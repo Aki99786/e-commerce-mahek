@@ -1,14 +1,33 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ProductCarousel } from "@/components/product/ProductCarousel";
-import { MOCK_PRODUCTS } from "@/data/mock-products";
+import { productService } from "@/features/products/services/product.service";
 import { ROUTES } from "@/constants/routes";
+import { adaptAPIProductToUI } from "@/features/products/utils/product-adapter";
+import type { Product } from "@/types/product";
 
 export const BestSellingSection = () => {
-  const bestSellingProducts = MOCK_PRODUCTS.filter(
-    (product) => product.bestseller
-  );
+  const [bestSellingProducts, setBestSellingProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBestSelling = async () => {
+      try {
+        const response = await productService.getBestSellingProducts();
+        const mappedProducts = response.products.map(adaptAPIProductToUI);
+        setBestSellingProducts(mappedProducts);
+      } catch (error) {
+        console.error("Failed to fetch best selling products:", error);
+        setBestSellingProducts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBestSelling();
+  }, []);
 
   return (
     <section className="py-8 md:py-10 lg:py-14 bg-gray-50">
@@ -21,11 +40,19 @@ export const BestSellingSection = () => {
             href={ROUTES.SHOP}
             className="text-sm md:text-base font-semibold text-primary hover:text-primary/80 transition-colors font-poppins"
           >
-            View All →
+            View All {"->"}
           </Link>
         </div>
 
-        <ProductCarousel products={bestSellingProducts} slidesToShow={5} />
+        {isLoading ? (
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="min-w-[200px] h-[300px] bg-gray-200 animate-pulse rounded-lg flex-shrink-0" />
+            ))}
+          </div>
+        ) : (
+          <ProductCarousel products={bestSellingProducts} slidesToShow={5} />
+        )}
       </div>
     </section>
   );

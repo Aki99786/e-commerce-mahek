@@ -1,9 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ProductCard } from "@/components/product/ProductCard";
-import { MOCK_PRODUCTS } from "@/data/mock-products";
+import { productService } from "@/features/products/services/product.service";
 import { ROUTES } from "@/constants/routes";
 
 interface TrendingWithBannerSectionProps {
@@ -12,7 +13,41 @@ interface TrendingWithBannerSectionProps {
 }
 
 export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'Top Trending Collection' }: TrendingWithBannerSectionProps) => {
-  const trendingProducts = MOCK_PRODUCTS.filter((product) => product.trending).slice(0, 4);
+  const [trendingProducts, setTrendingProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrending = async () => {
+      try {
+        const response = await productService.getTrendingProducts();
+        const mappedProducts = response.products.slice(0, 4).map((p: any) => ({
+          id: p._id,
+          name: p.name,
+          slug: p.slug,
+          description: p.description,
+          shortDescription: p.category,
+          images: p.allImages[0] ? [{ url: p.allImages[0], alt: p.name }] : [],
+          price: {
+            current: p.avgPrice,
+            original: p.variants?.[0]?.mrp || p.avgPrice,
+          },
+          category: p.category,
+          categorySlug: p.category.toLowerCase(),
+          stockStatus: p.totalStock > 0 ? "in-stock" : "out-of-stock",
+          rating: { average: p.averageRating, count: p.totalReviews },
+          __apiProduct: p
+        }));
+        setTrendingProducts(mappedProducts);
+      } catch (error) {
+        console.error("Failed to fetch trending products:", error);
+        setTrendingProducts([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTrending();
+  }, []);
 
   return (
     <section className="py-8 md:py-10 lg:py-14 bg-white">
@@ -38,9 +73,21 @@ export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'T
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-              {trendingProducts.map((product) => (
-                <ProductCard key={product.id} product={product} variant="compact" />
-              ))}
+              {isLoading ? (
+                // Loading Skeletons
+                [1, 2, 3, 4].map((i) => (
+                  <div key={i} className="w-full h-[300px] bg-gray-200 animate-pulse rounded-lg" />
+                ))
+              ) : (
+                trendingProducts.map((product) => (
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    variant="compact" 
+                    apiProduct={product.__apiProduct}
+                  />
+                ))
+              )}
             </div>
           </div>
         </div>

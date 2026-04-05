@@ -21,7 +21,7 @@ export const API_ENDPOINTS = {
     LIST: "products/list",
     BY_ID: (id: string) => `products/${id}`,
     BEST_SELLING: "products/best-selling-temp",
-    TRENDING: "products/tending-temp",
+    TRENDING: "products/trending-temp",
   },
   AUTH: {
     SEND_OTP: "auth/send-otp",
