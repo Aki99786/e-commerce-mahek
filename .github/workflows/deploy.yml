@@ -17,7 +17,7 @@ permissions:
 
 env:
   GCP_PROJECT_ID: mahek-deploy
-  GCP_REGION: asia-south1
+  GCP_REGION: asia-southeast1
   GCP_ARTIFACT_REPOSITORY: mahek-frontend
 
 jobs:
