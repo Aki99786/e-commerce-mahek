@@ -67,8 +67,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
+          workload_identity_provider: projects/1077439066905/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@mahek-deploy.iam.gserviceaccount.com
 
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
@@ -112,8 +112,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
+          workload_identity_provider: projects/1077439066905/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@mahek-deploy.iam.gserviceaccount.com
 
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
