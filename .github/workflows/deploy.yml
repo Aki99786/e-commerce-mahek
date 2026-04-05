@@ -1,0 +1,142 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches:
+      - ankit
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GCP_PROJECT_ID: mahek-deploy
+  GCP_REGION: asia-south1
+  GCP_ARTIFACT_REPOSITORY: mahek-frontend
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+      NEXT_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && 'https://api-prod-1077439066905.asia-south1.run.app/api/' || 'https://api-staging-1077439066905.asia-south1.run.app/api/' }}
+      NEXT_PUBLIC_APP_URL: ${{ github.ref == 'refs/heads/main' && secrets.NEXT_PUBLIC_APP_URL_PRODUCTION || secrets.NEXT_PUBLIC_APP_URL_STAGING }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        if: github.ref == 'refs/heads/ankit' || github.event_name == 'pull_request'
+        run: npm run lint
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_ENV: ${{ env.NEXT_PUBLIC_ENV }}
+          NEXT_PUBLIC_API_URL: ${{ env.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ env.NEXT_PUBLIC_APP_URL }}
+        run: npm run build
+
+  deploy-staging:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      NEXT_PUBLIC_ENV: staging
+      NEXT_PUBLIC_API_URL: https://api-staging-1077439066905.asia-south1.run.app/api/
+      NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL_STAGING }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_ENV=${{ env.NEXT_PUBLIC_ENV }} \
+            --build-arg NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }} \
+            --build-arg NEXT_PUBLIC_APP_URL=${{ env.NEXT_PUBLIC_APP_URL }} \
+            -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_ARTIFACT_REPOSITORY }}/mahek-frontend:${{ github.sha }} .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_ARTIFACT_REPOSITORY }}/mahek-frontend:${{ github.sha }}
+
+      - name: Deploy to Cloud Run staging
+        run: |
+          gcloud run deploy store-staging \
+            --image=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_ARTIFACT_REPOSITORY }}/mahek-frontend:${{ github.sha }} \
+            --region=${{ env.GCP_REGION }} \
+            --platform=managed \
+            --allow-unauthenticated
+
+  deploy-production:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      NEXT_PUBLIC_ENV: production
+      NEXT_PUBLIC_API_URL: https://api-prod-1077439066905.asia-south1.run.app/api/
+      NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL_PRODUCTION }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_ENV=${{ env.NEXT_PUBLIC_ENV }} \
+            --build-arg NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }} \
+            --build-arg NEXT_PUBLIC_APP_URL=${{ env.NEXT_PUBLIC_APP_URL }} \
+            -t ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_ARTIFACT_REPOSITORY }}/mahek-frontend:${{ github.sha }} .
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_ARTIFACT_REPOSITORY }}/mahek-frontend:${{ github.sha }}
+
+      - name: Deploy to Cloud Run production
+        run: |
+          gcloud run deploy store-prod \
+            --image=${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_ARTIFACT_REPOSITORY }}/mahek-frontend:${{ github.sha }} \
+            --region=${{ env.GCP_REGION }} \
+            --platform=managed \
+            --allow-unauthenticated
