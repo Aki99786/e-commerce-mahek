@@ -3,7 +3,6 @@ name: Frontend CI/CD
 on:
   push:
     branches:
-      - ankit
       - develop
       - main
   pull_request:
@@ -24,9 +23,9 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_ENV: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'production' || 'staging' }}
-      NEXT_PUBLIC_API_URL: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'https://api-prod-1077439066905.asia-south1.run.app/api/' || 'https://api-staging-1077439066905.asia-south1.run.app/api/' }}
-      NEXT_PUBLIC_APP_URL: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && secrets.NEXT_PUBLIC_APP_URL_PRODUCTION || secrets.NEXT_PUBLIC_APP_URL_STAGING }}
+      NEXT_PUBLIC_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
+      NEXT_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && 'https://api-prod-1077439066905.asia-south1.run.app/api/' || 'https://api-staging-1077439066905.asia-south1.run.app/api/' }}
+      NEXT_PUBLIC_APP_URL: ${{ github.ref == 'refs/heads/main' && secrets.NEXT_PUBLIC_APP_URL_PRODUCTION || secrets.NEXT_PUBLIC_APP_URL_STAGING }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -41,6 +40,7 @@ jobs:
         run: npm ci
 
       - name: Lint
+        if: github.ref == 'refs/heads/ankit' || github.event_name == 'pull_request'
         run: npm run lint
 
       - name: Build
