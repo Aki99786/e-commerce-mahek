@@ -12,9 +12,9 @@ export const TrendingWithBannerSwappedSection = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTrending = async () => {
+    const fetchLehengas = async () => {
       try {
-        const response = await productService.getTrendingProducts();
+        const response = await productService.getLehengasProducts();
         const mappedProducts = response.products.slice(0, 4).map((p: any) => ({
           id: p._id,
           name: p.name,
@@ -34,14 +34,14 @@ export const TrendingWithBannerSwappedSection = () => {
         }));
         setTrendingProducts(mappedProducts);
       } catch (error) {
-        console.error("Failed to fetch swapped trending products:", error);
+        console.error("Failed to fetch lehenga products:", error);
         setTrendingProducts([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchTrending();
+    fetchLehengas();
   }, []);
 
   return (
