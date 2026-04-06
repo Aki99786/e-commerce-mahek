@@ -20,8 +20,11 @@ export const API_ENDPOINTS = {
   PRODUCTS: {
     LIST: "products/list",
     BY_ID: (id: string) => `products/${id}`,
-    BEST_SELLING: "products/best-selling-temp",
-    TRENDING: "products/trending-temp",
+    BEST_SELLING: "products/best-selling",
+    TRENDING: "products/trending",
+    FLASH_SALE: "products/flash-sale",
+    LEHENGAS: "products/lehengas",
+    TESTIMONIALS: "products/testimonials",
   },
   AUTH: {
     SEND_OTP: "auth/send-otp",

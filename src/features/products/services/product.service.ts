@@ -46,6 +46,18 @@ class ProductService extends BaseService {
   async getTrendingProducts(): Promise<ProductsListResponse> {
     return this.get<ProductsListResponse>(API_ENDPOINTS.PRODUCTS.TRENDING);
   }
+
+  async getFlashSaleProducts(): Promise<ProductsListResponse> {
+    return this.get<ProductsListResponse>(API_ENDPOINTS.PRODUCTS.FLASH_SALE);
+  }
+
+  async getLehengasProducts(): Promise<ProductsListResponse> {
+    return this.get<ProductsListResponse>(API_ENDPOINTS.PRODUCTS.LEHENGAS);
+  }
+
+  async getTestimonials(): Promise<any> {
+    return this.get<any>(API_ENDPOINTS.PRODUCTS.TESTIMONIALS);
+  }
 }
 
 export const productService = new ProductService();
