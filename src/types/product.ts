@@ -17,7 +17,7 @@ export interface ProductImage {
 }
 
 export interface ProductPrice {
-  current: number;
+  current?: number;
   original?: number;
   discount?: number;
 }

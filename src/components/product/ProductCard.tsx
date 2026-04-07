@@ -26,17 +26,17 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
   const router = useRouter();
   const productUrl = ROUTES.PRODUCT_DETAIL(product.id);
   const isCompact = variant === 'compact';
-  const [isInWishlist, setIsInWishlist] = useState(initialWishlistState);
+  const { incrementCartCount, incrementWishlistCount, decrementWishlistCount, wishlistedProductIds, addToWishlistedIds, removeFromWishlistedIds } = useCartWishlist();
+  const [isInWishlist, setIsInWishlist] = useState(() => wishlistedProductIds.has(product.id) || initialWishlistState);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const { incrementCartCount, incrementWishlistCount, decrementWishlistCount } = useCartWishlist();
 
   useEffect(() => {
-    setIsInWishlist(initialWishlistState);
-  }, [initialWishlistState]);
+    setIsInWishlist(wishlistedProductIds.has(product.id) || initialWishlistState);
+  }, [wishlistedProductIds, product.id, initialWishlistState]);
 
   useEffect(() => {
     if (isHovering && product.images.length > 1) {
@@ -79,6 +79,7 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         await wishlistService.removeFromWishlist(product.id);
         setIsInWishlist(false);
         decrementWishlistCount();
+        removeFromWishlistedIds(product.id);
       } else {
         // Use first variant and first available size
         const firstVariant = apiProduct.variants[0];
@@ -98,6 +99,7 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         });
         setIsInWishlist(true);
         incrementWishlistCount();
+        addToWishlistedIds(product.id);
       }
       
       // Notify parent component to refresh wishlist
@@ -237,7 +239,7 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         )}
       </div>
 
-      <div className="p-2 sm:p-3">
+      <div className="pt-2">
         <button
           onClick={handleAddToCart}
           disabled={isAddingToCart}
@@ -302,21 +304,23 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
           className="!bg-gray-900 !text-white !text-xs sm:!text-sm !px-2 sm:!px-3 !py-1.5 sm:!py-2 !rounded !z-50"
         />
 
-        <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+        <div className="flex flex-col gap-0.5">
           {product.price?.current !== undefined ? (
             <>
-              <span className="text-base sm:text-lg font-bold text-gray-900 font-poppins">
-                Rs. {product.price.current.toLocaleString()}
-              </span>
-              {product.price.original && product.price.original > product.price.current && (
-                <>
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="text-base sm:text-lg font-bold text-gray-900 font-poppins">
+                  Rs. {product.price.current.toLocaleString()}
+                </span>
+                {product.price.original && product.price.original > product.price.current && (
                   <span className="text-xs sm:text-sm text-gray-400 line-through font-poppins">
                     Rs. {product.price.original.toLocaleString()}
                   </span>
-                  <span className="text-xs sm:text-sm text-orange-500 font-semibold font-poppins">
-                    ({product.price.discount}% OFF)
-                  </span>
-                </>
+                )}
+              </div>
+              {product.price.original && product.price.original > product.price.current && (
+                <span className="text-xs sm:text-sm text-orange-500 font-semibold font-poppins">
+                  ({product.price.discount}% OFF)
+                </span>
               )}
             </>
           ) : (

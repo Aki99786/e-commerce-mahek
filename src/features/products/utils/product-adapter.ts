@@ -3,14 +3,16 @@ import type { Product as UIProduct } from "@/types/product";
 import { ProductLabelType, StockStatus } from "@/types/product";
 
 export function adaptAPIProductToUI(apiProduct: APIProduct): UIProduct {
-  const prices = apiProduct.variants.map((v) => v.sellingPrice);
-  const mrps = apiProduct.variants.map((v) => v.mrp);
-  const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
-  const minMrp = Math.min(...mrps);
-  const maxMrp = Math.max(...mrps);
+  const variants = apiProduct.variants || [];
+  const prices = variants.map((v) => v.sellingPrice);
+  const mrps = variants.map((v) => v.mrp);
+  const minPrice = prices.length > 0 ? Math.min(...prices) : undefined;
+  const maxMrp = mrps.length > 0 ? Math.max(...mrps) : undefined;
 
-  const avgDiscount = Math.round(((maxMrp - minPrice) / maxMrp) * 100);
+  const avgDiscount =
+    minPrice !== undefined && maxMrp !== undefined && maxMrp > 0
+      ? Math.round(((maxMrp - minPrice) / maxMrp) * 100)
+      : 0;
   const hasDiscount = avgDiscount > 0;
 
   const stockStatus =
@@ -37,7 +39,10 @@ export function adaptAPIProductToUI(apiProduct: APIProduct): UIProduct {
     })),
     price: {
       current: minPrice,
-      original: maxMrp > minPrice ? maxMrp : undefined,
+      original:
+        maxMrp !== undefined && minPrice !== undefined && maxMrp > minPrice
+          ? maxMrp
+          : undefined,
       discount: hasDiscount ? avgDiscount : undefined,
     },
     rating: {
