@@ -54,7 +54,7 @@ export const StickyCartBar = ({
                 {product.name}
               </h3>
               <p className="text-xs text-gray-300 font-poppins truncate">
-                {selectedColor} / {selectedSize} - ₹{product.price.current.toLocaleString()}
+                {selectedColor} / {selectedSize} - ₹{(product.price.current ?? 0).toLocaleString()}
               </p>
             </div>
           </div>

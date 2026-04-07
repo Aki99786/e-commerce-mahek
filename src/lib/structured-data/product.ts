@@ -17,7 +17,7 @@ export const generateProductSchema = (product: Product) => {
       "@type": "Offer",
       url: `${SITE_CONFIG.url}/category/${product.category}`,
       priceCurrency: SITE_CONFIG.currency,
-      price: product.price.current,
+      price: product.price.current ?? 0,
       availability:
         product.stockStatus === "in-stock"
           ? "https://schema.org/InStock"
