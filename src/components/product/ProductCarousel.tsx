@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { ProductCard } from "./ProductCard";
 import { Product } from "@/types/product";
+import type { Product as APIProduct } from "@/features/products/types";
 
 interface ProductCarouselProps {
   products: Product[];
+  apiProducts?: APIProduct[];
   slidesToShow?: number;
 }
 
-export const ProductCarousel = ({ products, slidesToShow = 5 }: ProductCarouselProps) => {
+export const ProductCarousel = ({ products, apiProducts = [], slidesToShow = 5 }: ProductCarouselProps) => {
   const [sliderIndex, setSliderIndex] = useState(0);
 
   const getCardWidth = () => {
@@ -61,11 +63,14 @@ export const ProductCarousel = ({ products, slidesToShow = 5 }: ProductCarouselP
           className="flex gap-3 md:gap-4 lg:gap-6 transition-all duration-500 lg:px-10"
           style={{ transform: `translateX(-${sliderIndex * getCardWidth()}px)` }}
         >
-          {products.map((product) => (
-            <div key={product.id} className="flex-shrink-0 w-40 sm:w-44 md:w-48 lg:w-52">
-              <ProductCard product={product} />
-            </div>
-          ))}
+          {products.map((product) => {
+            const rawProduct = apiProducts.find((p) => p._id === product.id);
+            return (
+              <div key={product.id} className="flex-shrink-0 w-40 sm:w-44 md:w-48 lg:w-52">
+                <ProductCard product={product} apiProduct={rawProduct} />
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

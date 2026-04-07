@@ -7,9 +7,11 @@ import { productService } from "@/features/products/services/product.service";
 import { ROUTES } from "@/constants/routes";
 import { adaptAPIProductToUI } from "@/features/products/utils/product-adapter";
 import type { Product } from "@/types/product";
+import type { Product as APIProduct } from "@/features/products/types";
 
 export const BestSellingSection = () => {
   const [bestSellingProducts, setBestSellingProducts] = useState<Product[]>([]);
+  const [rawAPIProducts, setRawAPIProducts] = useState<APIProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -18,6 +20,7 @@ export const BestSellingSection = () => {
         const response = await productService.getBestSellingProducts();
         const mappedProducts = response.products.map(adaptAPIProductToUI);
         setBestSellingProducts(mappedProducts);
+        setRawAPIProducts(response.products);
       } catch (error) {
         console.error("Failed to fetch best selling products:", error);
         setBestSellingProducts([]);
@@ -51,7 +54,7 @@ export const BestSellingSection = () => {
             ))}
           </div>
         ) : (
-          <ProductCarousel products={bestSellingProducts} slidesToShow={5} />
+          <ProductCarousel products={bestSellingProducts} apiProducts={rawAPIProducts} slidesToShow={5} />
         )}
       </div>
     </section>

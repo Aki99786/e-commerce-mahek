@@ -26,49 +26,53 @@ export const useProductFilters = (allProducts: Product[]) => {
 
     if (filters.categories.length > 0) {
       filtered = filtered.filter((product) =>
-        filters.categories.includes(product.categorySlug)
+        filters.categories.includes(product.categorySlug),
       );
     }
 
     if (filters.priceRange.min > 0 || filters.priceRange.max < 10000) {
       filtered = filtered.filter(
         (product) =>
-          product.price.current >= filters.priceRange.min &&
-          product.price.current <= filters.priceRange.max
+          (product.price.current ?? 0) >= filters.priceRange.min &&
+          (product.price.current ?? 0) <= filters.priceRange.max,
       );
     }
 
     if (filters.colors.length > 0) {
       filtered = filtered.filter((product) =>
         product.colors?.some((color) =>
-          filters.colors.includes(color.name.toLowerCase())
-        )
+          filters.colors.includes(color.name.toLowerCase()),
+        ),
       );
     }
 
     if (filters.sizes.length > 0) {
       filtered = filtered.filter((product) =>
         product.sizes?.some((size) =>
-          filters.sizes.includes(size.name.toLowerCase())
-        )
+          filters.sizes.includes(size.name.toLowerCase()),
+        ),
       );
     }
 
     switch (filters.sortBy) {
       case SortOption.PRICE_LOW_TO_HIGH:
-        filtered.sort((a, b) => a.price.current - b.price.current);
+        filtered.sort(
+          (a, b) => (a.price.current ?? 0) - (b.price.current ?? 0),
+        );
         break;
       case SortOption.PRICE_HIGH_TO_LOW:
-        filtered.sort((a, b) => b.price.current - a.price.current);
+        filtered.sort(
+          (a, b) => (b.price.current ?? 0) - (a.price.current ?? 0),
+        );
         break;
       case SortOption.CUSTOMER_RATING:
         filtered.sort(
-          (a, b) => (b.rating?.average || 0) - (a.rating?.average || 0)
+          (a, b) => (b.rating?.average || 0) - (a.rating?.average || 0),
         );
         break;
       case SortOption.BETTER_DISCOUNT:
         filtered.sort(
-          (a, b) => (b.price.discount || 0) - (a.price.discount || 0)
+          (a, b) => (b.price.discount || 0) - (a.price.discount || 0),
         );
         break;
       case SortOption.WHATS_NEW:
@@ -76,7 +80,7 @@ export const useProductFilters = (allProducts: Product[]) => {
         break;
       case SortOption.POPULARITY:
         filtered.sort(
-          (a, b) => (b.rating?.count || 0) - (a.rating?.count || 0)
+          (a, b) => (b.rating?.count || 0) - (a.rating?.count || 0),
         );
         break;
       default:
@@ -87,7 +91,7 @@ export const useProductFilters = (allProducts: Product[]) => {
   }, [allProducts, filters]);
 
   const totalPages = Math.ceil(
-    filteredAndSortedProducts.length / ITEMS_PER_PAGE
+    filteredAndSortedProducts.length / ITEMS_PER_PAGE,
   );
 
   const paginatedProducts = useMemo(() => {
