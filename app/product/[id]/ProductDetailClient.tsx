@@ -25,7 +25,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [showZoom, setShowZoom] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLDivElement>(null);
-  const { incrementCartCount, incrementWishlistCount, refreshCounts } = useCartWishlist();
+  const { incrementCartCount, incrementWishlistCount, refreshCounts, cartedProductIds, addToCartedIds } = useCartWishlist();
+  const [isInCart, setIsInCart] = useState(() => cartedProductIds.has(product._id));
 
   const selectedVariant = product.variants[selectedVariantIndex];
   const validSizes = selectedVariant.sizes.filter(s => s !== null && s !== undefined);
@@ -43,6 +44,11 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       return;
     }
 
+    if (isInCart) {
+      router.push(ROUTES.CART);
+      return;
+    }
+
     setIsAddingToCart(true);
     try {
       await cartService.addToCart({
@@ -51,6 +57,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         size: hasValidSizes ? (selectedSize?.size || "ONE_SIZE") : "ONE_SIZE",
         quantity: 1,
       });
+      setIsInCart(true);
+      addToCartedIds(product._id);
       incrementCartCount();
       await refreshCounts();
     } catch (error) {
@@ -374,14 +382,24 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               </div>
             )}
 
-            {/* Add to Cart Button */}
+            {/* Add to Cart / Go to Bag Button */}
             <button
               onClick={handleAddToCart}
-              disabled={hasValidSizes ? (!selectedSize || selectedSize.stock === 0 || isAddingToCart) : isAddingToCart}
-              className="w-full bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white font-poppins font-semibold py-4 px-8 rounded-xl transition-all disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg shadow-pink-200 mb-4"
+              disabled={!isInCart && (hasValidSizes ? (!selectedSize || selectedSize.stock === 0 || isAddingToCart) : isAddingToCart)}
+              className={`w-full font-poppins font-semibold py-4 px-8 rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg mb-4 ${
+                isInCart
+                  ? "bg-white border-2 border-pink-600 text-pink-600 hover:bg-pink-50 shadow-pink-100 cursor-pointer"
+                  : "bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white shadow-pink-200 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed"
+              }`}
             >
               <ShoppingBag className="w-5 h-5" />
-              {isAddingToCart ? "Adding..." : hasValidSizes ? (!selectedSize || selectedSize.stock === 0 ? "Out of Stock" : "Add to Bag") : "Add to Bag"}
+              {isInCart
+                ? "Go to Bag"
+                : isAddingToCart
+                ? "Adding..."
+                : hasValidSizes
+                ? (!selectedSize || selectedSize.stock === 0 ? "Out of Stock" : "Add to Bag")
+                : "Add to Bag"}
             </button>
 
             {/* Product Details */}

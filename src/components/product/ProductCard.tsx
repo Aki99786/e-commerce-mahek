@@ -26,9 +26,11 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
   const router = useRouter();
   const productUrl = ROUTES.PRODUCT_DETAIL(product.id);
   const isCompact = variant === 'compact';
-  const { incrementCartCount, incrementWishlistCount, decrementWishlistCount, wishlistedProductIds, addToWishlistedIds, removeFromWishlistedIds } = useCartWishlist();
+  const { incrementCartCount, incrementWishlistCount, decrementWishlistCount, wishlistedProductIds, cartedProductIds, addToWishlistedIds, removeFromWishlistedIds, addToCartedIds } = useCartWishlist();
   const [isInWishlist, setIsInWishlist] = useState(() => wishlistedProductIds.has(product.id) || initialWishlistState);
+  const [isInCart, setIsInCart] = useState(() => cartedProductIds.has(product.id));
   const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
+  const [heartAnimation, setHeartAnimation] = useState<"like" | "unlike" | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
@@ -37,6 +39,10 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
   useEffect(() => {
     setIsInWishlist(wishlistedProductIds.has(product.id) || initialWishlistState);
   }, [wishlistedProductIds, product.id, initialWishlistState]);
+
+  useEffect(() => {
+    setIsInCart(cartedProductIds.has(product.id));
+  }, [cartedProductIds, product.id]);
 
   useEffect(() => {
     if (isHovering && product.images.length > 1) {
@@ -73,6 +79,8 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
       return;
     }
 
+    setHeartAnimation(isInWishlist ? "unlike" : "like");
+    setTimeout(() => setHeartAnimation(null), 400);
     setIsAddingToWishlist(true);
     try {
       if (isInWishlist) {
@@ -147,7 +155,9 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         size: firstSize,
         quantity: 1,
       });
+      setIsInCart(true);
       incrementCartCount();
+      addToCartedIds(product.id);
     } catch (error) {
       console.error("Error adding to cart:", error);
     } finally {
@@ -203,6 +213,22 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
           </div>
         )}
 
+        <style>{`
+          @keyframes heart-like {
+            0%   { transform: scale(1); }
+            30%  { transform: scale(1.45); }
+            60%  { transform: scale(0.9); }
+            80%  { transform: scale(1.2); }
+            100% { transform: scale(1); }
+          }
+          @keyframes heart-unlike {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(0.7); }
+            100% { transform: scale(1); }
+          }
+          .heart-anim-like  { animation: heart-like  0.4s ease forwards; }
+          .heart-anim-unlike { animation: heart-unlike 0.35s ease forwards; }
+        `}</style>
         <button
           onClick={handleWishlistToggle}
           disabled={isAddingToWishlist}
@@ -210,7 +236,8 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         >
           <svg
             className={cn(
-              "w-4 h-4 sm:w-5 sm:h-5 transition-all duration-200",
+              "w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200",
+              heartAnimation === "like" ? "heart-anim-like" : heartAnimation === "unlike" ? "heart-anim-unlike" : "",
               isInWishlist
                 ? "text-red-500 fill-red-500"
                 : "text-gray-700 group-hover/heart:text-red-500 group-hover/heart:fill-red-500"
@@ -241,33 +268,47 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
 
       <div className="pt-2">
         <button
-          onClick={handleAddToCart}
+          onClick={isInCart ? (e) => { e.preventDefault(); e.stopPropagation(); router.push(ROUTES.CART); } : handleAddToCart}
           disabled={isAddingToCart}
-          className="w-full border border-gray-300 rounded px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold font-poppins transition-colors flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50"
+          className="w-full border rounded px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold font-poppins transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50"
           style={{
-            borderColor: isAddingToCart ? '#C1272D' : undefined,
-            color: isAddingToCart ? '#C1272D' : undefined,
+            borderColor: isInCart ? '#C1272D' : isAddingToCart ? '#C1272D' : undefined,
+            color: isInCart ? '#ffffff' : isAddingToCart ? '#C1272D' : undefined,
+            backgroundColor: isInCart ? '#C1272D' : undefined,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#C1272D';
-            e.currentTarget.style.color = '#C1272D';
+            if (!isInCart) {
+              e.currentTarget.style.borderColor = '#C1272D';
+              e.currentTarget.style.color = '#C1272D';
+            }
           }}
           onMouseLeave={(e) => {
-            if (!isAddingToCart) {
+            if (!isInCart && !isAddingToCart) {
               e.currentTarget.style.borderColor = '';
               e.currentTarget.style.color = '';
             }
           }}
         >
-          <svg
-            className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-          {isAddingToCart ? "ADDING..." : "ADD TO CART"}
+          {isInCart ? (
+            <>
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              GO TO BAG
+            </>
+          ) : (
+            <>
+              <svg
+                className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              {isAddingToCart ? "ADDING..." : "ADD TO CART"}
+            </>
+          )}
         </button>
 
         {product.sizes && product.sizes.length > 0 && (
