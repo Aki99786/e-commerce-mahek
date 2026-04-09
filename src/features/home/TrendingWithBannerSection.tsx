@@ -7,6 +7,7 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { productService } from "@/features/products/services/product.service";
 import { adaptAPIProductToUI } from "@/features/products/utils/product-adapter";
 import { ROUTES } from "@/constants/routes";
+import type { Product as APIProduct } from "@/features/products/types";
 
 interface TrendingWithBannerSectionProps {
   bannerPosition?: 'left' | 'right';
@@ -21,6 +22,7 @@ enum ProductType {
 
 export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'Top Trending Collection', type = '' }: TrendingWithBannerSectionProps) => {
   const [trendingProducts, setTrendingProducts] = useState<any[]>([]);
+  const [rawAPIProducts, setRawAPIProducts] = useState<APIProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -29,6 +31,7 @@ export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'T
         const response = await productService.getTrendingProducts();
         const mappedProducts = response.products.slice(0, 4).map(adaptAPIProductToUI);
         setTrendingProducts(mappedProducts);
+        setRawAPIProducts(response.products.slice(0, 4));
       } catch (error) {
         console.error("Failed to fetch trending products:", error);
         setTrendingProducts([]);
@@ -42,6 +45,7 @@ export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'T
         const response = await productService.getProductsList({ type: 'LEHENGA', limit: 4, page: 1 });
         const mappedProducts = response.products.map(adaptAPIProductToUI);
         setTrendingProducts(mappedProducts);
+        setRawAPIProducts(response.products);
       } catch (error) {
         console.error("Failed to fetch lehenga products:", error);
         setTrendingProducts([]);
@@ -88,13 +92,17 @@ export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'T
                   <div key={i} className="w-full h-[300px] bg-gray-200 animate-pulse rounded-lg" />
                 ))
               ) : (
-                trendingProducts.map((product) => (
-                  <ProductCard 
-                    key={product.id} 
-                    product={product} 
-                    variant="compact" 
-                  />
-                ))
+                trendingProducts.map((product) => {
+                  const rawProduct = rawAPIProducts.find((p) => p._id === product.id);
+                  return (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product}
+                      apiProduct={rawProduct}
+                      variant="compact" 
+                    />
+                  );
+                })
               )}
             </div>
           </div>

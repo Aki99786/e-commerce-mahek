@@ -116,17 +116,14 @@ export default function WishlistPage() {
               <EmptyWishlist isAuthenticated={true} />
             ) : (
               <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h1 className="text-2xl font-playfair font-bold">
-                    My Wishlist{" "}
-                    <span className="text-gray-500 font-poppins text-lg">
-                      {wishlistItems.length}{" "}
-                      {wishlistItems.length === 1 ? "item" : "items"}
-                    </span>
-                  </h1>
+                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                  <h1 className="text-2xl font-playfair font-bold text-gray-900">My Wishlist</h1>
+                  <span className="text-sm text-gray-400 font-poppins bg-gray-100 px-2.5 py-0.5 rounded-full">
+                    {wishlistItems.length} {wishlistItems.length === 1 ? "item" : "items"}
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="flex flex-col gap-3 max-w-2xl">
                   {wishlistItems.map((item) => (
                     <WishlistItem
                       key={item._id || `${item.product._id}-${item.variantId}`}

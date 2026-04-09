@@ -144,21 +144,21 @@ export const Header = () => {
 
           <div className="flex items-center gap-3">
             <button
-              className="text-text-primary hover:text-primary transition-colors"
+              className="text-text-primary hover:text-primary transition-colors cursor-pointer"
               onClick={() => setIsSearchOpen(!isSearchOpen)}
               aria-label="Search"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <svg className="w-5 h-5 cursor-pointer select-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
 
             <Link
               href={ROUTES.WISHLIST}
-              className="relative text-text-primary hover:text-primary transition-colors"
+              className="relative text-text-primary hover:text-primary transition-colors cursor-pointer"
               aria-label="Wishlist"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <svg className="w-5 h-5 cursor-pointer select-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
               {wishlistCount > 0 && (
@@ -173,10 +173,10 @@ export const Header = () => {
             ) : (
               <Link
                 href={ROUTES.LOGIN}
-                className="text-text-primary hover:text-primary transition-colors"
+                className="text-text-primary hover:text-primary transition-colors cursor-pointer"
                 aria-label="Account"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                <svg className="w-5 h-5 cursor-pointer select-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </Link>
@@ -184,10 +184,10 @@ export const Header = () => {
 
             <Link
               href={ROUTES.CART}
-              className="relative text-text-primary hover:text-primary transition-colors"
+              className="relative text-text-primary hover:text-primary transition-colors cursor-pointer"
               aria-label="Cart"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <svg className="w-5 h-5 cursor-pointer select-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
               {cartCount > 0 && (

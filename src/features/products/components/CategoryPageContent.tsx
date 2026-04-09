@@ -31,6 +31,7 @@ export function CategoryPageContent({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
+  const [allCategoryProducts, setAllCategoryProducts] = useState<Product[]>([]);
   const [expandedVariants, setExpandedVariants] = useState<ExpandedVariantProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
@@ -81,6 +82,25 @@ export function CategoryPageContent({
     setIsInitialized(true);
     fetchWishlist();
   }, []);
+
+  // Fetch all products for filter options on category load (unfiltered, large limit)
+  useEffect(() => {
+    if (!isInitialized) return;
+    const fetchAllForFilters = async () => {
+      try {
+        const response: ProductsListResponse =
+          await productService.getProductsList({
+            type: categoryType,
+            limit: 500,
+            page: 1,
+          });
+        setAllCategoryProducts(response.products);
+      } catch (error) {
+        console.error("Error fetching all products for filters:", error);
+      }
+    };
+    fetchAllForFilters();
+  }, [categoryType, isInitialized]);
 
   // Fetch products when filters or category changes
   useEffect(() => {
@@ -141,7 +161,7 @@ export function CategoryPageContent({
     }
   };
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (isUnfilteredFetch = false) => {
     setLoading(true);
     try {
       const response: ProductsListResponse =
@@ -159,6 +179,11 @@ export function CategoryPageContent({
       setExpandedVariants(allExpandedVariants);
       setTotalProducts(allExpandedVariants.length);
       setCurrentPage(response.page);
+
+      // On first unfiltered fetch, store the full category products for filter options
+      if (isUnfilteredFetch) {
+        setAllCategoryProducts(response.products);
+      }
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -183,10 +208,14 @@ export function CategoryPageContent({
     setFilters({ ...filters, page });
   };
 
-  // Calculate color counts from expanded variants (each variant = 1 color)
-  const colorCounts = expandedVariants.reduce((acc, variant) => {
-    const color = variant.selectedVariant.color;
-    acc[color] = (acc[color] || 0) + 1;
+  // Aggregate colors from full unfiltered category products (stable filter options)
+  const colorCounts = allCategoryProducts.reduce((acc, product) => {
+    (product.allColors || []).forEach((color) => {
+      const trimmed = color.trim();
+      if (trimmed) {
+        acc[trimmed] = (acc[trimmed] || 0) + 1;
+      }
+    });
     return acc;
   }, {} as Record<string, number>);
 
@@ -195,9 +224,11 @@ export function CategoryPageContent({
     count,
   }));
 
-  // Calculate available sizes from expanded variants
+  // Aggregate sizes from full unfiltered category products (stable filter options)
   const availableSizes = Array.from(
-    new Set(expandedVariants.flatMap((v) => v.selectedVariant.sizes.map(s => s.size)))
+    new Set(
+      allCategoryProducts.flatMap((p) => (p.allSizes || []).map((s) => s.trim()).filter(Boolean))
+    )
   );
 
   return (

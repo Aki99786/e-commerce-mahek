@@ -9,6 +9,7 @@ interface CartWishlistContextType {
   cartCount: number;
   wishlistCount: number;
   wishlistedProductIds: Set<string>;
+  cartedProductIds: Set<string>;
   refreshCounts: () => Promise<void>;
   incrementCartCount: () => void;
   decrementCartCount: () => void;
@@ -16,6 +17,7 @@ interface CartWishlistContextType {
   decrementWishlistCount: () => void;
   addToWishlistedIds: (productId: string) => void;
   removeFromWishlistedIds: (productId: string) => void;
+  addToCartedIds: (productId: string) => void;
 }
 
 const CartWishlistContext = createContext<CartWishlistContextType | undefined>(undefined);
@@ -24,6 +26,7 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [wishlistedProductIds, setWishlistedProductIds] = useState<Set<string>>(new Set());
+  const [cartedProductIds, setCartedProductIds] = useState<Set<string>>(new Set());
   const [mounted, setMounted] = useState(false);
 
   const fetchCounts = async () => {
@@ -35,13 +38,14 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const [cart, wishlist] = await Promise.all([
-        cartService.getCartCount(),
+      const [cartList, wishlist] = await Promise.all([
+        cartService.getCartList(),
         wishlistService.getWishlist(),
       ]);
-      setCartCount(cart);
-      setWishlistCount(wishlist.total);
+      setCartCount(cartList.items.reduce((total, item) => total + item.quantity, 0));
+      setWishlistCount(wishlist.items.length);
       setWishlistedProductIds(new Set(wishlist.items.map((item) => item.product._id)));
+      setCartedProductIds(new Set(cartList.items.map((item) => item.product._id)));
     } catch (error) {
       console.error("Error fetching counts:", error);
     }
@@ -90,6 +94,8 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
       next.delete(productId);
       return next;
     });
+  const addToCartedIds = (productId: string) =>
+    setCartedProductIds((prev) => new Set(prev).add(productId));
 
   return (
     <CartWishlistContext.Provider
@@ -97,6 +103,7 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
         cartCount,
         wishlistCount,
         wishlistedProductIds,
+        cartedProductIds,
         refreshCounts,
         incrementCartCount,
         decrementCartCount,
@@ -104,6 +111,7 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
         decrementWishlistCount,
         addToWishlistedIds,
         removeFromWishlistedIds,
+        addToCartedIds,
       }}
     >
       {children}
