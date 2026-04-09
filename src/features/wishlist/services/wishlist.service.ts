@@ -5,7 +5,6 @@ import type {
   AddToWishlistRequest,
   MoveToCartRequest,
   BulkMoveToCartRequest,
-  AddToCartRequest,
 } from "../types";
 
 class WishlistService extends BaseService {

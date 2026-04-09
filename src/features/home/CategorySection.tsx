@@ -1,6 +1,5 @@
 import { CategoryCircle } from "@/components/category/CategoryCircle";
 import { CATEGORIES } from "@/constants/categories";
-import { CATEGORY_ROUTES } from "@/constants/routes";
 
 export const CategorySection = () => {
   return (

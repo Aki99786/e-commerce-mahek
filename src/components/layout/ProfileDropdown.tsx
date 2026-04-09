@@ -6,14 +6,21 @@ import { useRouter } from "next/navigation";
 import { getUserData, clearAuth } from "@/lib/auth-utils";
 import { User, Heart, ShoppingBag, Gift, Phone, CreditCard, MapPin, Edit, LogOut } from "lucide-react";
 
+interface UserData {
+  name: string;
+  email: string;
+  [key: string]: unknown;
+}
+
 export function ProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
-    setUserData(getUserData());
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setUserData(getUserData() as UserData | null);
 
     const handleStorageChange = () => {
       setUserData(getUserData());

@@ -38,10 +38,16 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { id } = await params;
   
+  let product;
   try {
-    const product = await productService.getProductById(id);
-    return <ProductDetailClient product={product} />;
-  } catch (error) {
+    product = await productService.getProductById(id);
+  } catch {
     notFound();
   }
+
+  if (!product) {
+    notFound();
+  }
+
+  return <ProductDetailClient product={product} />;
 }

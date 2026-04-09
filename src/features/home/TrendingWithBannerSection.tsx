@@ -21,7 +21,7 @@ enum ProductType {
 }
 
 export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'Top Trending Collection', type = '' }: TrendingWithBannerSectionProps) => {
-  const [trendingProducts, setTrendingProducts] = useState<any[]>([]);
+  const [trendingProducts, setTrendingProducts] = useState<import('@/types/product').Product[]>([]);
   const [rawAPIProducts, setRawAPIProducts] = useState<APIProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -97,7 +97,7 @@ export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'T
                   return (
                     <ProductCard 
                       key={product.id} 
-                      product={product}
+                        product={product}
                       apiProduct={rawProduct}
                       variant="compact" 
                     />

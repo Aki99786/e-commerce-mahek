@@ -24,8 +24,8 @@ interface CategoryPageContentProps {
 }
 
 export function CategoryPageContent({
-  categorySlug,
-  categoryName,
+  categorySlug: _categorySlug,
+  categoryName: _categoryName,
   categoryType,
 }: CategoryPageContentProps) {
   const router = useRouter();
@@ -53,7 +53,7 @@ export function CategoryPageContent({
       params.limit = parseInt(searchParams.get('limit')!);
     }
     if (searchParams.get('sort')) {
-      params.sort = searchParams.get('sort') as any;
+      params.sort = searchParams.get('sort') as ProductsListParams['sort'];
     }
     if (searchParams.get('minPrice')) {
       params.minPrice = parseInt(searchParams.get('minPrice')!);
@@ -68,7 +68,7 @@ export function CategoryPageContent({
       params.size = searchParams.get('size')!;
     }
     if (searchParams.get('availability')) {
-      params.availability = searchParams.get('availability') as any;
+      params.availability = searchParams.get('availability') as ProductsListParams['availability'];
     }
 
     return params;

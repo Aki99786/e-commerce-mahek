@@ -16,7 +16,8 @@ export const ReviewsSection = () => {
       try {
         const response = await productService.getTestimonials();
         if (response && response.testimonials) {
-          const mappedReviews: Review[] = response.testimonials.map((t: any) => ({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const mappedReviews: Review[] = (response.testimonials as any[]).map((t: any) => ({
             id: t._id || t.id || Math.random().toString(),
             customerName: t.userName || "Customer",
             customerInitial: t.userName ? t.userName.charAt(0).toUpperCase() : "C",

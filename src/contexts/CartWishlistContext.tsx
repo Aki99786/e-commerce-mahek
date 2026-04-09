@@ -52,12 +52,14 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
   useEffect(() => {
     if (!mounted) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCounts();
 
     const handleStorageChange = () => {
