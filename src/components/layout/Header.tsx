@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ROUTES, CATEGORY_ROUTES } from "@/constants/routes";
-import { cn } from "@/lib/utils/cn";
 import { TypingPlaceholder } from "@/components/ui/TypingPlaceholder";
 import { ProfileDropdown } from "@/components/layout/ProfileDropdown";
 import { isAuthenticated } from "@/lib/auth-utils";
@@ -21,18 +20,19 @@ const SEARCH_PLACEHOLDERS = [
 export const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isAuth, setIsAuth] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { cartCount, wishlistCount } = useCartWishlist();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
   useEffect(() => {
     if (!mounted) return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsAuth(isAuthenticated());
 
     const handleStorageChange = () => {
@@ -50,13 +50,6 @@ export const Header = () => {
       clearInterval(interval);
     };
   }, [mounted]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPlaceholderIndex((prev) => (prev + 1) % SEARCH_PLACEHOLDERS.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <header className="bg-white border-b border-border-light relative z-49">

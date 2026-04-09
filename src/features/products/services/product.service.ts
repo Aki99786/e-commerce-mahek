@@ -55,8 +55,10 @@ class ProductService extends BaseService {
     return this.get<ProductsListResponse>(API_ENDPOINTS.PRODUCTS.LEHENGAS);
   }
 
-  async getTestimonials(): Promise<any> {
-    return this.get<any>(API_ENDPOINTS.PRODUCTS.TESTIMONIALS);
+  async getTestimonials(): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      API_ENDPOINTS.PRODUCTS.TESTIMONIALS,
+    );
   }
 }
 

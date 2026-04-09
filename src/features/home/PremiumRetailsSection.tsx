@@ -12,7 +12,7 @@ export const PremiumRetailsSection = () => {
           {/* Left Content */}
           <div className="lg:col-span-2 flex flex-col justify-center">
             <p className="text-xs md:text-sm font-medium text-gray-600 mb-1 font-poppins tracking-wide">
-              You can't Miss !
+              You can&apos;t Miss !
             </p>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 font-playfair leading-tight">
               Premium Retails Indian outfit corner

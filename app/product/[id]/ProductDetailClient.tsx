@@ -61,7 +61,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       addToCartedIds(product._id);
       incrementCartCount();
       await refreshCounts();
-    } catch (error) {
+    } catch {
       // Error handled silently
     } finally {
       setIsAddingToCart(false);
@@ -83,7 +83,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       });
       incrementWishlistCount();
       await refreshCounts();
-    } catch (error) {
+    } catch {
       // Error handled silently
     } finally {
       setIsAddingToWishlist(false);

@@ -26,7 +26,7 @@ export interface WishlistProduct {
   variants: WishlistProductVariant[];
   averageRating: number;
   totalReviews: number;
-  reviews: any[];
+  reviews: unknown[];
   createdAt: string;
   updatedAt: string;
 }

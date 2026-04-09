@@ -62,14 +62,14 @@ class AuthService {
     if (result.user) {
       this.setUserData(result.user);
     } else {
-      const resultData = result as any;
+      const resultData = result as unknown as Record<string, string>;
       if (resultData.id) {
         const userData: UserData = {
           id: resultData.id,
           email: resultData.email,
           name: resultData.name,
           role: resultData.role,
-          addresses: resultData.addresses || [],
+          addresses: [],
         };
         this.setUserData(userData);
       }

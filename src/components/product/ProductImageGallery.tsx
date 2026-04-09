@@ -19,7 +19,7 @@ interface ProductImageGalleryProps {
   bestseller?: boolean;
 }
 
-export const ProductImageGallery = ({ images, productName, productId, variantId, size, label, bestseller }: ProductImageGalleryProps) => {
+export const ProductImageGallery = ({ images, productName: _productName, productId, variantId, size, label, bestseller }: ProductImageGalleryProps) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });

@@ -1,10 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { isAuthenticated as checkIsAuthenticated } from "@/lib/auth-utils";
 import { EmptyWishlist } from "@/components/empty-states/EmptyWishlist";
-import { ProfileMenu } from "@/components/profile/ProfileMenu";
 import { WishlistItem } from "@/features/wishlist/components/WishlistItem";
 import { wishlistService } from "@/features/wishlist/services/wishlist.service";
 import { useCartWishlist } from "@/contexts/CartWishlistContext";
@@ -13,8 +11,7 @@ import { adaptWishlistResponseToUI } from "@/features/wishlist/adapters/wishlist
 import { toast } from "@/lib/toast";
 
 export default function WishlistPage() {
-  const router = useRouter();
-  const { refreshCounts, incrementCartCount, decrementWishlistCount } = useCartWishlist();
+  const { incrementCartCount, decrementWishlistCount } = useCartWishlist();
   const [isAuth, setIsAuth] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [wishlistItems, setWishlistItems] = useState<UIWishlistItem[]>([]);

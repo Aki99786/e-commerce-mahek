@@ -70,7 +70,10 @@ class ApiClient {
     }
   }
 
-  async request<T = any>(url: string, config: RequestInit = {}): Promise<T> {
+  async request<T = unknown>(
+    url: string,
+    config: RequestInit = {},
+  ): Promise<T> {
     try {
       const fullUrl = url.startsWith("http") ? url : `${this.baseURL}${url}`;
 
@@ -109,13 +112,13 @@ class ApiClient {
     }
   }
 
-  async get<T = any>(url: string, config?: RequestInit): Promise<T> {
+  async get<T = unknown>(url: string, config?: RequestInit): Promise<T> {
     return this.request<T>(url, { ...config, method: "GET" });
   }
 
-  async post<T = any>(
+  async post<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: RequestInit,
   ): Promise<T> {
     return this.request<T>(url, {
@@ -125,9 +128,9 @@ class ApiClient {
     });
   }
 
-  async put<T = any>(
+  async put<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: RequestInit,
   ): Promise<T> {
     return this.request<T>(url, {
@@ -137,9 +140,9 @@ class ApiClient {
     });
   }
 
-  async patch<T = any>(
+  async patch<T = unknown>(
     url: string,
-    data?: any,
+    data?: unknown,
     config?: RequestInit,
   ): Promise<T> {
     return this.request<T>(url, {
@@ -149,7 +152,7 @@ class ApiClient {
     });
   }
 
-  async delete<T = any>(url: string, config?: RequestInit): Promise<T> {
+  async delete<T = unknown>(url: string, config?: RequestInit): Promise<T> {
     return this.request<T>(url, { ...config, method: "DELETE" });
   }
 }

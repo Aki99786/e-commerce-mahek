@@ -12,12 +12,13 @@ import { cartService } from "@/features/cart/services/cart.service";
 import { isAuthenticated } from "@/lib/auth-utils";
 import { useRouter } from "next/navigation";
 import { useCartWishlist } from "@/contexts/CartWishlistContext";
+import type { ProductVariantSize } from "@/features/products/types";
 
 interface ProductCardProps {
   product: Product;
   className?: string;
   variant?: 'default' | 'compact';
-  apiProduct?: any; // Original API product with variants
+  apiProduct?: import('@/features/products/types').Product;
   initialWishlistState?: boolean;
   onWishlistChange?: () => void | Promise<void>;
 }
@@ -25,7 +26,7 @@ interface ProductCardProps {
 export const ProductCard = ({ product, className, variant = 'default', apiProduct, initialWishlistState = false, onWishlistChange }: ProductCardProps) => {
   const router = useRouter();
   const productUrl = ROUTES.PRODUCT_DETAIL(product.id);
-  const isCompact = variant === 'compact';
+  void variant;
   const { incrementCartCount, incrementWishlistCount, decrementWishlistCount, wishlistedProductIds, cartedProductIds, addToWishlistedIds, removeFromWishlistedIds, addToCartedIds } = useCartWishlist();
   const [isInWishlist, setIsInWishlist] = useState(() => wishlistedProductIds.has(product.id) || initialWishlistState);
   const [isInCart, setIsInCart] = useState(() => cartedProductIds.has(product.id));
@@ -73,8 +74,7 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
       return;
     }
 
-    // If no API product data, redirect to detail page
-    if (!apiProduct || !apiProduct.variants || apiProduct.variants.length === 0) {
+    if (!apiProduct || !(apiProduct.variants as unknown[]) || (apiProduct.variants as unknown[]).length === 0) {
       router.push(productUrl);
       return;
     }
@@ -94,7 +94,7 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         
         // Filter out null/undefined sizes and get first valid size
         const validSizes = (firstVariant.sizes || []).filter(
-          (s: any) => s !== null && s !== undefined && s.size
+          (s: ProductVariantSize | null | undefined): s is ProductVariantSize => s !== null && s !== undefined && !!s.size
         );
         const firstSize = validSizes.length > 0 
           ? validSizes[0].size 
@@ -143,7 +143,7 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
       
       // Filter out null/undefined sizes and get first valid size
       const validSizes = (firstVariant.sizes || []).filter(
-        (s: any) => s !== null && s !== undefined && s.size
+        (s: ProductVariantSize | null | undefined): s is ProductVariantSize => s !== null && s !== undefined && !!s.size
       );
       const firstSize = validSizes.length > 0 
         ? validSizes[0].size 
