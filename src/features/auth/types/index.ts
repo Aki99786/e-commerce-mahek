@@ -1,14 +1,8 @@
-export interface LoginFormData {
-  emailOrPhone: string;
-  password: string;
-}
+export type UserRole = "USER" | "ADMIN" | "MANAGER" | "SUPPORT";
 
-export interface SignupFormData {
-  fullName: string;
+export interface LoginFormData {
   email: string;
-  phone: string;
   password: string;
-  confirmPassword: string;
 }
 
 export interface ForgotPasswordFormData {
@@ -26,12 +20,13 @@ export interface FormErrors {
 
 export interface SendOtpRequest {
   email: string;
-  name: string;
+  name?: string;
 }
 
 export interface SendOtpResponse {
-  success: boolean;
   message: string;
+  isLogin: boolean;
+  userName: string;
 }
 
 export interface VerifyOtpRequest {
@@ -39,28 +34,22 @@ export interface VerifyOtpRequest {
   otp: string;
 }
 
-export interface VerifyOtpResponse {
-  success: boolean;
-  message: string;
-  token?: string;
-  user?: UserData;
-}
-
 export interface UserData {
   id: string;
   email: string;
   name: string;
-  role: string;
-  addresses: Address[];
+  role: UserRole;
+  addresses: unknown[];
 }
 
-export interface Address {
-  id?: string;
-  street?: string;
-  city?: string;
-  state?: string;
-  zipCode?: string;
-  country?: string;
+export interface VerifyOtpResponse {
+  user: UserData;
+  token?: string;
+}
+
+export interface AdminLoginRequest {
+  email: string;
+  password: string;
 }
 
 export interface AuthFormData {

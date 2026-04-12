@@ -374,11 +374,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     );
                   })}
                 </div>
-                {selectedVariant.sizeDetails && (
-                  <p className="text-sm text-gray-600 font-poppins mt-2">
-                    {selectedVariant.sizeDetails}
-                  </p>
-                )}
               </div>
             )}
 

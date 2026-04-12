@@ -1,13 +1,10 @@
 import { FilterOption, SizeOption, SortOption } from "../types/filters";
 
 export const SORT_OPTIONS = [
-  { value: SortOption.RECOMMENDED, label: "Recommended" },
-  { value: SortOption.WHATS_NEW, label: "What's New" },
-  { value: SortOption.POPULARITY, label: "Popularity" },
-  { value: SortOption.BETTER_DISCOUNT, label: "Better Discount" },
-  { value: SortOption.PRICE_HIGH_TO_LOW, label: "Price: High to Low" },
-  { value: SortOption.PRICE_LOW_TO_HIGH, label: "Price: Low to High" },
-  { value: SortOption.CUSTOMER_RATING, label: "Customer Rating" },
+  { value: SortOption.LATEST, label: "Latest" },
+  { value: SortOption.PRICE_LOW, label: "Price: Low to High" },
+  { value: SortOption.PRICE_HIGH, label: "Price: High to Low" },
+  { value: SortOption.RATING, label: "Customer Rating" },
 ];
 
 export const CATEGORY_OPTIONS: FilterOption[] = [

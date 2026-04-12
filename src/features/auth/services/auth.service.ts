@@ -61,18 +61,6 @@ class AuthService {
   private handleUserData(result: VerifyOtpResponse): void {
     if (result.user) {
       this.setUserData(result.user);
-    } else {
-      const resultData = result as unknown as Record<string, string>;
-      if (resultData.id) {
-        const userData: UserData = {
-          id: resultData.id,
-          email: resultData.email,
-          name: resultData.name,
-          role: resultData.role,
-          addresses: [],
-        };
-        this.setUserData(userData);
-      }
     }
   }
 

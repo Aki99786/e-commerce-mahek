@@ -3,8 +3,10 @@ import { API_ENDPOINTS } from "@/lib/api-config";
 import type {
   WishlistResponse,
   AddToWishlistRequest,
+  RemoveFromWishlistRequest,
   MoveToCartRequest,
   BulkMoveToCartRequest,
+  BulkMoveToCartResponse,
 } from "../types";
 
 class WishlistService extends BaseService {
@@ -16,16 +18,21 @@ class WishlistService extends BaseService {
     return this.post<void>(API_ENDPOINTS.WISHLIST.ADD, data);
   }
 
-  async removeFromWishlist(productId: string): Promise<void> {
-    return this.delete<void>(API_ENDPOINTS.WISHLIST.REMOVE, { productId });
+  async removeFromWishlist(data: RemoveFromWishlistRequest): Promise<void> {
+    return this.delete<void>(API_ENDPOINTS.WISHLIST.REMOVE, data);
   }
 
   async moveToCart(data: MoveToCartRequest): Promise<void> {
     return this.post<void>(API_ENDPOINTS.WISHLIST.MOVE_TO_CART, data);
   }
 
-  async bulkMoveToCart(data: BulkMoveToCartRequest): Promise<void> {
-    return this.post<void>(API_ENDPOINTS.WISHLIST.BULK_MOVE_TO_CART, data);
+  async bulkMoveToCart(
+    data: BulkMoveToCartRequest,
+  ): Promise<BulkMoveToCartResponse> {
+    return this.post<BulkMoveToCartResponse>(
+      API_ENDPOINTS.WISHLIST.BULK_MOVE_TO_CART,
+      data,
+    );
   }
 
   async getWishlistCount(): Promise<number> {

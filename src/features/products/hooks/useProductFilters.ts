@@ -16,7 +16,7 @@ export const useProductFilters = (allProducts: Product[]) => {
     sizes: [],
     bundles: [],
     countryOfOrigin: [],
-    sortBy: SortOption.RECOMMENDED,
+    sortBy: SortOption.LATEST,
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -55,34 +55,22 @@ export const useProductFilters = (allProducts: Product[]) => {
     }
 
     switch (filters.sortBy) {
-      case SortOption.PRICE_LOW_TO_HIGH:
+      case SortOption.PRICE_LOW:
         filtered.sort(
           (a, b) => (a.price.current ?? 0) - (b.price.current ?? 0),
         );
         break;
-      case SortOption.PRICE_HIGH_TO_LOW:
+      case SortOption.PRICE_HIGH:
         filtered.sort(
           (a, b) => (b.price.current ?? 0) - (a.price.current ?? 0),
         );
         break;
-      case SortOption.CUSTOMER_RATING:
+      case SortOption.RATING:
         filtered.sort(
           (a, b) => (b.rating?.average || 0) - (a.rating?.average || 0),
         );
         break;
-      case SortOption.BETTER_DISCOUNT:
-        filtered.sort(
-          (a, b) => (b.price.discount || 0) - (a.price.discount || 0),
-        );
-        break;
-      case SortOption.WHATS_NEW:
-        filtered = filtered.filter((p) => p.label?.type === "new");
-        break;
-      case SortOption.POPULARITY:
-        filtered.sort(
-          (a, b) => (b.rating?.count || 0) - (a.rating?.count || 0),
-        );
-        break;
+      case SortOption.LATEST:
       default:
         break;
     }

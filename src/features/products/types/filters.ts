@@ -1,11 +1,8 @@
 export enum SortOption {
-  RECOMMENDED = "recommended",
-  WHATS_NEW = "whats-new",
-  POPULARITY = "popularity",
-  BETTER_DISCOUNT = "better-discount",
-  PRICE_HIGH_TO_LOW = "price-high-to-low",
-  PRICE_LOW_TO_HIGH = "price-low-to-high",
-  CUSTOMER_RATING = "customer-rating",
+  LATEST = "latest",
+  PRICE_LOW = "price-low",
+  PRICE_HIGH = "price-high",
+  RATING = "rating",
 }
 
 export interface FilterState {
