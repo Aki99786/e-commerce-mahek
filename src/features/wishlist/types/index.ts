@@ -50,6 +50,12 @@ export interface AddToWishlistRequest {
   size: string;
 }
 
+export interface RemoveFromWishlistRequest {
+  productId: string;
+  variantId: string;
+  size: string;
+}
+
 export interface MoveToCartRequest {
   productId: string;
   variantId: string;
@@ -62,7 +68,14 @@ export interface BulkMoveToCartItem {
   size: string;
 }
 
-export type BulkMoveToCartRequest = BulkMoveToCartItem[];
+export interface BulkMoveToCartRequest {
+  items: BulkMoveToCartItem[];
+}
+
+export interface BulkMoveToCartResponse {
+  message: string;
+  movedCount: number;
+}
 
 export interface AddToCartRequest {
   productId: string;

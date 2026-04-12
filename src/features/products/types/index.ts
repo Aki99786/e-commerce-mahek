@@ -1,16 +1,23 @@
+export type ProductSortOption =
+  | "latest"
+  | "price-low"
+  | "price-high"
+  | "rating";
+export type ProductAvailability = "inStock" | "outOfStock" | "preOrder";
+
 export interface ProductVariantSize {
   size: string;
   stock: number;
 }
 
 export interface ProductVariant {
+  _id: string;
   variantId: string;
   color: string;
   sellingPrice: number;
   mrp: number;
   sizes: ProductVariantSize[];
   images: string[];
-  sizeDetails: string;
 }
 
 export interface Product {
@@ -21,12 +28,13 @@ export interface Product {
   category: string;
   subCategory: string;
   pattern: string;
-  sleeveType: string;
+  sleeveType?: string;
   fabric: string;
-  neckType: string;
+  neckType?: string;
   description: string;
   isActive: boolean;
   isFeatured: boolean;
+  isPreOrder?: boolean;
   avgPrice: number;
   totalStock: number;
   allImages: string[];
@@ -49,16 +57,27 @@ export interface ProductsListResponse {
   products: Product[];
 }
 
+export interface TestimonialsResponse {
+  testimonials: unknown[];
+}
+
 export interface ProductsListParams {
+  category?: string;
+  subCategory?: string;
+  brand?: string;
   type?: string;
-  limit?: number;
-  minPrice?: number;
-  maxPrice?: number;
-  sort?: "price-low" | "price-high" | "newest" | "popular" | "rating";
   color?: string;
   size?: string;
-  availability?: "IN_STOCK" | "OUT_OF_STOCK" | "PRE_ORDER";
+  fabric?: string;
+  pattern?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  availability?: ProductAvailability;
+  isFeatured?: boolean;
+  search?: string;
+  sort?: ProductSortOption;
   page?: number;
+  limit?: number;
 }
 
 export type ProductCategory =

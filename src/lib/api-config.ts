@@ -29,6 +29,18 @@ export const API_ENDPOINTS = {
   AUTH: {
     SEND_OTP: "auth/send-otp",
     VERIFY_OTP: "auth/verify-otp",
+    LOGIN: "auth/login",
+  },
+  ADDRESS: {
+    LIST: "auth/addresses",
+    ADD: "auth/addresses",
+    UPDATE: (id: string) => `auth/addresses/${id}`,
+    DELETE: (id: string) => `auth/addresses/${id}`,
+  },
+  ORDERS: {
+    CHECKOUT: "orders/checkout",
+    VERIFY_PAYMENT: "orders/verify-payment",
+    MY_ORDERS: "orders/my",
   },
   REVIEWS: {
     ADD: (productId: string) => `products/${productId}/reviews`,

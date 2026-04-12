@@ -83,23 +83,24 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
     setTimeout(() => setHeartAnimation(null), 400);
     setIsAddingToWishlist(true);
     try {
+      // Use first variant and first available size (consistent for add & remove)
+        const firstVariant = apiProduct.variants[0];
+        const validSizes = (firstVariant.sizes || []).filter(
+          (s: ProductVariantSize | null | undefined): s is ProductVariantSize =>
+            s !== null && s !== undefined && !!s.size,
+        );
+        const firstSize = validSizes.length > 0 ? validSizes[0].size : "ONE_SIZE";
+
       if (isInWishlist) {
-        await wishlistService.removeFromWishlist(product.id);
+        await wishlistService.removeFromWishlist({
+          productId: product.id,
+          variantId: firstVariant.variantId,
+          size: firstSize,
+        });
         setIsInWishlist(false);
         decrementWishlistCount();
         removeFromWishlistedIds(product.id);
       } else {
-        // Use first variant and first available size
-        const firstVariant = apiProduct.variants[0];
-        
-        // Filter out null/undefined sizes and get first valid size
-        const validSizes = (firstVariant.sizes || []).filter(
-          (s: ProductVariantSize | null | undefined): s is ProductVariantSize => s !== null && s !== undefined && !!s.size
-        );
-        const firstSize = validSizes.length > 0 
-          ? validSizes[0].size 
-          : "ONE_SIZE";
-        
         await wishlistService.addToWishlist({
           productId: product.id,
           variantId: firstVariant.variantId,

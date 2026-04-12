@@ -288,9 +288,9 @@ export function ProductFilters({
         <h4 className="font-poppins font-semibold mb-3">Availability</h4>
         <div className="space-y-2">
           {[
-            { label: "In Stock", value: "IN_STOCK" as const },
-            { label: "Out of Stock", value: "OUT_OF_STOCK" as const },
-            { label: "Pre Order", value: "PRE_ORDER" as const },
+            { label: "In Stock", value: "inStock" as const },
+            { label: "Out of Stock", value: "outOfStock" as const },
+            { label: "Pre Order", value: "preOrder" as const },
           ].map((option) => (
             <label
               key={option.value}

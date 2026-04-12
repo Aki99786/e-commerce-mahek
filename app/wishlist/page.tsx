@@ -47,9 +47,15 @@ export default function WishlistPage() {
 
   const handleRemove = async (productId: string) => {
     try {
-      await wishlistService.removeFromWishlist(productId);
+      const item = wishlistItems.find((i) => i.product._id === productId);
+      if (!item) return;
+      await wishlistService.removeFromWishlist({
+        productId: item.product._id,
+        variantId: item.variantId,
+        size: item.size,
+      });
       setWishlistItems((prev) =>
-        prev.filter((item) => item.product._id !== productId)
+        prev.filter((i) => i.product._id !== productId)
       );
       decrementWishlistCount();
       toast.success("Removed from wishlist");

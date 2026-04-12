@@ -145,15 +145,11 @@ export const ProductImageGallery = ({ images, productName: _productName, product
               try {
                 setIsAddingToWishlist(true);
                 if (isWishlisted) {
-                  await wishlistService.removeFromWishlist(productId);
+                  await wishlistService.removeFromWishlist({ productId, variantId, size });
                   setIsWishlisted(false);
                   decrementWishlistCount();
                 } else {
-                  await wishlistService.addToWishlist({ 
-                    productId, 
-                    variantId, 
-                    size 
-                  });
+                  await wishlistService.addToWishlist({ productId, variantId, size });
                   setIsWishlisted(true);
                   incrementWishlistCount();
                 }
