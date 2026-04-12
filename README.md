@@ -7,39 +7,70 @@ Production-grade E-commerce website built with Next.js 16, TypeScript, and Tailw
 - **Framework:** Next.js 16 (App Router)
 - **Language:** TypeScript (strict mode)
 - **Styling:** Tailwind CSS 4
-- **Fonts:** Playfair Display, Lato (Google Fonts)
+- **Fonts:** Playfair Display, Inter, Poppins (Google Fonts)
 - **Image Optimization:** Next.js Image component
-- **State Management:** Ready for Zustand integration
+- **State Management:** React Context (CartWishlistContext)
 - **SEO:** Built-in metadata generation & structured data
+- **Icons:** Lucide React
+- **Notifications:** Sonner (Toast)
+- **Utilities:** clsx, tailwind-merge
 
 ## 📁 Project Structure
 
 ```
+app/
+├── cart/                  # Shopping cart page
+├── category/[slug]/       # Category listing page
+├── forgot-password/       # Forgot password page
+├── login/                 # Login page
+├── product/[id]/          # Product detail page
+├── profile/               # User profile page
+├── wishlist/              # Wishlist page
+├── layout.tsx             # Root layout
+├── page.tsx               # Home page
+└── globals.css            # Global styles
+
 src/
-├── app/                    # Next.js App Router pages
 ├── components/
-│   ├── ui/                # Reusable UI components (Button, Rating, Price, Badge)
-│   ├── layout/            # Layout components (Header, Footer, TopBar, MarqueeBar)
-│   ├── product/           # Product-related components
+│   ├── auth/              # Authentication components
 │   ├── category/          # Category components
-│   └── review/            # Review components
-├── features/
-│   └── home/              # Landing page sections
+│   ├── empty-states/      # Empty state components
+│   ├── layout/            # Layout components (Header, Footer, TopBar, etc.)
+│   ├── product/           # Product-related components
+│   ├── profile/           # Profile components
+│   ├── review/            # Review components
+│   └── ui/                # Reusable UI components
+├── contexts/              # React contexts
+│   └── CartWishlistContext.tsx
 ├── constants/             # App constants (routes, categories, site config)
-├── types/                 # TypeScript type definitions
+├── data/                  # Mock data (products, reviews)
+├── features/              # Feature-based modules
+│   ├── auth/              # Authentication features
+│   ├── cart/              # Cart features
+│   ├── home/              # Landing page sections
+│   ├── products/          # Product features
+│   ├── reviews/           # Review features
+│   └── wishlist/          # Wishlist features
 ├── lib/
-│   ├── utils/             # Utility functions (currency, SEO, cn)
+│   ├── api/               # API services
 │   ├── structured-data/   # Schema.org structured data generators
-│   └── fonts.ts           # Font configuration
-└── data/                  # Mock data (products, reviews)
+│   ├── utils/             # Utility functions (currency, SEO, cn)
+│   ├── api-client.ts      # API client configuration
+│   ├── api-config.ts      # API configuration
+│   ├── api-wrapper.ts     # API wrapper utilities
+│   ├── auth-utils.ts      # Authentication utilities
+│   ├── base-service.ts    # Base service class
+│   ├── fonts.ts           # Font configuration
+│   └── toast.ts           # Toast notification utilities
+└── types/                 # TypeScript type definitions
 ```
 
 ## 🎨 Design System
 
-All design tokens are centralized in `tailwind.config.ts`:
+All design tokens are centralized in `tailwind.config.js`:
 
 - **Colors:** Primary, secondary, accent, text, background, borders
-- **Typography:** Playfair Display (headings), Lato (body)
+- **Typography:** Playfair Display (headings), Inter & Poppins (body)
 - **Spacing:** Consistent spacing scale
 - **Shadows:** Predefined shadow utilities
 - **Border Radius:** Standardized radius values
@@ -97,41 +128,45 @@ npm start
 - **SEO Optimized:** Metadata generation, structured data, semantic HTML
 - **Performance:** Optimized images, code splitting, lazy loading
 - **Design System:** Centralized Tailwind theme tokens
-- **Landing Page:** Complete conversion with all sections:
-  - Hero Banner
-  - Category Circles
-  - Best Selling Products
-  - Trending Collection
-  - Flash Sale Countdown
-  - Reviews Section
-  - Features Bar
-  - Footer
+- **State Management:** React Context for Cart & Wishlist
+- **Authentication:** Login page with form validation
+- **Pages Implemented:**
+  - Home page with all sections
+  - Shopping cart page
+  - Wishlist page
+  - Product detail page
+  - Category listing page
+  - User profile page
+  - Forgot password page
+- **API Integration:** API client with wrapper utilities
+- **Toast Notifications:** Sonner integration
 
 ### 🔜 Ready for Implementation
 
-- **Cart Management:** Zustand store structure prepared
-- **Product Pages:** Dynamic routes configured
-- **Category Pages:** Filtering and sorting ready
-- **Wishlist:** Component structure in place
-- **Search:** Search UI implemented
-- **Authentication:** Login/signup routes defined
-- **Payment Integration:** Stripe/Razorpay ready
-- **Order Tracking:** Route structure prepared
+- **Authentication:** Signup page, password reset flow
+- **Product Pages:** Additional product features
+- **Search:** Search functionality
+- **Checkout:** Checkout flow
+- **Payment Integration:** Stripe/Razorpay
+- **Order Tracking:** Order tracking page
+- **Admin Panel:** Admin dashboard
 
 ## 📦 Components
 
 ### UI Components
 
-- `Button` - Variants: primary, secondary, outline, link
-- `Rating` - Star rating display
 - `Price` - Price with discount display
-- `Badge` - Product labels (sale, pre-order, new, sold-out)
+- `Rating` - Star rating display
+- `TypingPlaceholder` - Placeholder component
 
 ### Product Components
 
 - `ProductCard` - Reusable product card with hover effects
-- `CategoryCircle` - Category navigation circles
-- `ReviewCard` - Customer review display
+- `ProductCarousel` - Product carousel
+- `ProductImageGallery` - Product image gallery
+- `ReviewsSection` - Reviews section component
+- `SizeGuideModal` - Size guide modal
+- `StickyCartBar` - Sticky cart bar
 
 ### Layout Components
 
@@ -139,11 +174,12 @@ npm start
 - `Footer` - Multi-column footer with links
 - `TopBar` - Announcement and social links
 - `MarqueeBar` - Scrolling promotional messages
+- `ProfileDropdown` - User profile dropdown
 
 ## 🎨 Styling Guidelines
 
 - **Tailwind Only:** No custom CSS files
-- **Design Tokens:** Use theme values from `tailwind.config.ts`
+- **Design Tokens:** Use theme values from `tailwind.config.js`
 - **Responsive:** Mobile-first breakpoints (sm, md, lg, xl)
 - **Consistency:** Reuse spacing, colors, and typography tokens
 
@@ -155,19 +191,20 @@ All types are defined in `src/types/`:
 - `cart.ts` - Cart, CartItem, CartState
 - `review.ts` - Review, ReviewCard
 - `common.ts` - NavLink, FeatureItem, CategoryCard, BannerSlide
+- `toast.ts` - Toast notification types
 
 ## 🔗 Routes
 
 Defined in `src/constants/routes.ts`:
 
 - `/` - Home
-- `/shop` - Shop
-- `/product/[slug]` - Product detail
-- `/category/[slug]` - Category listing
 - `/cart` - Shopping cart
-- `/checkout` - Checkout
+- `/category/[slug]` - Category listing
+- `/forgot-password` - Forgot password
+- `/login` - Login
+- `/product/[id]` - Product detail
+- `/profile` - User profile
 - `/wishlist` - Wishlist
-- `/track-order` - Order tracking
 
 ## 🌐 SEO Features
 
@@ -188,8 +225,8 @@ Defined in `src/constants/routes.ts`:
 2. **Install Dependencies:** Run `npm install`
 3. **Test Application:** Run `npm run dev`
 4. **Add Real Data:** Replace mock data with API integration
-5. **Implement Cart:** Add Zustand store for cart management
-6. **Add Authentication:** Implement login/signup functionality
+5. **Implement Authentication:** Complete signup and password reset flow
+6. **Implement Checkout:** Build checkout flow
 7. **Payment Gateway:** Integrate Stripe or Razorpay
 8. **Deploy:** Deploy to Vercel or your preferred platform
 
@@ -202,6 +239,15 @@ Defined in `src/constants/routes.ts`:
 ## 🤝 Contributing
 
 Follow the project rules defined in `.windsurf/rules/mahek-rules.md`
+
+## 🌍 Live URLs
+
+| Environment                 | URL                                                                  |
+| --------------------------- | -------------------------------------------------------------------- |
+| **Production (Storefront)** | [www.maheksarees.in](https://www.maheksarees.in)                     |
+| **Staging (Storefront)**    | [staging.maheksarees.in](https://staging.maheksarees.in)             |
+| **Production (Admin)**      | [admin.maheksarees.in](https://admin.maheksarees.in)                 |
+| **Staging (Admin)**         | [admin.staging.maheksarees.in](https://admin.staging.maheksarees.in) |
 
 ## 📄 License
 
