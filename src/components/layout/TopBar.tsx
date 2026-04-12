@@ -13,6 +13,8 @@ export const TopBar = () => {
               <li>
                 <Link
                   href={SOCIAL_LINKS.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-white/90 hover:text-white transition-colors cursor-pointer"
                   aria-label="Facebook"
                 >
@@ -24,6 +26,8 @@ export const TopBar = () => {
               <li>
                 <Link
                   href={SOCIAL_LINKS.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-white/90 hover:text-white transition-colors cursor-pointer"
                   aria-label="YouTube"
                 >
@@ -35,6 +39,8 @@ export const TopBar = () => {
               <li>
                 <Link
                   href={SOCIAL_LINKS.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-white/90 hover:text-white transition-colors cursor-pointer"
                   aria-label="Instagram"
                 >
