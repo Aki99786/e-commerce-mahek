@@ -72,7 +72,7 @@ export const Header = () => {
                 alt="Mahek Sarees"
                 width={60}
                 height={60}
-                className="w-12 h-12 md:w-14 md:h-14"
+                className="w-12 h-12 md:w-14 md:h-14 cursor-pointer"
               />
             </Link>
           </div>

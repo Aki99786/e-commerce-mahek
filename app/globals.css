@@ -69,9 +69,11 @@ h6 {
   font-weight: 600;
 }
 
-a {
-  transition: color 0.3s ease-in-out;
-  cursor: pointer;
+@layer base {
+  a {
+    transition: color 0.3s ease-in-out;
+    cursor: pointer;
+  }
 }
 
 img {

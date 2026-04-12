@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { SITE_CONFIG, SOCIAL_LINKS } from "@/constants/site";
-import { CATEGORY_ROUTES, ROUTES } from "@/constants/routes";
+import { ROUTES } from "@/constants/routes";
+import { CATEGORIES } from "@/constants/categories";
 
 export const Footer = () => {
   return (
@@ -13,46 +14,16 @@ export const Footer = () => {
               TOP CATEGORIES
             </h4>
             <ul className="space-y-1.5">
-              <li>
-                <Link
-                  href={CATEGORY_ROUTES.BANARASI_SAREES}
-                  className="text-xs md:text-sm text-gray-600 hover:text-accent transition-colors leading-relaxed"
-                >
-                  Banarasi Sarees
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={CATEGORY_ROUTES.SAREES}
-                  className="text-xs md:text-sm text-gray-600 hover:text-accent transition-colors leading-relaxed"
-                >
-                  Sarees
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={CATEGORY_ROUTES.LEHENGA}
-                  className="text-xs md:text-sm text-gray-600 hover:text-accent transition-colors leading-relaxed"
-                >
-                  Lehanga
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={CATEGORY_ROUTES.RAJPUTI_POSHAK}
-                  className="text-xs md:text-sm text-gray-600 hover:text-accent transition-colors leading-relaxed"
-                >
-                  Rajputi Poshak
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href={CATEGORY_ROUTES.BRIDAL_LEHENGA}
-                  className="text-xs md:text-sm text-gray-600 hover:text-accent transition-colors leading-relaxed"
-                >
-                  Bridal Lehangas
-                </Link>
-              </li>
+              {CATEGORIES.map((category) => (
+                <li key={category.id}>
+                  <Link
+                    href={`/category/${category.slug}`}
+                    className="text-xs md:text-sm text-gray-600 hover:text-accent transition-colors leading-relaxed"
+                  >
+                    {category.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -187,7 +158,9 @@ export const Footer = () => {
               <li>
                 <Link
                   href={SOCIAL_LINKS.facebook}
-                  className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-gray-900 hover:bg-primary hover:text-white transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-gray-900 hover:bg-primary hover:text-white transition-colors cursor-pointer"
                   aria-label="Facebook"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -198,7 +171,9 @@ export const Footer = () => {
               <li>
                 <Link
                   href={SOCIAL_LINKS.instagram}
-                  className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-gray-900 hover:bg-primary hover:text-white transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-gray-900 hover:bg-primary hover:text-white transition-colors cursor-pointer"
                   aria-label="Instagram"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -209,7 +184,9 @@ export const Footer = () => {
               <li>
                 <Link
                   href={SOCIAL_LINKS.youtube}
-                  className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-gray-900 hover:bg-primary hover:text-white transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-gray-900 hover:bg-primary hover:text-white transition-colors cursor-pointer"
                   aria-label="YouTube"
                 >
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
