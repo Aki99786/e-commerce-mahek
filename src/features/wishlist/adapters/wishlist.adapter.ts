@@ -23,10 +23,10 @@ export function adaptWishlistItemToUI(item: WishlistItem): UIWishlistItem {
     throw new Error(`Variant ${item.variantId} not found for product ${item.product._id}`);
   }
 
-  const totalStock = selectedVariant.sizes.reduce(
-    (sum, sizeItem) => sum + sizeItem.stock,
-    0
-  );
+  // sizes can be [null] for single-size items (e.g., sarees) — filter before summing
+  const totalStock = selectedVariant.sizes
+    .filter((s): s is NonNullable<typeof s> => s !== null)
+    .reduce((sum, sizeItem) => sum + sizeItem.stock, 0);
 
   const discountPercent = selectedVariant.mrp > 0
     ? Math.round(((selectedVariant.mrp - selectedVariant.sellingPrice) / selectedVariant.mrp) * 100)
