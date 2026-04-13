@@ -8,7 +8,7 @@ export interface WishlistProductVariant {
   color: string;
   sellingPrice: number;
   mrp: number;
-  sizes: WishlistProductVariantSize[];
+  sizes: (WishlistProductVariantSize | null)[];  // null for single-size items like sarees
   images: string[];
   sizeDetails: string;
 }
@@ -41,7 +41,7 @@ export interface WishlistItem {
 
 export interface WishlistResponse {
   items: WishlistItem[];
-  total: number;
+  total?: number;  // API may not return this field
 }
 
 export interface AddToWishlistRequest {

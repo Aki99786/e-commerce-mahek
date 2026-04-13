@@ -38,7 +38,8 @@ class WishlistService extends BaseService {
   async getWishlistCount(): Promise<number> {
     try {
       const response = await this.getWishlist();
-      return response.total;
+      // API does not return a `total` field; derive it from items.length
+      return response.total ?? response.items.length;
     } catch (error) {
       console.error("Error fetching wishlist count:", error);
       return 0;
