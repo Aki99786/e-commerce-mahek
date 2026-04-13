@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { playfair, inter, poppins } from "@/lib/fonts";
 import { generateSEO } from "@/lib/utils/seo";
 import { SITE_CONFIG } from "@/constants/site";
@@ -30,7 +31,7 @@ export default function RootLayout({
         <CartWishlistProvider>
           <Toaster position="top-right" richColors closeButton />
           <TopBar />
-          <Header />
+          <Suspense fallback={null}><Header /></Suspense>
           <main className="flex-1">{children}</main>
           <Footer />
         </CartWishlistProvider>

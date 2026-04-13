@@ -97,7 +97,7 @@ function SuccessContent() {
             Continue Shopping
           </Link>
           <Link
-            href={ROUTES.HOME}
+            href={ROUTES.TRACK_ORDER}
             className="w-full border border-gray-300 text-gray-700 py-3 rounded font-poppins font-semibold text-sm hover:bg-gray-50 transition-colors"
           >
             View My Orders

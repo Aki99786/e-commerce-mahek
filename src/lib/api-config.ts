@@ -40,7 +40,7 @@ export const API_ENDPOINTS = {
   ORDERS: {
     CHECKOUT: "orders/checkout",
     VERIFY_PAYMENT: "orders/verify-payment",
-    MY_ORDERS: "orders/my",
+    MY_ORDERS: "orders/my-orders",
   },
   REVIEWS: {
     ADD: (productId: string) => `products/${productId}/reviews`,

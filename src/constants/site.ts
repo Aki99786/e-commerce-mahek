@@ -15,7 +15,7 @@ export const SITE_CONFIG = {
 
 export const SOCIAL_LINKS = {
   facebook: "#",
-  instagram: "https://www.instagram.com/maheksarees2023/",
+  instagram: "https://www.instagram.com/mahek_saree_lehenga_house",
   youtube: "https://www.youtube.com/@maheksarees6599",
 } as const;
 

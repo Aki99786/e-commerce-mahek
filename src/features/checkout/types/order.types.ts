@@ -28,16 +28,33 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   [PaymentStatus.REFUNDED]: "Refunded",
 };
 
+export interface OrderProductVariant {
+  color: string;
+  sellingPrice: number;
+  mrp: number;
+  images: string[];
+  sizeDetails: string;
+  variantId: string;
+  sizes: { size: string; stock: number }[];
+}
+
+export interface OrderItemProduct {
+  _id: string;
+  name: string;
+  slug: string;
+  category: string;
+  isActive: boolean;
+  allImages: string[];
+  variants: OrderProductVariant[];
+}
+
 export interface OrderItem {
-  product: {
-    _id: string;
-    name: string;
-    allImages: string[];
-  };
+  product: OrderItemProduct;
   variantId: string;
   size: string;
   quantity: number;
   price: number;
+  _id: string;
 }
 
 export interface OrderShippingAddress {
