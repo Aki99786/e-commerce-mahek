@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ROUTES, CATEGORY_ROUTES } from "@/constants/routes";
 import { TypingPlaceholder } from "@/components/ui/TypingPlaceholder";
 import { ProfileDropdown } from "@/components/layout/ProfileDropdown";
@@ -18,8 +19,11 @@ const SEARCH_PLACEHOLDERS = [
 ];
 
 export const Header = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isAuth, setIsAuth] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { cartCount, wishlistCount } = useCartWishlist();
@@ -138,7 +142,11 @@ export const Header = () => {
           <div className="flex items-center gap-3">
             <button
               className="text-text-primary hover:text-primary transition-colors cursor-pointer"
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              onClick={() => {
+                const currentSearch = searchParams.get('search') ?? '';
+                setSearchQuery(currentSearch);
+                setIsSearchOpen(!isSearchOpen);
+              }}
               aria-label="Search"
             >
               <svg className="w-5 h-5 cursor-pointer select-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
@@ -198,29 +206,40 @@ export const Header = () => {
           <div className="container-fluid">
             <button
               className="absolute top-3 right-3 md:top-6 md:right-6 text-text-secondary hover:text-primary transition-colors z-10"
-              onClick={() => setIsSearchOpen(false)}
+              onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }}
               aria-label="Close search"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <form className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0 max-w-2xl mx-auto w-full pr-10 md:pr-0">
+            <form
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0 max-w-2xl mx-auto w-full pr-10 md:pr-0"
+              onSubmit={(e: FormEvent<HTMLFormElement>) => {
+                e.preventDefault();
+                const trimmed = searchQuery.trim();
+                if (!trimmed) return;
+                setIsSearchOpen(false);
+                setSearchQuery("");
+                router.push(ROUTES.SEARCH(trimmed));
+              }}
+            >
               <div className="flex-1 relative">
                 <svg className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
                   type="text"
-                  placeholder=""
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoFocus
                   className="w-full pl-10 md:pl-12 pr-4 py-3 md:py-3.5 border border-gray-300 rounded-lg sm:rounded-l-lg sm:rounded-r-none focus:outline-none focus:ring-1 focus:ring-inset focus:ring-black focus:border-black text-sm font-poppins bg-white hover:bg-white transition-colors"
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect fill='white' width='1' height='1'/%3E%3C/svg%3E")`,
-                  }}
                 />
-                <div className="absolute left-10 md:left-12 top-1/2 -translate-y-1/2 text-gray-400 text-xs md:text-sm font-poppins pointer-events-none">
-                  <TypingPlaceholder texts={SEARCH_PLACEHOLDERS} interval={3000} typingSpeed={50} />
-                </div>
+                {searchQuery === "" && (
+                  <div className="absolute left-10 md:left-12 top-1/2 -translate-y-1/2 text-gray-400 text-xs md:text-sm font-poppins pointer-events-none">
+                    <TypingPlaceholder texts={SEARCH_PLACEHOLDERS} interval={3000} typingSpeed={50} />
+                  </div>
+                )}
               </div>
               <button
                 type="submit"

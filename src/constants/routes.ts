@@ -1,16 +1,18 @@
 export const ROUTES = {
   HOME: "/",
-  SHOP: "/category/sarees",
+  SHOP: "/products",
+  PRODUCTS: "/products",
   PRODUCT_DETAIL: (id: string) => `/product/${id}`,
-  CATEGORY: (slug: string) => `/category/${slug}`,
+  CATEGORY: (slug: string) => `/products?category=${slug}`,
+  SEARCH: (query: string) => `/products?search=${encodeURIComponent(query)}`,
   CART: "/cart",
   CHECKOUT: "/checkout/address",
   CHECKOUT_ADDRESS: "/checkout/address",
   CHECKOUT_PAYMENT: "/checkout/payment",
   CHECKOUT_SUCCESS: "/checkout/success",
   WISHLIST: "/wishlist",
-  SALE: "/category/sarees",
-  TRENDING: "/category/sarees",
+  SALE: "/products",
+  TRENDING: "/products",
   TRACK_ORDER: "/cart",
   ABOUT: "/about",
   HELP: "/help",
@@ -19,9 +21,9 @@ export const ROUTES = {
 } as const;
 
 export const CATEGORY_ROUTES = {
-  SAREES: "/category/sarees",
-  BANARASI_SAREES: "/category/banarasi-sarees",
-  LEHENGA: "/category/lehenga",
-  RAJPUTI_POSHAK: "/category/rajputi-poshak",
-  BRIDAL_LEHENGA: "/category/bridal-lehenga",
+  SAREES: "/products?category=sarees",
+  BANARASI_SAREES: "/products?category=banarasi-sarees",
+  LEHENGA: "/products?category=lehenga",
+  RAJPUTI_POSHAK: "/products?category=rajputi-poshak",
+  BRIDAL_LEHENGA: "/products?category=bridal-lehenga",
 } as const;

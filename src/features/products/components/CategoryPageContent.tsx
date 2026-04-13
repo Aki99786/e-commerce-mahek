@@ -14,22 +14,26 @@ import type {
   ProductsListParams,
   ProductsListResponse,
 } from "../types";
+import { CATEGORY_TYPE_MAP } from "../types";
+import { CATEGORIES } from "@/constants/categories";
 import type { ExpandedVariantProduct } from "../utils/variant-expander";
 import type { WishlistItem } from "@/features/wishlist/types";
 
 interface CategoryPageContentProps {
-  categorySlug: string;
-  categoryName: string;
-  categoryType: string;
+  categoryType?: string;
 }
 
 export function CategoryPageContent({
-  categorySlug: _categorySlug,
-  categoryName: _categoryName,
-  categoryType,
-}: CategoryPageContentProps) {
+  categoryType: categoryTypeProp,
+}: CategoryPageContentProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Resolve categoryType: prop overrides URL (backward compat), else read ?category=
+  const categorySlugFromUrl = searchParams.get('category') ?? '';
+  const categoryType = categoryTypeProp ?? CATEGORY_TYPE_MAP[categorySlugFromUrl] ?? '';
+  const categoryDisplayName = CATEGORIES.find((c) => c.slug === categorySlugFromUrl)?.name ?? '';
+
   const [products, setProducts] = useState<Product[]>([]);
   const [allCategoryProducts, setAllCategoryProducts] = useState<Product[]>([]);
   const [expandedVariants, setExpandedVariants] = useState<ExpandedVariantProduct[]>([]);
@@ -39,6 +43,8 @@ export function CategoryPageContent({
   const [isInitialized, setIsInitialized] = useState(false);
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   
+  const searchQuery = searchParams.get('search') ?? '';
+
   // Initialize filters from URL query params
   const getInitialFilters = (): ProductsListParams => {
     const params: ProductsListParams = {
@@ -83,17 +89,15 @@ export function CategoryPageContent({
     fetchWishlist();
   }, []);
 
-  // Fetch all products for filter options on category load (unfiltered, large limit)
+  // Fetch all products for filter options (unfiltered, large limit)
   useEffect(() => {
     if (!isInitialized) return;
     const fetchAllForFilters = async () => {
       try {
+        const params: ProductsListParams = { limit: 500, page: 1 };
+        if (categoryType) params.type = categoryType;
         const response: ProductsListResponse =
-          await productService.getProductsList({
-            type: categoryType,
-            limit: 500,
-            page: 1,
-          });
+          await productService.getProductsList(params);
         setAllCategoryProducts(response.products);
       } catch (error) {
         console.error("Error fetching all products for filters:", error);
@@ -102,12 +106,18 @@ export function CategoryPageContent({
     fetchAllForFilters();
   }, [categoryType, isInitialized]);
 
+  // Re-fetch when search query changes
+  useEffect(() => {
+    if (!isInitialized) return;
+    setFilters((prev) => ({ ...prev, page: 1 }));
+  }, [searchQuery, isInitialized]);
+
   // Fetch products when filters or category changes
   useEffect(() => {
     if (isInitialized) {
       fetchProducts();
     }
-  }, [filters, categoryType, isInitialized]);
+  }, [filters, categoryType, isInitialized, searchQuery]);
 
   // Sync filters to URL query params
   useEffect(() => {
@@ -140,13 +150,21 @@ export function CategoryPageContent({
       params.set('availability', filters.availability);
     }
 
+    if (categorySlugFromUrl) {
+      params.set('category', categorySlugFromUrl);
+    }
+
+    if (searchQuery) {
+      params.set('search', searchQuery);
+    }
+
     const queryString = params.toString();
     const newUrl = queryString 
       ? `${window.location.pathname}?${queryString}`
       : window.location.pathname;
     
     router.replace(newUrl, { scroll: false });
-  }, [filters, isInitialized, router]);
+  }, [filters, isInitialized, router, categorySlugFromUrl, searchQuery]);
 
   const fetchWishlist = async () => {
     if (!isAuthenticated()) {
@@ -164,11 +182,11 @@ export function CategoryPageContent({
   const fetchProducts = async (isUnfilteredFetch = false) => {
     setLoading(true);
     try {
+      const apiParams: ProductsListParams = { ...filters };
+      if (categoryType) apiParams.type = categoryType;
+      if (searchQuery) apiParams.search = searchQuery;
       const response: ProductsListResponse =
-        await productService.getProductsList({
-          ...filters,
-          type: categoryType,
-        });
+        await productService.getProductsList(apiParams);
       
       // Expand products into variants (each variant becomes a separate card)
       const allExpandedVariants = response.products.flatMap((product) =>
@@ -231,10 +249,29 @@ export function CategoryPageContent({
     )
   );
 
+  // Derive page heading
+  const pageHeading = searchQuery
+    ? `Search results for "${searchQuery}"`
+    : categoryDisplayName
+    ? categoryDisplayName
+    : 'All Products';
+
   return (
     <div className="min-h-screen bg-background-light">
       {/* Main Content */}
       <div className="container-fluid py-8">
+        {/* Page heading */}
+        <div className="mb-6">
+          <h1 className="text-2xl md:text-3xl font-playfair text-text-primary">
+            {pageHeading}
+          </h1>
+          {!loading && (
+            <p className="text-sm font-poppins text-text-secondary mt-1">
+              {totalProducts} {totalProducts === 1 ? 'product' : 'products'} found
+            </p>
+          )}
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters Sidebar */}
           <aside className="lg:w-64 flex-shrink-0">

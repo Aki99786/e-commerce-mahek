@@ -11,7 +11,7 @@ export const CategorySection = () => {
               key={category.id}
               name={category.name}
               image={category.image}
-              href={`/category/${category.slug}`}
+              href={`/products?category=${category.slug}`}
             />
           ))}
         </div>
