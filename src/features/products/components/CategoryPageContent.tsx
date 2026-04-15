@@ -82,9 +82,8 @@ export function CategoryPageContent({
 
   const [filters, setFilters] = useState<ProductsListParams>(getInitialFilters);
 
-  // Initialize filters from URL on mount and fetch wishlist
+  // Initialize on mount and fetch wishlist
   useEffect(() => {
-    setFilters(getInitialFilters());
     setIsInitialized(true);
     fetchWishlist();
   }, []);
@@ -106,17 +105,12 @@ export function CategoryPageContent({
     fetchAllForFilters();
   }, [categoryType, isInitialized]);
 
-  // Re-fetch when search query changes
-  useEffect(() => {
-    if (!isInitialized) return;
-    setFilters((prev) => ({ ...prev, page: 1 }));
-  }, [searchQuery, isInitialized]);
-
-  // Fetch products when filters or category changes
+  // Fetch products when filters, category or search query changes
   useEffect(() => {
     if (isInitialized) {
       fetchProducts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, categoryType, isInitialized, searchQuery]);
 
   // Sync filters to URL query params
@@ -162,8 +156,11 @@ export function CategoryPageContent({
     const newUrl = queryString 
       ? `${window.location.pathname}?${queryString}`
       : window.location.pathname;
-    
-    router.replace(newUrl, { scroll: false });
+
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    if (newUrl !== currentUrl) {
+      router.replace(newUrl, { scroll: false });
+    }
   }, [filters, isInitialized, router, categorySlugFromUrl, searchQuery]);
 
   const fetchWishlist = async () => {
@@ -212,6 +209,7 @@ export function CategoryPageContent({
   const isProductInWishlist = (productId: string, variantId: string, size: string): boolean => {
     return wishlistItems.some(
       (item) =>
+        item.product != null &&
         item.product._id === productId &&
         item.variantId === variantId &&
         item.size === size
