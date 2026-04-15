@@ -44,8 +44,8 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
       ]);
       setCartCount(cartList.items.reduce((total, item) => total + item.quantity, 0));
       setWishlistCount(wishlist.items.length);
-      setWishlistedProductIds(new Set(wishlist.items.map((item) => item.product._id)));
-      setCartedProductIds(new Set(cartList.items.map((item) => item.product._id)));
+      setWishlistedProductIds(new Set(wishlist.items.filter((item) => item.product != null).map((item) => item.product._id)));
+      setCartedProductIds(new Set(cartList.items.filter((item) => item.product != null).map((item) => item.product._id)));
     } catch (error) {
       console.error("Error fetching counts:", error);
     }

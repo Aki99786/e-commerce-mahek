@@ -267,7 +267,7 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         )}
       </div>
 
-      <div className="pt-2">
+      <div className="pt-2 px-2 pb-3">
         <button
           onClick={isInCart ? (e) => { e.preventDefault(); e.stopPropagation(); router.push(ROUTES.CART); } : handleAddToCart}
           disabled={isAddingToCart}
