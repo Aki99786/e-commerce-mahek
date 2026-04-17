@@ -19,11 +19,3 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/signup",
 } as const;
-
-export const CATEGORY_ROUTES = {
-  SAREES: "/products?category=sarees",
-  BANARASI_SAREES: "/products?category=banarasi-sarees",
-  LEHENGA: "/products?category=lehenga",
-  RAJPUTI_POSHAK: "/products?category=rajputi-poshak",
-  BRIDAL_LEHENGA: "/products?category=bridal-lehenga",
-} as const;

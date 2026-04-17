@@ -95,10 +95,12 @@ export default function CheckoutAddressPage() {
 
       setAddresses(allAddresses);
 
-      const defaultAddr =
-        allAddresses.find((a) => a.isDefault) || allAddresses[0];
-      if (defaultAddr) {
-        setSelectedId((prev) => prev ?? defaultAddr._id);
+      const autoSelect =
+        allAddresses.length === 1
+          ? allAddresses[0]
+          : allAddresses.find((a) => a.isDefault) ?? null;
+      if (autoSelect) {
+        setSelectedId((prev) => prev ?? autoSelect._id);
       }
     } catch (error) {
       console.error("Error loading checkout data:", error);

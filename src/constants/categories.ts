@@ -1,4 +1,4 @@
-export enum CategoryEnum {
+export enum CategorySlugEnum {
   SAREES = "sarees",
   BANARASI_SAREES = "banarasi-sarees",
   LEHENGA = "lehenga",
@@ -6,35 +6,43 @@ export enum CategoryEnum {
   BRIDAL_LEHENGA = "bridal-lehenga",
 }
 
+export enum CategoryEnum {
+  SAREES = "Saree",
+  BANARASI_SAREES = "Banarasi Sarees",
+  LEHENGA = "Lehenga",
+  RAJPUTI_POSHAK = "Rajputi Poshak",
+  BRIDAL_LEHENGA = "Bridal Lehenga",
+}
+
 export const CATEGORIES = [
   {
-    id: CategoryEnum.BANARASI_SAREES,
+    id: "banarasi-sarees",
     name: "Banarasi Sarees",
-    slug: "banarasi-sarees",
+    slug: CategoryEnum.BANARASI_SAREES,
     image: "/images/categories1.png",
   },
   {
-    id: CategoryEnum.SAREES,
+    id: "sarees",
     name: "Sarees",
-    slug: "sarees",
+    slug: CategoryEnum.SAREES,
     image: "/images/categories2.png",
   },
   {
-    id: CategoryEnum.LEHENGA,
+    id: "lehenga",
     name: "Lehenga",
-    slug: "lehenga",
+    slug: CategoryEnum.LEHENGA,
     image: "/images/categories3.png",
   },
   {
-    id: CategoryEnum.RAJPUTI_POSHAK,
+    id: "rajputi-poshak",
     name: "Rajputi Poshak",
-    slug: "rajputi-poshak",
+    slug: CategoryEnum.RAJPUTI_POSHAK,
     image: "/images/categories4.png",
   },
   {
-    id: CategoryEnum.BRIDAL_LEHENGA,
+    id: "bridal-lehenga",
     name: "Bridal Lehenga",
-    slug: "bridal-lehenga",
+    slug: CategoryEnum.BRIDAL_LEHENGA,
     image: "/images/categories5.png",
   },
 ] as const;

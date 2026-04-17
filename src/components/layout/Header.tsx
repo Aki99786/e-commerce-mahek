@@ -4,7 +4,8 @@ import { useState, useEffect, type FormEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ROUTES, CATEGORY_ROUTES } from "@/constants/routes";
+import { ROUTES } from "@/constants/routes";
+import { CategoryEnum } from "@/constants/categories";
 import { TypingPlaceholder } from "@/components/ui/TypingPlaceholder";
 import { ProfileDropdown } from "@/components/layout/ProfileDropdown";
 import { isAuthenticated } from "@/lib/auth-utils";
@@ -96,19 +97,19 @@ export const Header = () => {
                 </svg>
               </button>
               <div className="absolute top-full left-0 mt-2 bg-white shadow-lg py-2 min-w-[200px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 rounded-sm z-51">
-                <Link href={CATEGORY_ROUTES.SAREES} className="block px-4 py-2 text-sm hover:bg-background-gray transition-colors">
+                <Link href={`/products?category=${CategoryEnum.SAREES}`} className="block px-4 py-2 text-sm hover:bg-background-gray transition-colors">
                   Sarees
                 </Link>
-                <Link href={CATEGORY_ROUTES.BANARASI_SAREES} className="block px-4 py-2 text-sm hover:bg-background-gray transition-colors">
+                <Link href={`/products?category=${CategoryEnum.BANARASI_SAREES}`} className="block px-4 py-2 text-sm hover:bg-background-gray transition-colors">
                   Banarasi Sarees
                 </Link>
-                <Link href={CATEGORY_ROUTES.LEHENGA} className="block px-4 py-2 text-sm hover:bg-background-gray transition-colors">
+                <Link href={`/products?category=${CategoryEnum.LEHENGA}`} className="block px-4 py-2 text-sm hover:bg-background-gray transition-colors">
                   Lehanga
                 </Link>
-                <Link href={CATEGORY_ROUTES.RAJPUTI_POSHAK} className="block px-4 py-2 text-sm hover:bg-background-gray transition-colors">
+                <Link href={`/products?category=${CategoryEnum.RAJPUTI_POSHAK}`} className="block px-4 py-2 text-sm hover:bg-background-gray transition-colors">
                   Rajputi Poshak
                 </Link>
-                <Link href={CATEGORY_ROUTES.BRIDAL_LEHENGA} className="block px-4 py-2 text-sm hover:bg-background-gray transition-colors">
+                <Link href={`/products?category=${CategoryEnum.BRIDAL_LEHENGA}`} className="block px-4 py-2 text-sm hover:bg-background-gray transition-colors">
                   Bridal Lehanga
                 </Link>
               </div>
@@ -240,11 +241,11 @@ export const Header = () => {
               <div className="border-b border-border-light">
                 <p className="py-3 text-sm font-semibold font-poppins text-text-secondary uppercase tracking-wide">Shop</p>
                 <div className="pl-3 flex flex-col gap-1 pb-3">
-                  <Link href={CATEGORY_ROUTES.SAREES} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm font-poppins text-text-primary hover:text-primary transition-colors">Sarees</Link>
-                  <Link href={CATEGORY_ROUTES.BANARASI_SAREES} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm font-poppins text-text-primary hover:text-primary transition-colors">Banarasi Sarees</Link>
-                  <Link href={CATEGORY_ROUTES.LEHENGA} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm font-poppins text-text-primary hover:text-primary transition-colors">Lehanga</Link>
-                  <Link href={CATEGORY_ROUTES.RAJPUTI_POSHAK} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm font-poppins text-text-primary hover:text-primary transition-colors">Rajputi Poshak</Link>
-                  <Link href={CATEGORY_ROUTES.BRIDAL_LEHENGA} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm font-poppins text-text-primary hover:text-primary transition-colors">Bridal Lehanga</Link>
+                  <Link href={`/products?category=${CategoryEnum.SAREES}`} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm font-poppins text-text-primary hover:text-primary transition-colors">Sarees</Link>
+                  <Link href={`/products?category=${CategoryEnum.BANARASI_SAREES}`} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm font-poppins text-text-primary hover:text-primary transition-colors">Banarasi Sarees</Link>
+                  <Link href={`/products?category=${CategoryEnum.LEHENGA}`} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm font-poppins text-text-primary hover:text-primary transition-colors">Lehanga</Link>
+                  <Link href={`/products?category=${CategoryEnum.RAJPUTI_POSHAK}`} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm font-poppins text-text-primary hover:text-primary transition-colors">Rajputi Poshak</Link>
+                  <Link href={`/products?category=${CategoryEnum.BRIDAL_LEHENGA}`} onClick={() => setIsMobileMenuOpen(false)} className="py-2 text-sm font-poppins text-text-primary hover:text-primary transition-colors">Bridal Lehanga</Link>
                 </div>
               </div>
               <Link

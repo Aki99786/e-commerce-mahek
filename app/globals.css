@@ -24,9 +24,12 @@
   --color-error: #dc3545;
   --color-warning: #ffc107;
 
-  --font-family-playfair: var(--font-playfair), serif;
-  --font-family-inter: var(--font-inter), sans-serif;
-  --font-family-poppins: var(--font-poppins), sans-serif;
+  --font-playfair: "Playfair Display";
+  --font-inter: "Inter";
+  --font-poppins: "Poppins";
+  --font-family-playfair: "Playfair Display", serif;
+  --font-family-inter: "Inter", sans-serif;
+  --font-family-poppins: "Poppins", sans-serif;
 
   --spacing-18: 4.5rem;
   --spacing-22: 5.5rem;

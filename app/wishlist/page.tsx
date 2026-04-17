@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { isAuthenticated as checkIsAuthenticated } from "@/lib/auth-utils";
 import { EmptyWishlist } from "@/components/empty-states/EmptyWishlist";
 import { WishlistItem } from "@/features/wishlist/components/WishlistItem";
@@ -9,9 +10,11 @@ import { useCartWishlist } from "@/contexts/CartWishlistContext";
 import type { UIWishlistItem } from "@/features/wishlist/adapters/wishlist.adapter";
 import { adaptWishlistResponseToUI } from "@/features/wishlist/adapters/wishlist.adapter";
 import { toast } from "@/lib/toast";
+import { ROUTES } from "@/constants/routes";
 
 export default function WishlistPage() {
-  const { incrementCartCount, decrementWishlistCount } = useCartWishlist();
+  const router = useRouter();
+  const { incrementCartCount, decrementWishlistCount, cartedProductIds } = useCartWishlist();
   const [isAuth, setIsAuth] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [wishlistItems, setWishlistItems] = useState<UIWishlistItem[]>([]);
@@ -87,6 +90,7 @@ export default function WishlistPage() {
       incrementCartCount();
       decrementWishlistCount();
       toast.success("Moved to cart successfully");
+      router.push(ROUTES.CART);
     } catch (error) {
       console.error("Error moving to cart:", error);
       toast.error("Failed to move to cart");
@@ -133,6 +137,7 @@ export default function WishlistPage() {
                       item={item}
                       onRemove={handleRemove}
                       onAddToCart={handleAddToCart}
+                      isInCart={cartedProductIds.has(item.product._id)}
                     />
                   ))}
                 </div>

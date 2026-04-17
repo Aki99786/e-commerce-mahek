@@ -15,6 +15,7 @@ import type {
   ProductsListResponse,
 } from "../types";
 import { CATEGORY_TYPE_MAP } from "../types";
+import { Pagination } from "./Pagination";
 import { CATEGORIES } from "@/constants/categories";
 import type { ExpandedVariantProduct } from "../utils/variant-expander";
 import type { WishlistItem } from "@/features/wishlist/types";
@@ -321,29 +322,11 @@ export function CategoryPageContent({
 
                 {/* Pagination */}
                 {totalProducts > (filters.limit || 10) && (
-                  <div className="flex justify-center items-center gap-2 mt-8">
-                    <button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="px-4 py-2 border border-border-light rounded-md font-poppins disabled:opacity-50 disabled:cursor-not-allowed hover:bg-background-light"
-                    >
-                      Previous
-                    </button>
-                    <span className="px-4 py-2 font-poppins">
-                      Page {currentPage} of{" "}
-                      {Math.ceil(totalProducts / (filters.limit || 10))}
-                    </span>
-                    <button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={
-                        currentPage >=
-                        Math.ceil(totalProducts / (filters.limit || 10))
-                      }
-                      className="px-4 py-2 border border-border-light rounded-md font-poppins disabled:opacity-50 disabled:cursor-not-allowed hover:bg-background-light"
-                    >
-                      Next
-                    </button>
-                  </div>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(totalProducts / (filters.limit || 10))}
+                    onPageChange={handlePageChange}
+                  />
                 )}
               </>
             )}

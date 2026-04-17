@@ -1,3 +1,9 @@
+export enum Availability {
+  IN_STOCK = "IN_STOCK",
+  OUT_OF_STOCK = "OUT_OF_STOCK",
+  LOW_STOCK = "LOW_STOCK",
+}
+
 export interface WishlistProductVariantSize {
   size: string;
   stock: number;
@@ -8,7 +14,7 @@ export interface WishlistProductVariant {
   color: string;
   sellingPrice: number;
   mrp: number;
-  sizes: (WishlistProductVariantSize | null)[];  // null for single-size items like sarees
+  sizes: (WishlistProductVariantSize | null)[]; // null for single-size items like sarees
   images: string[];
   sizeDetails: string;
 }
@@ -41,7 +47,7 @@ export interface WishlistItem {
 
 export interface WishlistResponse {
   items: WishlistItem[];
-  total?: number;  // API may not return this field
+  total?: number; // API may not return this field
 }
 
 export interface AddToWishlistRequest {
