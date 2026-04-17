@@ -1,3 +1,5 @@
+import { CategorySlugEnum } from "@/constants/categories";
+
 export type ProductSortOption =
   | "latest"
   | "price-low"
@@ -88,9 +90,9 @@ export type ProductCategory =
   | "RAJPUTI_POSHAK";
 
 export const CATEGORY_TYPE_MAP: Record<string, ProductCategory> = {
-  sarees: "SAREE",
-  "banarasi-sarees": "BANARASI_SAREE",
-  lehenga: "LEHENGA",
-  "bridal-lehenga": "BRIDAL_LEHENGA",
-  "rajputi-poshak": "RAJPUTI_POSHAK",
+  [CategorySlugEnum.SAREES]: "SAREE",
+  [CategorySlugEnum.BANARASI_SAREES]: "BANARASI_SAREE",
+  [CategorySlugEnum.LEHENGA]: "LEHENGA",
+  [CategorySlugEnum.BRIDAL_LEHENGA]: "BRIDAL_LEHENGA",
+  [CategorySlugEnum.RAJPUTI_POSHAK]: "RAJPUTI_POSHAK",
 };

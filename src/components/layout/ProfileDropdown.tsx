@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getUserData, clearAuth } from "@/lib/auth-utils";
-import { User, Heart, ShoppingBag, Gift, Phone, CreditCard, MapPin, Edit, LogOut } from "lucide-react";
+import { Gift, Phone, CreditCard, MapPin, Edit, LogOut, ShoppingBag } from "lucide-react";
 
 interface UserData {
   name: string;
@@ -66,7 +66,6 @@ export function ProfileDropdown() {
 
   const menuItems = [
     { label: "Orders", href: "/orders", icon: ShoppingBag },
-    { label: "Wishlist", href: "/wishlist", icon: Heart },
     { label: "Gift Cards", href: "/gift-cards", icon: Gift },
     { label: "Contact Us", href: "/contact", icon: Phone },
     { label: "Coupons", href: "/coupons", icon: CreditCard },
@@ -75,7 +74,7 @@ export function ProfileDropdown() {
   ];
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative flex items-center" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         onMouseEnter={() => setIsOpen(true)}
@@ -92,33 +91,6 @@ export function ProfileDropdown() {
           className="absolute top-full right-0 mt-2 w-80 bg-white shadow-2xl rounded-lg border border-border-light overflow-hidden z-50"
           onMouseLeave={() => setIsOpen(false)}
         >
-          <div className="flex items-center gap-4 border-b border-border-light px-4 py-3">
-            <Link
-              href="/profile"
-              onClick={() => setIsOpen(false)}
-              className="flex-1 flex flex-col items-center gap-1 py-2 text-secondary border-b-2 border-secondary"
-            >
-              <User className="w-4 h-4" />
-              <span className="text-xs font-poppins font-semibold">Profile</span>
-            </Link>
-            <Link
-              href="/wishlist"
-              onClick={() => setIsOpen(false)}
-              className="flex-1 flex flex-col items-center gap-1 py-2 text-text-secondary hover:text-primary transition-colors"
-            >
-              <Heart className="w-4 h-4" />
-              <span className="text-xs font-poppins font-semibold">Wishlist</span>
-            </Link>
-            <Link
-              href="/cart"
-              onClick={() => setIsOpen(false)}
-              className="flex-1 flex flex-col items-center gap-1 py-2 text-text-secondary hover:text-primary transition-colors"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              <span className="text-xs font-poppins font-semibold">Bag</span>
-            </Link>
-          </div>
-
           <div className="px-4 py-3 border-b border-border-light">
             <h3 className="text-base font-playfair font-bold text-primary">
               Hello {userData.name}

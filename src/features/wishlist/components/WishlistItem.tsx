@@ -3,15 +3,20 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Availability } from "../types";
+import { ROUTES } from "@/constants/routes";
 import type { UIWishlistItem } from "../adapters/wishlist.adapter";
 
 interface WishlistItemProps {
   item: UIWishlistItem;
   onRemove: (productId: string) => void;
   onAddToCart: (productId: string) => void;
+  isInCart?: boolean;
 }
 
-export function WishlistItem({ item, onRemove, onAddToCart }: WishlistItemProps) {
+export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: WishlistItemProps) {
+  const router = useRouter();
   const [isRemoving, setIsRemoving] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
@@ -37,7 +42,7 @@ export function WishlistItem({ item, onRemove, onAddToCart }: WishlistItemProps)
     }
   };
 
-  const isOutOfStock = item.product.availability === "OUT_OF_STOCK";
+  const isOutOfStock = item.product.availability === Availability.OUT_OF_STOCK;
 
   return (
     <div className="flex items-start gap-4 bg-white border border-gray-100 rounded-lg p-4 hover:shadow-sm transition-shadow group">
@@ -105,11 +110,15 @@ export function WishlistItem({ item, onRemove, onAddToCart }: WishlistItemProps)
         )}
 
         <button
-          onClick={handleAddToCart}
+          onClick={isInCart ? () => router.push(ROUTES.CART) : handleAddToCart}
           disabled={isAddingToCart || isOutOfStock}
-          className="mt-3 px-4 py-1.5 border border-gray-800 text-gray-800 text-xs font-semibold font-poppins rounded hover:bg-gray-800 hover:text-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          className={`mt-3 px-4 py-1.5 border text-xs font-semibold font-poppins rounded transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${
+            isInCart
+              ? "border-primary bg-primary text-white hover:bg-primary/90"
+              : "border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white"
+          }`}
         >
-          {isAddingToCart ? "Moving..." : "Move to Bag"}
+          {isInCart ? "Go to Bag" : isAddingToCart ? "Moving..." : "Move to Bag"}
         </button>
       </div>
     </div>

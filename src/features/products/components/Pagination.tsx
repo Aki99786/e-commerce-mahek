@@ -65,7 +65,8 @@ export const Pagination = ({
             {typeof page === "number" ? (
               <button
                 onClick={() => onPageChange(page)}
-                className={`min-w-[40px] h-10 px-3 rounded text-sm font-poppins transition-colors ${
+                role="button"
+                className={`min-w-[40px] h-10 px-3 rounded text-sm font-poppins transition-colors cursor-pointer ${
                   currentPage === page
                     ? "bg-primary text-white font-semibold"
                     : "border border-border hover:bg-gray-50"
@@ -83,7 +84,8 @@ export const Pagination = ({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="flex items-center gap-1 px-3 py-2 border border-border rounded text-sm font-poppins hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        role="button"
+        className="flex items-center gap-1 px-3 py-2 border border-border rounded text-sm font-poppins cursor-pointer hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         <span>Next</span>
         <ChevronRight className="w-4 h-4" />

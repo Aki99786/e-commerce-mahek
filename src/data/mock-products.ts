@@ -1,5 +1,6 @@
 import type { Product } from "@/types/product";
 import { ProductLabelType, StockStatus } from "@/types/product";
+import { CategoryEnum, CategorySlugEnum } from "@/constants/categories";
 
 export const MOCK_PRODUCTS: Product[] = [
   {
@@ -45,8 +46,8 @@ export const MOCK_PRODUCTS: Product[] = [
       average: 4,
       count: 16,
     },
-    category: "Bridal Lehenga",
-    categorySlug: "bridal-lehenga",
+    category: CategoryEnum.BRIDAL_LEHENGA,
+    categorySlug: CategorySlugEnum.BRIDAL_LEHENGA,
     label: {
       type: ProductLabelType.NEW,
       text: "NEW",
@@ -162,8 +163,8 @@ export const MOCK_PRODUCTS: Product[] = [
       average: 4,
       count: 18,
     },
-    category: "Sarees",
-    categorySlug: "sarees",
+    category: CategoryEnum.SAREES,
+    categorySlug: CategorySlugEnum.SAREES,
     label: {
       type: ProductLabelType.SALE,
       text: "-10%",
@@ -187,8 +188,8 @@ export const MOCK_PRODUCTS: Product[] = [
       average: 4,
       count: 32,
     },
-    category: "Sarees",
-    categorySlug: "sarees",
+    category: CategoryEnum.SAREES,
+    categorySlug: CategorySlugEnum.SAREES,
     label: {
       type: ProductLabelType.PRE_ORDER,
       text: "Pre-Order",
@@ -211,8 +212,8 @@ export const MOCK_PRODUCTS: Product[] = [
       average: 4,
       count: 15,
     },
-    category: "Bridal Lehenga",
-    categorySlug: "bridal-lehenga",
+    category: CategoryEnum.BRIDAL_LEHENGA,
+    categorySlug: CategorySlugEnum.BRIDAL_LEHENGA,
     label: {
       type: ProductLabelType.SALE,
       text: "-10%",
@@ -235,8 +236,8 @@ export const MOCK_PRODUCTS: Product[] = [
       average: 4,
       count: 28,
     },
-    category: "Lehenga",
-    categorySlug: "lehenga",
+    category: CategoryEnum.LEHENGA,
+    categorySlug: CategorySlugEnum.LEHENGA,
     label: {
       type: ProductLabelType.SALE,
       text: "-10%",
@@ -260,8 +261,8 @@ export const MOCK_PRODUCTS: Product[] = [
       average: 4,
       count: 42,
     },
-    category: "Banarasi Sarees",
-    categorySlug: "banarasi-sarees",
+    category: CategoryEnum.BANARASI_SAREES,
+    categorySlug: CategorySlugEnum.BANARASI_SAREES,
     label: {
       type: ProductLabelType.SALE,
       text: "-10%",
@@ -285,8 +286,8 @@ export const MOCK_PRODUCTS: Product[] = [
       average: 4,
       count: 19,
     },
-    category: "Rajputi Poshak",
-    categorySlug: "rajputi-poshak",
+    category: CategoryEnum.RAJPUTI_POSHAK,
+    categorySlug: CategorySlugEnum.RAJPUTI_POSHAK,
     label: {
       type: ProductLabelType.SALE,
       text: "-10%",
@@ -310,8 +311,8 @@ export const MOCK_PRODUCTS: Product[] = [
       average: 4,
       count: 36,
     },
-    category: "Lehenga",
-    categorySlug: "lehenga",
+    category: CategoryEnum.LEHENGA,
+    categorySlug: CategorySlugEnum.LEHENGA,
     label: {
       type: ProductLabelType.SALE,
       text: "-10%",
