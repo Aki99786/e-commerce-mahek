@@ -13,56 +13,30 @@ export function EmptyWishlist({ isAuthenticated = false }: EmptyWishlistProps) {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background-light flex items-center justify-center px-4">
-        <div className="max-w-md w-full text-center">
-          <div className="mb-8">
-            <div className="w-32 h-32 mx-auto mb-6 relative">
-              <svg
-                viewBox="0 0 120 120"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-full h-full"
-              >
-                <rect
-                  x="30"
-                  y="40"
-                  width="60"
-                  height="70"
-                  rx="4"
-                  stroke="#FFB6C1"
-                  strokeWidth="3"
-                  fill="#FFF0F5"
-                />
-                <path
-                  d="M45 40V35C45 27.268 51.268 21 59 21H61C68.732 21 75 27.268 75 35V40"
-                  stroke="#FFB6C1"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M50 60L55 65L70 50"
-                  stroke="#FF69B4"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
+      <div className="flex-1 bg-gray-50 flex items-center justify-center px-4 py-16">
+        <div className="max-w-sm w-full text-center">
+          {/* Icon */}
+          <div className="w-20 h-20 rounded-full bg-rose-50 flex items-center justify-center mx-auto mb-6">
+            <svg className="w-10 h-10 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
           </div>
 
-          <h1 className="text-3xl font-playfair font-bold text-primary mb-3">
-            PLEASE LOG IN
+          <h1 className="text-2xl font-playfair font-bold text-gray-900 mb-2">
+            Sign in to view your Wishlist
           </h1>
-          
-          <p className="text-base font-poppins text-text-secondary mb-8">
-            Login to view items in your wishlist.
+          <p className="text-sm font-poppins text-gray-500 mb-7 leading-relaxed">
+            Log in to save your favourite items and access them anytime.
           </p>
 
           <Link
             href={buildLoginUrl(pathname)}
-            className="inline-block px-8 py-3 bg-white text-secondary border-2 border-secondary rounded-lg font-poppins font-semibold text-base hover:bg-secondary hover:text-white transition-all duration-300 shadow-sm hover:shadow-md"
+            className="inline-flex items-center gap-2 px-7 py-3 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white rounded-xl font-poppins font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200"
           >
-            LOGIN
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+            Login to Continue
           </Link>
         </div>
       </div>
@@ -70,49 +44,29 @@ export function EmptyWishlist({ isAuthenticated = false }: EmptyWishlistProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-border-light p-8 text-center">
-      <div className="mb-6">
-        <div className="w-24 h-24 mx-auto mb-4 relative">
-          <svg
-            viewBox="0 0 120 120"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-full h-full"
-          >
-            <rect
-              x="30"
-              y="40"
-              width="60"
-              height="70"
-              rx="4"
-              stroke="#FFB6C1"
-              strokeWidth="3"
-              fill="#FFF0F5"
-            />
-            <path
-              d="M45 40V35C45 27.268 51.268 21 59 21H61C68.732 21 75 27.268 75 35V40"
-              stroke="#FFB6C1"
-              strokeWidth="3"
-              strokeLinecap="round"
-            />
-            <circle cx="60" cy="70" r="3" fill="#FF69B4" />
-          </svg>
-        </div>
+    <div className="text-center py-16 px-4">
+      {/* Icon */}
+      <div className="w-20 h-20 rounded-full bg-rose-50 flex items-center justify-center mx-auto mb-5">
+        <svg className="w-10 h-10 text-rose-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
       </div>
 
-      <h2 className="text-2xl font-playfair font-bold text-primary mb-2">
+      <h2 className="text-2xl font-playfair font-bold text-gray-900 mb-2">
         Your Wishlist is Empty
       </h2>
-      
-      <p className="text-sm font-poppins text-text-secondary mb-6">
-        Add items you love to your wishlist. Review them anytime and easily move them to the bag.
+      <p className="text-sm font-poppins text-gray-500 mb-7 max-w-xs mx-auto leading-relaxed">
+        Save items you love here. Review them anytime and move them to your bag easily.
       </p>
 
       <Link
         href="/"
-        className="inline-block px-6 py-2.5 bg-gradient-to-r from-secondary to-primary text-white rounded-lg font-poppins font-semibold text-sm hover:shadow-lg transition-all duration-300"
+        className="inline-flex items-center gap-2 px-7 py-3 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white rounded-xl font-poppins font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200"
       >
-        START SHOPPING
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+        Start Shopping
       </Link>
     </div>
   );

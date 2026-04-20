@@ -24,14 +24,14 @@ function SuccessContent() {
 
   if (!orderId) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background-light flex items-center justify-center px-4 py-12">
+    <div className="flex-1 bg-background-light flex items-center justify-center px-4 py-12">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 max-w-md w-full p-8 text-center">
         <div className="flex justify-center mb-5">
           <div className="relative">
@@ -112,7 +112,7 @@ export default function CheckoutSuccessPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary" />
         </div>
       }

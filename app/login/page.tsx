@@ -3,7 +3,7 @@ import { LoginForm } from "./LoginForm";
 
 function LoginFallback() {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
+    <div className="flex-1 flex items-center justify-center">
       <div className="animate-pulse text-text-secondary font-poppins">Loading...</div>
     </div>
   );

@@ -267,11 +267,11 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         )}
       </div>
 
-      <div className="pt-2 px-2 pb-3">
+      <div className="pt-1.5 px-1.5 pb-2.5 sm:pt-2 sm:px-2 sm:pb-3">
         <button
           onClick={isInCart ? (e) => { e.preventDefault(); e.stopPropagation(); router.push(ROUTES.CART); } : handleAddToCart}
           disabled={isAddingToCart}
-          className="w-full border rounded px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold font-poppins transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50 whitespace-nowrap"
+          className="w-full border rounded px-2 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-sm font-semibold font-poppins transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2 disabled:opacity-50 whitespace-nowrap overflow-hidden"
           style={{
             borderColor: isInCart ? '#C1272D' : isAddingToCart ? '#C1272D' : undefined,
             color: isInCart ? '#ffffff' : isAddingToCart ? '#C1272D' : undefined,

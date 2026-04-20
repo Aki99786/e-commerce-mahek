@@ -42,56 +42,76 @@ export function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
   const currentIndex = STEPS.findIndex((s) => s.id === currentStep);
 
   return (
-    <div className="flex items-center justify-center gap-0 font-poppins text-xs tracking-widest select-none">
-      {STEPS.map((step, index) => {
-        const isCompleted = index < currentIndex;
-        const isActive = index === currentIndex;
-        const isClickable = index < currentIndex;
+    <div className="select-none">
+      {/* Row 1: circles + connector lines, all vertically centered */}
+      <div className="flex items-center justify-center">
+        {STEPS.map((step, index) => {
+          const isCompleted = index < currentIndex;
+          const isActive = index === currentIndex;
+          const isClickable = index < currentIndex;
 
-        const labelEl = (
-          <span
-            className={`flex items-center gap-1.5 font-semibold ${
-              isActive
-                ? "text-secondary"
-                : isCompleted
-                  ? "text-gray-500"
-                  : "text-gray-400"
-            }`}
-          >
-            {isCompleted ? (
-              <CheckCircle2 size={14} className="text-green-500" />
-            ) : (
-              step.icon
-            )}
-            {step.label}
-          </span>
-        );
+          const circleEl = (
+            <div
+              className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all duration-300 flex-shrink-0 ${
+                isCompleted
+                  ? "bg-green-500 border-green-500"
+                  : isActive
+                  ? "bg-rose-600 border-rose-600"
+                  : "bg-white border-gray-300"
+              }`}
+            >
+              {isCompleted ? (
+                <CheckCircle2 size={16} className="text-white" />
+              ) : (
+                <span className={isActive ? "text-white" : "text-gray-400"}>
+                  {step.icon}
+                </span>
+              )}
+            </div>
+          );
 
-        return (
-          <div key={step.id} className="flex items-center">
-            {isClickable ? (
-              <Link href={step.href} className="hover:opacity-80 transition-opacity">
-                {labelEl}
-              </Link>
-            ) : (
-              labelEl
-            )}
+          return (
+            <div key={step.id} className="flex items-center">
+              {isClickable ? (
+                <Link href={step.href} className="hover:opacity-80 transition-opacity">
+                  {circleEl}
+                </Link>
+              ) : (
+                circleEl
+              )}
 
-            {index < STEPS.length - 1 && (
-              <span className="mx-3 flex items-center gap-1">
-                {[0, 1, 2, 3, 4].map((dot) => (
-                  <span
-                    key={dot}
-                    className={`w-1 h-1 rounded-full ${
-                      index < currentIndex ? "bg-gray-400" : "bg-gray-300"
-                    }`}
-                  />
-                ))}
+              {index < STEPS.length - 1 && (
+                <div className={`w-16 sm:w-24 h-0.5 mx-1 transition-colors duration-500 ${
+                  index < currentIndex ? "bg-green-400" : "bg-gray-200"
+                }`} />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Row 2: labels below circles, spaced to match */}
+      <div className="flex items-start justify-center mt-2">
+        {STEPS.map((step, index) => {
+          const isCompleted = index < currentIndex;
+          const isActive = index === currentIndex;
+
+          return (
+            <div key={step.id} className="flex items-start">
+              <span
+                className={`w-9 text-center text-[9px] sm:text-[10px] font-poppins font-semibold tracking-widest uppercase leading-tight ${
+                  isActive ? "text-rose-600" : isCompleted ? "text-green-600" : "text-gray-400"
+                }`}
+              >
+                {step.label}
               </span>
-            )}
-          </div>
-        );
-      })}
+              {index < STEPS.length - 1 && (
+                <div className="w-16 sm:w-24 mx-1" />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

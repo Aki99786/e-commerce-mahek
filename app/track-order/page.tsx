@@ -417,7 +417,7 @@ export default function TrackOrderPage() {
 
   if (isChecking) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
       </div>
     );
@@ -426,7 +426,7 @@ export default function TrackOrderPage() {
   if (!isAuth) return null;
 
   return (
-    <div className="min-h-screen bg-background-light py-8 px-4">
+    <div className="flex-1 bg-background-light py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-playfair font-bold text-gray-900">

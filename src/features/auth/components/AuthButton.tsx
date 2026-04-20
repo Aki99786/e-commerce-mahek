@@ -16,13 +16,13 @@ export const AuthButton = ({
   ...props
 }: AuthButtonProps) => {
   const baseStyles =
-    "w-full py-4 px-6 rounded-lg font-inter font-semibold text-base transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md active:scale-[0.98]";
+    "w-full py-3.5 px-6 rounded-xl font-poppins font-bold text-sm tracking-wider transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2";
 
   const variantStyles = {
     primary:
-      "bg-gradient-to-r from-secondary to-primary text-white hover:from-secondary/90 hover:to-primary/90 focus:ring-4 focus:ring-secondary/20 focus:outline-none",
+      "bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white focus:ring-4 focus:ring-rose-200 focus:outline-none",
     secondary:
-      "bg-white text-primary border-2 border-primary hover:bg-background-gray focus:ring-4 focus:ring-primary/20 focus:outline-none",
+      "bg-white text-gray-800 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 focus:ring-4 focus:ring-gray-100 focus:outline-none",
   };
 
   return (

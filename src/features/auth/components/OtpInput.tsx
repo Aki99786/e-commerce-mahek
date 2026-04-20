@@ -46,11 +46,11 @@ export function OtpInput({ value, onChange, error, disabled }: OtpInputProps) {
   };
 
   return (
-    <div className="space-y-2">
-      <label className="block text-sm font-semibold font-poppins text-text-primary">
-        Enter OTP
+    <div className="space-y-3">
+      <label className="block text-xs font-poppins font-semibold uppercase tracking-widest text-gray-400 text-center">
+        Enter 6-digit OTP
       </label>
-      <div className="flex gap-2 justify-center">
+      <div className="flex gap-2.5 justify-center">
         {Array.from({ length: OTP_LENGTH }).map((_, index) => (
           <input
             key={index}
@@ -65,17 +65,19 @@ export function OtpInput({ value, onChange, error, disabled }: OtpInputProps) {
             onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(index, e)}
             onPaste={handlePaste}
             disabled={disabled}
-            className={`w-12 h-12 text-center text-lg font-semibold font-poppins border-2 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-secondary focus:border-secondary ${
+            className={`w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-bold font-poppins border-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-500 ${
               error
-                ? "border-red-500 bg-red-50"
-                : "border-border bg-white hover:border-secondary/50"
+                ? "border-red-400 bg-red-50 text-red-600"
+                : value[index]
+                ? "border-rose-400 bg-rose-50 text-rose-700"
+                : "border-gray-200 bg-gray-50 hover:border-rose-300"
             } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
             aria-label={`OTP digit ${index + 1}`}
           />
         ))}
       </div>
       {error && (
-        <p className="text-sm font-poppins text-red-600 mt-2">{error}</p>
+        <p className="text-xs font-poppins text-red-500 text-center mt-1">{error}</p>
       )}
     </div>
   );
