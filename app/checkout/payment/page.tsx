@@ -82,7 +82,7 @@ export default function CheckoutPaymentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary" />
       </div>
     );
@@ -100,121 +100,128 @@ export default function CheckoutPaymentPage() {
         strategy="afterInteractive"
       />
 
-      <div className="min-h-screen bg-background-light">
-        <div className="bg-white border-b border-gray-200 py-4 px-4">
+      <div className="flex-1 bg-gray-50">
+        <div className="bg-white border-b border-gray-100 py-5 px-4 shadow-sm">
           <CheckoutStepper currentStep="payment" />
         </div>
 
-        <div className="max-w-5xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-5">
+        <div className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-7 items-start">
+            <div className="lg:col-span-2 space-y-4">
+
+              {/* Step label */}
+              <div>
+                <p className="text-[10px] font-poppins font-semibold uppercase tracking-widest text-rose-600 mb-1">Step 3 of 3</p>
+                <h1 className="text-xl font-playfair font-bold text-gray-900">Payment</h1>
+              </div>
+
+              {/* Delivery address summary */}
               {selectedAddress && (
-                <div className="bg-white border border-gray-200 rounded-lg p-5">
-                  <div className="flex items-start justify-between">
+                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
-                      <MapPin size={18} className="text-secondary mt-0.5 flex-shrink-0" />
+                      <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <MapPin size={15} className="text-rose-500" />
+                      </div>
                       <div>
-                        <p className="font-poppins font-semibold text-gray-900 text-sm mb-0.5">
-                          Delivering to:{" "}
-                          <span className="text-gray-700 font-medium">
-                            {selectedAddress.fullName}, {selectedAddress.pincode}
-                          </span>
+                        <p className="font-poppins font-semibold text-gray-900 text-sm">
+                          Delivering to <span className="text-rose-600">{selectedAddress.fullName}</span>
                         </p>
-                        <p className="text-sm text-gray-500 font-poppins">
+                        <p className="text-xs text-gray-500 font-poppins mt-0.5 leading-relaxed">
                           {selectedAddress.addressLine1}
-                          {selectedAddress.addressLine2
-                            ? `, ${selectedAddress.addressLine2}`
-                            : ""}
-                          , {selectedAddress.city}, {selectedAddress.state}
+                          {selectedAddress.addressLine2 ? `, ${selectedAddress.addressLine2}` : ""}
+                          , {selectedAddress.city}, {selectedAddress.state} — {selectedAddress.pincode}
                         </p>
-                        <p className="text-sm text-gray-500 font-poppins mt-0.5">
-                          Mobile: {selectedAddress.phone}
+                        <p className="text-xs text-gray-500 font-poppins mt-0.5">
+                          📞 {selectedAddress.phone}
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={() => router.push(ROUTES.CHECKOUT_ADDRESS)}
-                      className="flex items-center gap-1 text-xs font-poppins font-semibold text-secondary border border-secondary px-2.5 py-1.5 rounded hover:bg-secondary/5 transition-colors flex-shrink-0 ml-3"
+                      className="flex items-center gap-1.5 text-xs font-poppins font-semibold text-rose-600 border border-rose-200 bg-rose-50 px-3 py-1.5 rounded-lg hover:bg-rose-100 transition-colors flex-shrink-0"
                     >
-                      <Pencil size={12} />
-                      CHANGE
+                      <Pencil size={11} />
+                      Change
                     </button>
                   </div>
                 </div>
               )}
 
-              <div className="bg-white border border-gray-200 rounded-lg p-5">
-                <h2 className="font-playfair font-bold text-gray-900 text-lg mb-5">
-                  Payment
-                </h2>
-
-                <div className="flex items-center gap-3 p-4 bg-secondary/5 border border-secondary/20 rounded-lg mb-5">
-                  <ShieldCheck size={20} className="text-secondary flex-shrink-0" />
-                  <p className="text-sm font-poppins text-gray-700">
-                    All payments are{" "}
-                    <span className="font-semibold">100% secure</span> and encrypted
-                    via Razorpay
+              {/* Payment card */}
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                {/* Security badge */}
+                <div className="flex items-center gap-2.5 px-5 py-3.5 bg-green-50 border-b border-green-100">
+                  <ShieldCheck size={16} className="text-green-600 flex-shrink-0" />
+                  <p className="text-xs font-poppins text-green-700">
+                    All payments are <span className="font-bold">100% secure</span> and encrypted via Razorpay
                   </p>
                 </div>
 
-                <div className="border border-gray-200 rounded-lg p-4 mb-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full border-2 border-secondary flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-secondary" />
-                    </div>
-                    <div>
-                      <p className="font-poppins font-semibold text-gray-900 text-sm">
-                        Pay via Razorpay
-                      </p>
-                      <p className="text-xs font-poppins text-gray-500 mt-0.5">
-                        UPI · Cards · Net Banking · Wallets · EMI
-                      </p>
-                    </div>
-                    <img
-                      src="https://razorpay.com/assets/razorpay-logo.svg"
-                      alt="Razorpay"
-                      className="h-5 ml-auto"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 mb-5 flex-wrap">
-                  {["VISA", "Mastercard", "RuPay", "UPI", "Net Banking"].map(
-                    (method) => (
-                      <span
-                        key={method}
-                        className="text-xs font-poppins text-gray-500 border border-gray-200 px-2 py-1 rounded"
-                      >
-                        {method}
+                <div className="p-5">
+                  {/* Razorpay option */}
+                  <div className="border-2 border-rose-500 rounded-xl p-4 bg-rose-50/30 mb-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded-full border-2 border-rose-500 flex items-center justify-center flex-shrink-0">
+                        <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-poppins font-bold text-gray-900 text-sm">Pay via Razorpay</p>
+                        <p className="text-xs font-poppins text-gray-400 mt-0.5">UPI · Cards · Net Banking · Wallets · EMI</p>
+                      </div>
+                      <span className="flex-shrink-0 text-[11px] font-bold font-poppins text-[#072654] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md tracking-tight">
+                        rzp
                       </span>
-                    ),
-                  )}
+                    </div>
+                  </div>
+
+                  {/* Accepted methods */}
+                  <div className="mb-5">
+                    <p className="text-[10px] font-poppins font-semibold uppercase tracking-widest text-gray-400 mb-2">Accepted Methods</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {["VISA", "Mastercard", "RuPay", "UPI", "Net Banking"].map((method) => (
+                        <span
+                          key={method}
+                          className="text-[11px] font-poppins font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-lg"
+                        >
+                          {method}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Pay button */}
+                  <button
+                    onClick={handlePayNow}
+                    disabled={isProcessing || !razorpayReady}
+                    className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white py-3.5 rounded-xl font-poppins font-bold text-sm tracking-wider shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                        Processing...
+                      </>
+                    ) : !razorpayReady ? (
+                      <>
+                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                        Loading Payment...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Pay ₹{checkoutState.total.toLocaleString()}
+                      </>
+                    )}
+                  </button>
+
+                  <p className="text-[11px] text-gray-400 font-poppins text-center mt-3 leading-relaxed">
+                    By placing the order, you agree to Mahek Sarees{" "}
+                    <span className="underline cursor-pointer">Terms of Use</span> and{" "}
+                    <span className="underline cursor-pointer">Privacy Policy</span>
+                  </p>
                 </div>
-
-                <button
-                  onClick={handlePayNow}
-                  disabled={isProcessing || !razorpayReady}
-                  className="w-full bg-secondary text-white py-3.5 rounded font-poppins font-bold text-sm tracking-wider hover:bg-secondary/90 disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-                >
-                  {isProcessing ? (
-                    <>
-                      <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                      Processing...
-                    </>
-                  ) : !razorpayReady ? (
-                    "Loading Payment..."
-                  ) : (
-                    `PAY ₹${checkoutState.total.toLocaleString()}`
-                  )}
-                </button>
-
-                <p className="text-xs text-gray-400 font-poppins text-center mt-3">
-                  By placing the order, you agree to Mahek Sarees Terms of Use and
-                  Privacy Policy
-                </p>
               </div>
             </div>
 

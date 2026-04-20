@@ -184,44 +184,43 @@ export default function CheckoutAddressPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background-light">
-      <div className="bg-white border-b border-gray-200 py-4 px-4">
+    <div className="flex-1 bg-gray-50">
+      <div className="bg-white border-b border-gray-100 py-5 px-4 shadow-sm">
         <CheckoutStepper currentStep="address" />
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-5xl mx-auto px-4 py-6 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-7 items-start">
           <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-5">
+            <div className="mb-4">
+              <p className="text-[10px] font-poppins font-semibold uppercase tracking-widest text-rose-600 mb-1">Step 2 of 3</p>
               <h1 className="text-xl font-playfair font-bold text-gray-900">
                 Select Delivery Address
               </h1>
-              <button
-                onClick={handleAddNew}
-                className="flex items-center gap-1.5 text-sm font-poppins font-semibold text-secondary border border-secondary px-3 py-1.5 rounded hover:bg-secondary/5 transition-colors"
-              >
-                <Plus size={15} />
-                ADD NEW ADDRESS
-              </button>
             </div>
 
             {addresses.length === 0 ? (
-              <div className="bg-white border border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <p className="text-gray-500 font-poppins text-sm mb-4">
-                  No saved addresses found
-                </p>
+              <div className="bg-white border-2 border-dashed border-rose-200 rounded-2xl p-8 text-center">
+                <div className="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-7 h-7 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <p className="text-gray-700 font-poppins font-semibold text-sm mb-1">No saved addresses</p>
+                <p className="text-gray-400 font-poppins text-xs mb-5">Add an address to continue with checkout</p>
                 <button
                   onClick={handleAddNew}
-                  className="inline-flex items-center gap-2 bg-secondary text-white px-4 py-2 rounded font-poppins font-semibold text-sm hover:bg-secondary/90 transition-colors"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-rose-600 to-pink-600 text-white px-5 py-2.5 rounded-xl font-poppins font-semibold text-sm hover:from-rose-700 hover:to-pink-700 transition-all shadow-md"
                 >
-                  <Plus size={15} />
+                  <Plus size={14} />
                   Add Your First Address
                 </button>
               </div>
@@ -240,10 +239,10 @@ export default function CheckoutAddressPage() {
 
                 <button
                   onClick={handleAddNew}
-                  className="w-full border border-dashed border-secondary text-secondary py-3 rounded-lg font-poppins font-semibold text-sm hover:bg-secondary/5 transition-colors flex items-center justify-center gap-2"
+                  className="w-full border-2 border-dashed border-rose-200 text-rose-500 py-3 rounded-xl font-poppins font-semibold text-sm hover:bg-rose-50 transition-colors flex items-center justify-center gap-2"
                 >
-                  <Plus size={15} />
-                  + Add New Address
+                  <Plus size={14} />
+                  Add New Address
                 </button>
               </div>
             )}
@@ -257,7 +256,7 @@ export default function CheckoutAddressPage() {
                   <button
                     onClick={handleContinue}
                     disabled={!selectedId}
-                    className="w-full bg-secondary text-white py-3 rounded font-poppins font-bold text-sm tracking-wider hover:bg-secondary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white py-3 rounded-xl font-poppins font-bold text-sm tracking-wider shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                   >
                     CONTINUE
                   </button>

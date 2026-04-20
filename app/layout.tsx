@@ -36,7 +36,7 @@ export default function RootLayout({
           <Toaster position="top-right" richColors closeButton />
           <TopBar />
           <Suspense fallback={null}><Header /></Suspense>
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 flex flex-col">{children}</main>
           <Footer />
         </CartWishlistProvider>
       </body>

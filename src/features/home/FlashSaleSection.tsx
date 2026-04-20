@@ -38,69 +38,69 @@ export const FlashSaleSection = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const timerUnits = [
+    { label: "DAYS", value: timeLeft.days },
+    { label: "HRS", value: timeLeft.hours },
+    { label: "MINS", value: timeLeft.minutes },
+    { label: "SECS", value: timeLeft.seconds },
+  ];
+
   return (
-    <section className="bg-white py-2">
+    <section className="bg-gray-50 py-4 md:py-6">
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16">
         <div className="relative overflow-hidden rounded-2xl bg-[url('/images/flash-sale-bg.png')] bg-cover bg-center">
-        <div className="absolute inset-0 bg-black/55"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
 
-        <div className="relative flex flex-col gap-6 px-6 py-8 md:flex-row md:items-center md:justify-between">
-          <div className="text-white">
-            <h2 className="font-playfair text-2xl font-bold leading-tight md:text-3xl tracking-tight">
-              Flash Sale now on!
-            </h2>
-            <p className="mt-1 text-sm font-semibold text-white/90 md:text-base font-poppins">
-              Score Big Savings on All Your Favorites
-            </p>
-          </div>
-
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
-            <div className="flex items-center gap-2">
-              <div className="text-center">
-                <div className="w-[55px] rounded bg-white px-1.5 py-2 flex items-center justify-center">
-                  <div className="text-xl md:text-2xl font-extrabold text-black">
-                    {String(timeLeft.days).padStart(2, "0")}
-                  </div>
-                </div>
-                <div className="mt-1.5 text-[10px] md:text-xs font-bold tracking-widest text-white font-poppins">DAYS</div>
+          <div className="relative flex flex-col gap-5 px-6 py-8 md:px-10 md:flex-row md:items-center md:justify-between">
+            {/* Left: Label + heading */}
+            <div className="text-white">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-rose-600/30 border border-rose-400/40 mb-3">
+                <svg className="w-3.5 h-3.5 text-rose-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                </svg>
+                <span className="text-[10px] font-poppins font-bold uppercase tracking-widest text-rose-300">Limited Time</span>
               </div>
-
-              <div className="text-center">
-                <div className="w-[55px] rounded bg-white px-1.5 py-2 flex items-center justify-center">
-                  <div className="text-xl md:text-2xl font-extrabold text-black">
-                    {String(timeLeft.hours).padStart(2, "0")}
-                  </div>
-                </div>
-                <div className="mt-1.5 text-[10px] md:text-xs font-bold tracking-widest text-white font-poppins">HOURS</div>
-              </div>
-
-              <div className="text-center">
-                <div className="w-[55px] rounded bg-white px-1.5 py-2 flex items-center justify-center">
-                  <div className="text-xl md:text-2xl font-extrabold text-black">
-                    {String(timeLeft.minutes).padStart(2, "0")}
-                  </div>
-                </div>
-                <div className="mt-1.5 text-[10px] md:text-xs font-bold tracking-widest text-white font-poppins">MINS</div>
-              </div>
-
-              <div className="text-center">
-                <div className="w-[55px] rounded bg-white px-1.5 py-2 flex items-center justify-center">
-                  <div className="text-xl md:text-2xl font-extrabold text-black">
-                    {String(timeLeft.seconds).padStart(2, "0")}
-                  </div>
-                </div>
-                <div className="mt-1.5 text-[10px] md:text-xs font-bold tracking-widest text-white font-poppins">SECS</div>
-              </div>
+              <h2 className="font-playfair text-2xl font-bold leading-tight md:text-3xl lg:text-4xl tracking-tight">
+                Flash Sale <span className="text-rose-400">Now On!</span>
+              </h2>
+              <p className="mt-1.5 text-sm text-white/70 md:text-base font-poppins">
+                Score big savings on all your favorites
+              </p>
             </div>
 
-            <Link
-              href={ROUTES.SALE}
-              className="inline-flex items-center justify-center rounded-full border border-white/70 px-7 py-3 font-playfair text-sm font-semibold text-white backdrop-blur-sm transition hover:border-white hover:bg-white/10"
-            >
-              Shop Sale
-            </Link>
+            {/* Right: Timer + CTA */}
+            <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+              {/* Timer */}
+              <div className="flex items-center gap-2">
+                {timerUnits.map(({ label, value }, i) => (
+                  <div key={label} className="flex items-center gap-2">
+                    <div className="text-center">
+                      <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm flex items-center justify-center">
+                        <span className="text-xl md:text-2xl font-extrabold text-white font-poppins tabular-nums">
+                          {String(value).padStart(2, "0")}
+                        </span>
+                      </div>
+                      <p className="mt-1.5 text-[9px] md:text-[10px] font-bold tracking-widest text-white/60 font-poppins">{label}</p>
+                    </div>
+                    {i < timerUnits.length - 1 && (
+                      <span className="text-white/40 font-bold text-lg mb-4">:</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA */}
+              <Link
+                href={ROUTES.SALE}
+                className="inline-flex items-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-700 px-6 py-3 font-poppins text-sm font-semibold text-white shadow-lg hover:shadow-rose-500/30 transition-all"
+              >
+                Shop Sale
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </section>

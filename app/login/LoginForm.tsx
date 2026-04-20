@@ -230,10 +230,14 @@ export function LoginForm() {
         </form>
       ) : (
         <div className="space-y-6">
-          <div className="text-center">
-            <p className="text-sm font-poppins text-text-secondary mb-6">
-              We&apos;ve sent a 6-digit OTP to <span className="font-semibold text-text-primary">{formData.email}</span>
-            </p>
+          <div className="text-center mb-5">
+            <p className="text-sm font-poppins text-gray-500 mb-2">We&apos;ve sent a 6-digit OTP to</p>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-lg text-sm font-semibold font-poppins text-rose-700">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              {formData.email}
+            </span>
           </div>
 
           <OtpInput
@@ -244,14 +248,20 @@ export function LoginForm() {
           />
 
           {errorMessage && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm font-poppins text-red-600">{errorMessage}</p>
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+              <svg className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-xs font-poppins text-red-600">{errorMessage}</p>
             </div>
           )}
 
           {successMessage && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm font-poppins text-green-600">{successMessage}</p>
+            <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl">
+              <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-xs font-poppins text-green-600">{successMessage}</p>
             </div>
           )}
 
@@ -261,24 +271,35 @@ export function LoginForm() {
             isLoading={isLoading}
             disabled={otp.length !== 6 || isLoading}
           >
+            {!isLoading && (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            )}
             VERIFY OTP
           </AuthButton>
 
-          <div className="flex items-center justify-between text-sm font-poppins">
+          <div className="flex items-center justify-between">
             <button
               type="button"
               onClick={handleBackToEmail}
-              className="text-secondary font-semibold hover:underline"
+              className="flex items-center gap-1 text-xs font-poppins font-semibold text-gray-500 hover:text-gray-800 transition-colors disabled:opacity-40"
               disabled={isLoading}
             >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
               Change Email
             </button>
             <button
               type="button"
               onClick={handleResendOtp}
-              className="text-secondary font-semibold hover:underline"
+              className="flex items-center gap-1 text-xs font-poppins font-semibold text-rose-600 hover:text-rose-700 transition-colors disabled:opacity-40"
               disabled={isLoading}
             >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
               Resend OTP
             </button>
           </div>

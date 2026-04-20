@@ -25,8 +25,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [showZoom, setShowZoom] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLDivElement>(null);
-  const { incrementCartCount, incrementWishlistCount, refreshCounts, cartedProductIds, addToCartedIds } = useCartWishlist();
+  const { incrementCartCount, incrementWishlistCount, decrementWishlistCount, refreshCounts, cartedProductIds, addToCartedIds, wishlistedProductIds, addToWishlistedIds, removeFromWishlistedIds } = useCartWishlist();
   const [isInCart, setIsInCart] = useState(() => cartedProductIds.has(product._id));
+  const [isInWishlist, setIsInWishlist] = useState(() => wishlistedProductIds.has(product._id));
 
   const selectedVariant = product.variants[selectedVariantIndex];
   const validSizes = selectedVariant.sizes.filter(s => s !== null && s !== undefined);
@@ -76,12 +77,25 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
     setIsAddingToWishlist(true);
     try {
-      await wishlistService.addToWishlist({
-        productId: product._id,
-        variantId: selectedVariant.variantId,
-        size: hasValidSizes ? (selectedSize?.size || "ONE_SIZE") : "ONE_SIZE",
-      });
-      incrementWishlistCount();
+      if (isInWishlist) {
+        await wishlistService.removeFromWishlist({
+          productId: product._id,
+          variantId: selectedVariant.variantId,
+          size: hasValidSizes ? (selectedSize?.size || "ONE_SIZE") : "ONE_SIZE",
+        });
+        setIsInWishlist(false);
+        removeFromWishlistedIds(product._id);
+        decrementWishlistCount();
+      } else {
+        await wishlistService.addToWishlist({
+          productId: product._id,
+          variantId: selectedVariant.variantId,
+          size: hasValidSizes ? (selectedSize?.size || "ONE_SIZE") : "ONE_SIZE",
+        });
+        setIsInWishlist(true);
+        addToWishlistedIds(product._id);
+        incrementWishlistCount();
+      }
       await refreshCounts();
     } catch {
       // Error handled silently
@@ -117,36 +131,14 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+    <div className="flex-1 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
           {/* Left Side - Image Gallery */}
-          <div className="flex gap-4">
-            {/* Thumbnail Column */}
-            <div className="flex flex-col gap-3 w-20 overflow-y-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-300 z-99">
-              {images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImageIndex(index)}
-                  className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${
-                    selectedImageIndex === index
-                      ? "border-pink-600 ring-2 ring-pink-200"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <Image
-                    src={image}
-                    alt={`${product.name} thumbnail ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="80px"
-                  />
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-col gap-3 lg:flex-row lg:gap-4">
 
             {/* Main Image */}
-            <div className="flex-1 relative">
+            <div className="flex-1 relative order-1">
               <div 
                 ref={imageRef}
                 className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-gray-50 cursor-crosshair"
@@ -207,13 +199,13 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   className="absolute top-4 right-4 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-all disabled:opacity-50"
                   aria-label="Add to wishlist"
                 >
-                  <Heart className="w-6 h-6 text-gray-800" />
+                  <Heart className={`w-6 h-6 transition-colors ${isInWishlist ? "fill-rose-500 text-rose-500" : "text-gray-800"}`} />
                 </button>
               </div>
               
               {/* Zoomed Image Preview */}
               {showZoom && (
-                <div className="absolute left-full ml-4 top-0 w-96 h-96 rounded-2xl overflow-hidden bg-white shadow-2xl border-2 border-gray-200 hidden lg:block">
+                <div className="absolute left-full ml-4 top-0 w-96 h-96 rounded-2xl overflow-hidden bg-white shadow-2xl border-2 border-gray-200 hidden lg:block z-50">
                   <div 
                     className="w-full h-full"
                     style={{
@@ -226,6 +218,30 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 </div>
               )}
             </div>
+
+            {/* Thumbnail Strip — horizontal on mobile, vertical on lg+ */}
+            <div className="order-2 flex flex-row gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-3 lg:overflow-x-visible lg:overflow-y-auto lg:w-20 lg:max-h-[600px] lg:pb-0 scrollbar-thin scrollbar-thumb-gray-300">
+              {images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImageIndex(index)}
+                  className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 lg:w-full lg:h-auto ${
+                    selectedImageIndex === index
+                      ? "border-pink-600 ring-2 ring-pink-200"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <Image
+                    src={image}
+                    alt={`${product.name} thumbnail ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 80px, 80px"
+                  />
+                </button>
+              ))}
+            </div>
+
           </div>
 
           {/* Right Side - Product Info */}
@@ -238,17 +254,17 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             </div>
 
             {/* Product Name */}
-            <h1 className="text-3xl lg:text-4xl font-playfair font-bold text-gray-900 mb-4">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-playfair font-bold text-gray-900 mb-3 sm:mb-4">
               {product.name}
             </h1>
 
             {/* Rating */}
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`w-5 h-5 ${
+                    className={`w-4 h-4 sm:w-5 sm:h-5 ${
                       i < Math.floor(product.averageRating)
                         ? "fill-yellow-400 text-yellow-400"
                         : "text-gray-300"
@@ -256,26 +272,26 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   />
                 ))}
               </div>
-              <span className="font-poppins font-semibold text-gray-900">
+              <span className="font-poppins font-semibold text-gray-900 text-sm sm:text-base">
                 {product.averageRating.toFixed(1)}
               </span>
-              <span className="font-poppins text-gray-500">
+              <span className="font-poppins text-gray-500 text-sm sm:text-base">
                 ({product.totalReviews} ratings)
               </span>
             </div>
 
             {/* Pricing */}
-            <div className="mb-6 pb-6 border-b border-gray-200">
-              <div className="flex items-baseline gap-3 mb-2">
-                <span className="text-4xl font-poppins font-bold text-gray-900">
+            <div className="mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-gray-200">
+              <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mb-2">
+                <span className="text-3xl sm:text-4xl font-poppins font-bold text-gray-900">
                   ₹{selectedVariant.sellingPrice.toLocaleString()}
                 </span>
                 {selectedVariant.mrp > selectedVariant.sellingPrice && (
                   <>
-                    <span className="text-2xl font-poppins text-gray-400 line-through">
+                    <span className="text-xl sm:text-2xl font-poppins text-gray-400 line-through">
                       ₹{selectedVariant.mrp.toLocaleString()}
                     </span>
-                    <span className="px-3 py-1 bg-orange-100 text-orange-600 rounded-md text-sm font-poppins font-semibold">
+                    <span className="px-2 sm:px-3 py-1 bg-orange-100 text-orange-600 rounded-md text-xs sm:text-sm font-poppins font-semibold">
                       {discount}% OFF
                     </span>
                   </>
@@ -292,11 +308,11 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             </div>
 
             {/* Color Selection */}
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
               <h3 className="font-poppins font-semibold text-gray-900 mb-3 uppercase text-sm tracking-wide">
                 Select Color
               </h3>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                 {product.variants.map((variant, index) => {
                   const isSelected = selectedVariantIndex === index;
                   const variantDiscount = variant.mrp > 0 
@@ -311,7 +327,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                         setSelectedSizeIndex(0);
                         setSelectedImageIndex(0);
                       }}
-                      className={`relative px-5 py-3 rounded-xl border-2 transition-all ${
+                      className={`relative px-3 py-2 sm:px-5 sm:py-3 rounded-xl border-2 transition-all ${
                         isSelected
                           ? "border-pink-600 bg-pink-50 ring-2 ring-pink-200"
                           : "border-gray-200 hover:border-gray-300 bg-white"
@@ -340,11 +356,11 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
             {/* Size Selection */}
             {hasValidSizes && (
-              <div className="mb-8">
+              <div className="mb-6 sm:mb-8">
                 <h3 className="font-poppins font-semibold text-gray-900 mb-3 uppercase text-sm tracking-wide">
                   Select Size
                 </h3>
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                   {validSizes.map((sizeOption, index) => {
                   const isSelected = selectedSizeIndex === index;
                   const isOutOfStock = sizeOption.stock === 0;
@@ -354,7 +370,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                       key={index}
                       onClick={() => !isOutOfStock && setSelectedSizeIndex(index)}
                       disabled={isOutOfStock}
-                      className={`relative px-6 py-3 rounded-xl border-2 transition-all min-w-[80px] ${
+                      className={`relative px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl border-2 transition-all min-w-[64px] sm:min-w-[80px] ${
                         isOutOfStock
                           ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
                           : isSelected
@@ -362,7 +378,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                           : "border-gray-200 hover:border-gray-300 bg-white text-gray-900"
                       }`}
                     >
-                      <span className="font-poppins font-medium">
+                      <span className="font-poppins font-medium text-sm">
                         {sizeOption.size}
                       </span>
                       {isOutOfStock && (
@@ -381,7 +397,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             <button
               onClick={handleAddToCart}
               disabled={!isInCart && (hasValidSizes ? (!selectedSize || selectedSize.stock === 0 || isAddingToCart) : isAddingToCart)}
-              className={`w-full font-poppins font-semibold py-4 px-8 rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg mb-4 ${
+              className={`w-full font-poppins font-semibold py-3.5 sm:py-4 px-6 sm:px-8 rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg mb-4 ${
                 isInCart
                   ? "bg-white border-2 border-pink-600 text-pink-600 hover:bg-pink-50 shadow-pink-100 cursor-pointer"
                   : "bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white shadow-pink-200 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed"
@@ -398,8 +414,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             </button>
 
             {/* Product Details */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="font-poppins font-semibold text-gray-900 mb-4 uppercase text-sm tracking-wide">
+            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
+              <h3 className="font-poppins font-semibold text-gray-900 mb-3 sm:mb-4 uppercase text-sm tracking-wide">
                 Product Details
               </h3>
               <div className="space-y-3">
@@ -413,11 +429,11 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             </div>
 
             {/* Specifications */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 mt-4">
-              <h3 className="font-poppins font-semibold text-gray-900 mb-4 uppercase text-sm tracking-wide">
+            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mt-4">
+              <h3 className="font-poppins font-semibold text-gray-900 mb-3 sm:mb-4 uppercase text-sm tracking-wide">
                 Specifications
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <p className="font-poppins text-xs text-gray-500 uppercase tracking-wide mb-1">
                     Fabric

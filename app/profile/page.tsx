@@ -26,7 +26,7 @@ export default function ProfilePage() {
 
   if (isChecking) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
       </div>
     );
@@ -37,7 +37,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background-light py-8 px-4">
+    <div className="flex-1 bg-background-light py-8 px-4">
       <div className="max-w-md mx-auto">
         <ProfileMenu activeTab="profile" />
       </div>

@@ -13,7 +13,7 @@ export function EmptyCart({ isAuthenticated = false }: EmptyCartProps) {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background-light flex items-center justify-center px-4">
+      <div className="flex-1 bg-background-light flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center">
           <div className="mb-8">
             <div className="w-32 h-32 mx-auto mb-6 relative">
@@ -72,7 +72,7 @@ export function EmptyCart({ isAuthenticated = false }: EmptyCartProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-border-light p-8 text-center">
+    <div className="flex-1 bg-white rounded-lg shadow-sm border border-border-light p-8 text-center">
       <div className="mb-6">
         <div className="w-24 h-24 mx-auto mb-4 relative">
           <svg
