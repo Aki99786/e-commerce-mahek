@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { playfair, inter, poppins } from "@/lib/fonts";
+import { Suspense } from "react";
 import { generateSEO } from "@/lib/utils/seo";
 import { SITE_CONFIG } from "@/constants/site";
 import { TopBar } from "@/components/layout/TopBar";
@@ -25,13 +25,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable} ${poppins.variable}`}>
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+      </head>
       <body className="min-h-screen flex flex-col">
         <CartWishlistProvider>
           <Toaster position="top-right" richColors closeButton />
           <TopBar />
-          <Header />
-          <main className="flex-1">{children}</main>
+          <Suspense fallback={null}><Header /></Suspense>
+          <main className="flex-1 flex flex-col">{children}</main>
           <Footer />
         </CartWishlistProvider>
       </body>

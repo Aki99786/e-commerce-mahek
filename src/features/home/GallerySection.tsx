@@ -1,14 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ROUTES } from "@/constants/routes";
+import { CategoryEnum } from "@/constants/categories";
 
 export const GallerySection = () => {
   return (
-    <section className="bg-white py-10 md:py-14 lg:py-18">
+    <section className="bg-white py-10 md:py-14 lg:py-16">
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16">
+        <div className="text-center mb-8 md:mb-10">
+          <p className="text-[10px] md:text-xs font-poppins font-semibold uppercase tracking-widest text-rose-600 mb-2">Collections</p>
+          <h2 className="text-2xl md:text-3xl font-playfair font-bold text-gray-900">Discover Our World</h2>
+        </div>
         <div className="grid gap-4 md:gap-5 grid-cols-1 md:grid-cols-3">
         <Link
-          href="#"
-          className="group relative h-[500px] overflow-hidden rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
+          href={`/products?category=${CategoryEnum.BANARASI_SAREES}`}
+          className="group relative h-[500px] overflow-hidden rounded-xl shadow-sm hover:shadow-xl transition-shadow duration-300"
         >
           <Image
             src="/images/gallery-section/cate1.png"
@@ -28,8 +34,8 @@ export const GallerySection = () => {
 
         <div className="flex flex-col gap-5">
           <Link
-            href="#"
-            className="group relative h-[200px] overflow-hidden border border-slate-200 bg-slate-100 md:h-[320px]"
+            href={`/products?category=${CategoryEnum.SAREES}`}
+            className="group relative h-[200px] overflow-hidden rounded-xl md:h-[320px]"
           >
             <Image
               src="/images/gallery-section/cate2.png"
@@ -48,8 +54,8 @@ export const GallerySection = () => {
           </Link>
 
           <Link
-            href="#"
-            className="group relative h-[200px] overflow-hidden border border-slate-200 bg-slate-100 md:h-[280px]"
+            href={`/products?category=${CategoryEnum.RAJPUTI_POSHAK}`}
+            className="group relative h-[200px] overflow-hidden rounded-xl md:h-[280px]"
           >
             <Image
               src="/images/gallery-section/cate3.png"
@@ -70,8 +76,8 @@ export const GallerySection = () => {
 
         <div className="flex flex-col gap-5">
           <Link
-            href="#"
-            className="group relative h-[200px] overflow-hidden border border-slate-200 bg-slate-100 md:h-[280px]"
+            href={`/products?category=${CategoryEnum.LEHENGA}`}
+            className="group relative h-[200px] overflow-hidden rounded-xl md:h-[280px]"
           >
             <Image
               src="/images/gallery-section/cate4.png"
@@ -90,8 +96,8 @@ export const GallerySection = () => {
           </Link>
 
           <Link
-            href="#"
-            className="group relative h-[200px] overflow-hidden border border-slate-200 bg-slate-100 md:h-[280px]"
+            href={`/products?category=${CategoryEnum.BRIDAL_LEHENGA}`}
+            className="group relative h-[200px] overflow-hidden rounded-xl md:h-[280px]"
           >
             <Image
               src="/images/gallery-section/cate5.png"
@@ -111,9 +117,12 @@ export const GallerySection = () => {
         </div>
       </div>
 
-      <div className="mt-6 text-center">
-        <Link href="#" className="text-sm font-semibold underline underline-offset-4 font-poppins">
+      <div className="mt-8 text-center">
+        <Link href={ROUTES.SHOP} className="inline-flex items-center gap-2 text-sm font-semibold text-rose-600 hover:text-rose-700 font-poppins transition-colors">
           View All Products
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </Link>
       </div>
       </div>

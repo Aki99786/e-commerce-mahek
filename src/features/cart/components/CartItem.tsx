@@ -43,87 +43,104 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
   const colorName = item.color.charAt(0).toUpperCase() + item.color.slice(1);
 
   return (
-    <div className={`bg-white rounded-lg p-6 shadow-sm border border-gray-200 ${isRemoving ? "opacity-50" : ""}`}>
-      <div className="flex gap-6">
+    <div className={`bg-white rounded-xl border border-gray-100 shadow-sm transition-opacity ${isRemoving ? "opacity-40 pointer-events-none" : ""}`}>
+      <div className="flex gap-3 p-3 sm:gap-4 sm:p-4">
+
         {/* Product Image */}
         <Link href={productUrl} className="flex-shrink-0">
-          <div className="relative w-32 h-32 bg-gray-100 rounded-md overflow-hidden">
+          <div className="relative w-20 h-24 sm:w-24 sm:h-28 bg-gray-50 rounded-lg overflow-hidden">
             <Image
               src={productImage}
               alt={item.product.name}
               fill
-              sizes="128px"
+              sizes="(max-width: 640px) 80px, 96px"
               className="object-cover object-top"
             />
           </div>
         </Link>
 
         {/* Product Details */}
-        <div className="flex-1 min-w-0">
-          <Link href={productUrl}>
-            <h3 
-              className="font-playfair font-medium text-base text-gray-900 hover:text-primary transition-colors line-clamp-2 mb-2"
-              data-tooltip-id={`product-name-${item.variantId}-${item.size}`}
-              data-tooltip-content={item.product.name}
-            >
-              {item.product.name}
-            </h3>
-          </Link>
-          <Tooltip 
-            id={`product-name-${item.variantId}-${item.size}`}
-            place="top"
-            className="!bg-gray-900 !text-white !text-sm !px-3 !py-2 !rounded !z-50"
-          />
+        <div className="flex-1 min-w-0 flex flex-col justify-between">
+          <div>
+            {/* Name + remove button row */}
+            <div className="flex items-start justify-between gap-2 mb-1.5">
+              <Link href={productUrl} className="flex-1 min-w-0">
+                <h3
+                  className="font-playfair font-semibold text-sm sm:text-base text-gray-900 hover:text-rose-700 transition-colors line-clamp-2 leading-snug"
+                  data-tooltip-id={`product-name-${item.variantId}-${item.size}`}
+                  data-tooltip-content={item.product.name}
+                >
+                  {item.product.name}
+                </h3>
+              </Link>
+              <Tooltip
+                id={`product-name-${item.variantId}-${item.size}`}
+                place="top"
+                className="!bg-gray-900 !text-white !text-xs !px-2 !py-1.5 !rounded !z-50"
+              />
+              <button
+                onClick={handleRemove}
+                disabled={isRemoving}
+                className="flex-shrink-0 w-7 h-7 rounded-lg hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                aria-label="Remove item"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
 
-          <div className="space-y-1.5">
-            <p className="text-sm text-gray-600 font-poppins">
-              Color: <span className="font-medium">{colorName}</span>
-            </p>
-            <p className="text-sm text-gray-600 font-poppins">
-              Size: <span className="font-medium">{item.size}</span>
-            </p>
-            <p className="text-xl font-bold text-gray-900 font-poppins mt-2">
-              ₹{item.price.toLocaleString()}
-            </p>
+            {/* Color + Size pills */}
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs font-poppins text-gray-600">
+                {colorName}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs font-poppins text-gray-600">
+                Size: {item.size}
+              </span>
+            </div>
           </div>
 
-          {/* Quantity Controls */}
-          <div className="mt-4 flex items-center gap-3">
-            <div className="flex items-center border border-gray-300 rounded">
+          {/* Price row + stepper */}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            {/* Quantity stepper */}
+            <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden">
               <button
                 onClick={() => handleQuantityChange(item.quantity - 1)}
                 disabled={isUpdating || item.quantity <= 1}
-                className="px-3 py-1.5 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-poppins text-lg"
+                className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-base"
               >
                 −
               </button>
-              <span className="px-4 py-1.5 border-x border-gray-300 font-poppins font-medium min-w-[3rem] text-center">
-                {item.quantity}
+              <span className="w-8 h-8 flex items-center justify-center border-x border-gray-200 font-poppins font-semibold text-sm text-gray-900">
+                {isUpdating ? (
+                  <svg className="w-3 h-3 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : item.quantity}
               </span>
               <button
                 onClick={() => handleQuantityChange(item.quantity + 1)}
                 disabled={isUpdating}
-                className="px-3 py-1.5 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-poppins text-lg"
+                className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-base"
               >
                 +
               </button>
             </div>
 
-            <button
-              onClick={handleRemove}
-              disabled={isRemoving}
-              className="text-sm text-red-600 hover:text-red-700 font-poppins disabled:opacity-50"
-            >
-              {isRemoving ? "Removing..." : "Remove"}
-            </button>
+            {/* Price */}
+            <div className="text-right">
+              <p className="text-base sm:text-lg font-bold font-poppins text-gray-900">
+                ₹{subtotal.toLocaleString()}
+              </p>
+              {item.quantity > 1 && (
+                <p className="text-[11px] text-gray-400 font-poppins">
+                  ₹{item.price.toLocaleString()} each
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-
-        {/* Subtotal - Hidden on mobile, shown on desktop */}
-        <div className="hidden md:block flex-shrink-0 text-right ml-auto">
-          <p className="text-xl font-bold text-gray-900 font-poppins">
-            ₹{subtotal.toLocaleString()}
-          </p>
         </div>
       </div>
     </div>

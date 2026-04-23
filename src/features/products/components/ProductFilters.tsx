@@ -57,14 +57,6 @@ const getColorCode = (colorValue: string): string => {
   return colorMap[colorValue.toLowerCase()] || "#6B7280";
 };
 
-const getTextColor = (bgColor: string): string => {
-  const hex = bgColor.replace("#", "");
-  const r = parseInt(hex.substr(0, 2), 16);
-  const g = parseInt(hex.substr(2, 2), 16);
-  const b = parseInt(hex.substr(4, 2), 16);
-  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness > 128 ? "#000000" : "#FFFFFF";
-};
 
 export function ProductFilters({
   onFilterChange,
@@ -83,11 +75,12 @@ export function ProductFilters({
   // Update local filters when initialFilters change (from URL)
   useEffect(() => {
     if (initialFilters) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFilters(initialFilters);
     }
   }, [initialFilters]);
 
-  const handleFilterChange = (key: keyof ProductsListParams, value: any) => {
+  const handleFilterChange = (key: keyof ProductsListParams, value: string | number | undefined) => {
     const newFilters = { ...filters, [key]: value, page: 1 };
     setFilters(newFilters);
     onFilterChange(newFilters);
@@ -131,7 +124,7 @@ export function ProductFilters({
           className="w-full p-2 border border-border-light rounded-md font-poppins text-sm"
         >
           <option value="">Recommended</option>
-          <option value="newest">What's New</option>
+          <option value="newest">What&apos;s New</option>
           <option value="popular">Popularity</option>
           <option value="price-low">Price: Low to High</option>
           <option value="price-high">Price: High to Low</option>
@@ -295,9 +288,9 @@ export function ProductFilters({
         <h4 className="font-poppins font-semibold mb-3">Availability</h4>
         <div className="space-y-2">
           {[
-            { label: "In Stock", value: "IN_STOCK" as const },
-            { label: "Out of Stock", value: "OUT_OF_STOCK" as const },
-            { label: "Pre Order", value: "PRE_ORDER" as const },
+            { label: "In Stock", value: "inStock" as const },
+            { label: "Out of Stock", value: "outOfStock" as const },
+            { label: "Pre Order", value: "preOrder" as const },
           ].map((option) => (
             <label
               key={option.value}

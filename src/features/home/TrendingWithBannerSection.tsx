@@ -5,49 +5,62 @@ import Image from "next/image";
 import Link from "next/link";
 import { ProductCard } from "@/components/product/ProductCard";
 import { productService } from "@/features/products/services/product.service";
+import { adaptAPIProductToUI } from "@/features/products/utils/product-adapter";
 import { ROUTES } from "@/constants/routes";
+import type { Product as APIProduct } from "@/features/products/types";
 
 interface TrendingWithBannerSectionProps {
   bannerPosition?: 'left' | 'right';
   title?: string;
+  type?: string;
 }
 
-export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'Top Trending Collection' }: TrendingWithBannerSectionProps) => {
-  const [trendingProducts, setTrendingProducts] = useState<any[]>([]);
+enum ProductType {
+  TRENDING = 'TRENDING',
+  LEHENGA = 'LEHENGA',
+}
+
+export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'Top Trending Collection', type = '' }: TrendingWithBannerSectionProps) => {
+  const [trendingProducts, setTrendingProducts] = useState<import('@/types/product').Product[]>([]);
+  const [rawAPIProducts, setRawAPIProducts] = useState<APIProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchTrending = async () => {
       try {
         const response = await productService.getTrendingProducts();
-        const mappedProducts = response.products.slice(0, 4).map((p: any) => ({
-          id: p._id,
-          name: p.name,
-          slug: p.slug,
-          description: p.description,
-          shortDescription: p.category,
-          images: p.allImages[0] ? [{ url: p.allImages[0], alt: p.name }] : [],
-          price: {
-            current: p.avgPrice,
-            original: p.variants?.[0]?.mrp || p.avgPrice,
-          },
-          category: p.category,
-          categorySlug: p.category.toLowerCase(),
-          stockStatus: p.totalStock > 0 ? "in-stock" : "out-of-stock",
-          rating: { average: p.averageRating, count: p.totalReviews },
-          __apiProduct: p
-        }));
+        const mappedProducts = response.products.slice(0, 4).map(adaptAPIProductToUI);
         setTrendingProducts(mappedProducts);
+        setRawAPIProducts(response.products.slice(0, 4));
       } catch (error) {
         console.error("Failed to fetch trending products:", error);
         setTrendingProducts([]);
       } finally {
         setIsLoading(false);
       }
+    };  
+
+    const fetchLehenga = async () => {
+      try {
+        const response = await productService.getProductsList({ type: 'LEHENGA', limit: 4, page: 1 });
+        const mappedProducts = response.products.map(adaptAPIProductToUI);
+        setTrendingProducts(mappedProducts);
+        setRawAPIProducts(response.products);
+      } catch (error) {
+        console.error("Failed to fetch lehenga products:", error);
+        setTrendingProducts([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    fetchTrending();
-  }, []);
+    if (type === ProductType.TRENDING) {
+      fetchTrending();
+    } else if (type === ProductType.LEHENGA) {
+      fetchLehenga();
+    }
+
+  }, [type]);
 
   return (
     <section className="py-8 md:py-10 lg:py-14 bg-white">
@@ -65,10 +78,16 @@ export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'T
           </div>
 
           <div className="lg:col-span-3">
-            <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 font-playfair tracking-tight">{title}</h2>
-              <Link href={ROUTES.SHOP} className="text-xs md:text-sm font-semibold text-primary hover:text-primary/80 transition-colors font-poppins whitespace-nowrap">
-                View All →
+            <div className="flex items-end justify-between mb-4 md:mb-6">
+              <div>
+                <p className="text-[10px] md:text-xs font-poppins font-semibold uppercase tracking-widest text-rose-600 mb-1.5">New Arrivals</p>
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 font-playfair tracking-tight">{title}</h2>
+              </div>
+              <Link href={ROUTES.SHOP} className="flex items-center gap-1 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors font-poppins whitespace-nowrap">
+                View All
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </Link>
             </div>
 
@@ -79,14 +98,17 @@ export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'T
                   <div key={i} className="w-full h-[300px] bg-gray-200 animate-pulse rounded-lg" />
                 ))
               ) : (
-                trendingProducts.map((product) => (
-                  <ProductCard 
-                    key={product.id} 
-                    product={product} 
-                    variant="compact" 
-                    apiProduct={product.__apiProduct}
-                  />
-                ))
+                trendingProducts.map((product) => {
+                  const rawProduct = rawAPIProducts.find((p) => p._id === product.id);
+                  return (
+                    <ProductCard 
+                      key={product.id} 
+                        product={product}
+                      apiProduct={rawProduct}
+                      variant="compact" 
+                    />
+                  );
+                })
               )}
             </div>
           </div>

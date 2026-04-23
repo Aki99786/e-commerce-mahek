@@ -11,9 +11,9 @@ export interface UpdateReviewRequest {
 }
 
 export interface Review {
-  id: string;
+  _id: string;
   productId: string;
-  userId: string;
+  user: string;
   rating: number;
   title: string;
   comment: string;

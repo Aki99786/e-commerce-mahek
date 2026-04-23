@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { SlidersHorizontal, X } from "lucide-react";
 import { ProductFilters } from "./ProductFilters";
 import { productService } from "../services/product.service";
 import { wishlistService } from "@/features/wishlist/services/wishlist.service";
@@ -14,30 +15,39 @@ import type {
   ProductsListParams,
   ProductsListResponse,
 } from "../types";
+import { CATEGORY_TYPE_MAP } from "../types";
+import { Pagination } from "./Pagination";
+import { CATEGORIES } from "@/constants/categories";
 import type { ExpandedVariantProduct } from "../utils/variant-expander";
 import type { WishlistItem } from "@/features/wishlist/types";
 
 interface CategoryPageContentProps {
-  categorySlug: string;
-  categoryName: string;
-  categoryType: string;
+  categoryType?: string;
 }
 
 export function CategoryPageContent({
-  categorySlug,
-  categoryName,
-  categoryType,
-}: CategoryPageContentProps) {
+  categoryType: categoryTypeProp,
+}: CategoryPageContentProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Resolve categoryType: prop overrides URL (backward compat), else read ?category=
+  const categorySlugFromUrl = searchParams.get('category') ?? '';
+  const categoryType = categoryTypeProp ?? CATEGORY_TYPE_MAP[categorySlugFromUrl] ?? '';
+  const categoryDisplayName = CATEGORIES.find((c) => c.slug === categorySlugFromUrl)?.name ?? '';
+
   const [products, setProducts] = useState<Product[]>([]);
+  const [allCategoryProducts, setAllCategoryProducts] = useState<Product[]>([]);
   const [expandedVariants, setExpandedVariants] = useState<ExpandedVariantProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [isInitialized, setIsInitialized] = useState(false);
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   
+  const searchQuery = searchParams.get('search') ?? '';
+
   // Initialize filters from URL query params
   const getInitialFilters = (): ProductsListParams => {
     const params: ProductsListParams = {
@@ -52,7 +62,7 @@ export function CategoryPageContent({
       params.limit = parseInt(searchParams.get('limit')!);
     }
     if (searchParams.get('sort')) {
-      params.sort = searchParams.get('sort') as any;
+      params.sort = searchParams.get('sort') as ProductsListParams['sort'];
     }
     if (searchParams.get('minPrice')) {
       params.minPrice = parseInt(searchParams.get('minPrice')!);
@@ -67,7 +77,7 @@ export function CategoryPageContent({
       params.size = searchParams.get('size')!;
     }
     if (searchParams.get('availability')) {
-      params.availability = searchParams.get('availability') as any;
+      params.availability = searchParams.get('availability') as ProductsListParams['availability'];
     }
 
     return params;
@@ -75,19 +85,36 @@ export function CategoryPageContent({
 
   const [filters, setFilters] = useState<ProductsListParams>(getInitialFilters);
 
-  // Initialize filters from URL on mount and fetch wishlist
+  // Initialize on mount and fetch wishlist
   useEffect(() => {
-    setFilters(getInitialFilters());
     setIsInitialized(true);
     fetchWishlist();
   }, []);
 
-  // Fetch products when filters or category changes
+  // Fetch all products for filter options (unfiltered, large limit)
+  useEffect(() => {
+    if (!isInitialized) return;
+    const fetchAllForFilters = async () => {
+      try {
+        const params: ProductsListParams = { limit: 500, page: 1 };
+        if (categoryType) params.type = categoryType;
+        const response: ProductsListResponse =
+          await productService.getProductsList(params);
+        setAllCategoryProducts(response.products);
+      } catch (error) {
+        console.error("Error fetching all products for filters:", error);
+      }
+    };
+    fetchAllForFilters();
+  }, [categoryType, isInitialized]);
+
+  // Fetch products when filters, category or search query changes
   useEffect(() => {
     if (isInitialized) {
       fetchProducts();
     }
-  }, [filters, categoryType, isInitialized]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, categoryType, isInitialized, searchQuery]);
 
   // Sync filters to URL query params
   useEffect(() => {
@@ -120,13 +147,24 @@ export function CategoryPageContent({
       params.set('availability', filters.availability);
     }
 
+    if (categorySlugFromUrl) {
+      params.set('category', categorySlugFromUrl);
+    }
+
+    if (searchQuery) {
+      params.set('search', searchQuery);
+    }
+
     const queryString = params.toString();
     const newUrl = queryString 
       ? `${window.location.pathname}?${queryString}`
       : window.location.pathname;
-    
-    router.replace(newUrl, { scroll: false });
-  }, [filters, isInitialized, router]);
+
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    if (newUrl !== currentUrl) {
+      router.replace(newUrl, { scroll: false });
+    }
+  }, [filters, isInitialized, router, categorySlugFromUrl, searchQuery]);
 
   const fetchWishlist = async () => {
     if (!isAuthenticated()) {
@@ -141,14 +179,14 @@ export function CategoryPageContent({
     }
   };
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (isUnfilteredFetch = false) => {
     setLoading(true);
     try {
+      const apiParams: ProductsListParams = { ...filters };
+      if (categoryType) apiParams.type = categoryType;
+      if (searchQuery) apiParams.search = searchQuery;
       const response: ProductsListResponse =
-        await productService.getProductsList({
-          ...filters,
-          type: categoryType,
-        });
+        await productService.getProductsList(apiParams);
       
       // Expand products into variants (each variant becomes a separate card)
       const allExpandedVariants = response.products.flatMap((product) =>
@@ -159,6 +197,11 @@ export function CategoryPageContent({
       setExpandedVariants(allExpandedVariants);
       setTotalProducts(allExpandedVariants.length);
       setCurrentPage(response.page);
+
+      // On first unfiltered fetch, store the full category products for filter options
+      if (isUnfilteredFetch) {
+        setAllCategoryProducts(response.products);
+      }
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -169,6 +212,7 @@ export function CategoryPageContent({
   const isProductInWishlist = (productId: string, variantId: string, size: string): boolean => {
     return wishlistItems.some(
       (item) =>
+        item.product != null &&
         item.product._id === productId &&
         item.variantId === variantId &&
         item.size === size
@@ -183,10 +227,14 @@ export function CategoryPageContent({
     setFilters({ ...filters, page });
   };
 
-  // Calculate color counts from expanded variants (each variant = 1 color)
-  const colorCounts = expandedVariants.reduce((acc, variant) => {
-    const color = variant.selectedVariant.color;
-    acc[color] = (acc[color] || 0) + 1;
+  // Aggregate colors from full unfiltered category products (stable filter options)
+  const colorCounts = allCategoryProducts.reduce((acc, product) => {
+    (product.allColors || []).forEach((color) => {
+      const trimmed = color.trim();
+      if (trimmed) {
+        acc[trimmed] = (acc[trimmed] || 0) + 1;
+      }
+    });
     return acc;
   }, {} as Record<string, number>);
 
@@ -195,18 +243,83 @@ export function CategoryPageContent({
     count,
   }));
 
-  // Calculate available sizes from expanded variants
+  // Aggregate sizes from full unfiltered category products (stable filter options)
   const availableSizes = Array.from(
-    new Set(expandedVariants.flatMap((v) => v.selectedVariant.sizes.map(s => s.size)))
+    new Set(
+      allCategoryProducts.flatMap((p) => (p.allSizes || []).map((s) => s.trim()).filter(Boolean))
+    )
   );
 
+  // Derive page heading
+  const pageHeading = searchQuery
+    ? `Search results for "${searchQuery}"`
+    : categoryDisplayName
+    ? categoryDisplayName
+    : 'All Products';
+
   return (
-    <div className="min-h-screen bg-background-light">
+    <div className="flex-1 bg-background-light">
+      {/* Mobile Filter Drawer Overlay */}
+      {mobileFiltersOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setMobileFiltersOpen(false)}
+        />
+      )}
+
+      {/* Mobile Filter Drawer */}
+      <div
+        className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-in-out lg:hidden overflow-y-auto ${
+          mobileFiltersOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+          <h2 className="text-base font-playfair font-bold text-gray-900">Filters</h2>
+          <button
+            onClick={() => setMobileFiltersOpen(false)}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Close filters"
+          >
+            <X className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
+        <div className="p-4">
+          <ProductFilters
+            onFilterChange={(f) => { handleFilterChange(f); setMobileFiltersOpen(false); }}
+            availableColors={availableColors}
+            availableSizes={availableSizes}
+            initialFilters={filters}
+          />
+        </div>
+      </div>
+
       {/* Main Content */}
-      <div className="container-fluid py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <aside className="lg:w-64 flex-shrink-0">
+      <div className="container-fluid py-4 sm:py-6 lg:py-8">
+        {/* Page heading + mobile filter button */}
+        <div className="flex items-start justify-between mb-4 sm:mb-6">
+          <div>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-playfair text-text-primary">
+              {pageHeading}
+            </h1>
+            {!loading && (
+              <p className="text-xs sm:text-sm font-poppins text-text-secondary mt-1">
+                {totalProducts} {totalProducts === 1 ? 'product' : 'products'} found
+              </p>
+            )}
+          </div>
+          {/* Mobile/Tablet filter toggle */}
+          <button
+            onClick={() => setMobileFiltersOpen(true)}
+            className="lg:hidden flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm font-poppins font-medium text-gray-700 hover:border-gray-400 transition-colors flex-shrink-0 mt-1"
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span>Filters</span>
+          </button>
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Filters Sidebar — desktop only */}
+          <aside className="hidden lg:block lg:w-64 flex-shrink-0">
             <div className="bg-white p-6 rounded-lg shadow-sm sticky top-4">
               <ProductFilters
                 onFilterChange={handleFilterChange}
@@ -218,21 +331,21 @@ export function CategoryPageContent({
           </aside>
 
           {/* Products Grid */}
-          <main className="flex-1">
+          <main className="flex-1 min-w-0">
             {loading ? (
               <div className="flex items-center justify-center py-20">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
               </div>
             ) : products.length === 0 ? (
               <div className="text-center py-20">
-                <p className="text-xl font-poppins text-text-secondary">
+                <p className="text-lg sm:text-xl font-poppins text-text-secondary">
                   No products found matching your filters
                 </p>
               </div>
             ) : (
               <>
                 {/* Products Grid - Variant-wise display */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                   {expandedVariants.map((expandedVariant) => {
                     const firstSize = expandedVariant.selectedVariant.sizes[0]?.size || "ONE_SIZE";
                     const isInWishlist = isProductInWishlist(
@@ -255,29 +368,11 @@ export function CategoryPageContent({
 
                 {/* Pagination */}
                 {totalProducts > (filters.limit || 10) && (
-                  <div className="flex justify-center items-center gap-2 mt-8">
-                    <button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="px-4 py-2 border border-border-light rounded-md font-poppins disabled:opacity-50 disabled:cursor-not-allowed hover:bg-background-light"
-                    >
-                      Previous
-                    </button>
-                    <span className="px-4 py-2 font-poppins">
-                      Page {currentPage} of{" "}
-                      {Math.ceil(totalProducts / (filters.limit || 10))}
-                    </span>
-                    <button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={
-                        currentPage >=
-                        Math.ceil(totalProducts / (filters.limit || 10))
-                      }
-                      className="px-4 py-2 border border-border-light rounded-md font-poppins disabled:opacity-50 disabled:cursor-not-allowed hover:bg-background-light"
-                    >
-                      Next
-                    </button>
-                  </div>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(totalProducts / (filters.limit || 10))}
+                    onPageChange={handlePageChange}
+                  />
                 )}
               </>
             )}

@@ -12,12 +12,13 @@ import { cartService } from "@/features/cart/services/cart.service";
 import { isAuthenticated } from "@/lib/auth-utils";
 import { useRouter } from "next/navigation";
 import { useCartWishlist } from "@/contexts/CartWishlistContext";
+import type { ProductVariantSize } from "@/features/products/types";
 
 interface ProductCardProps {
   product: Product;
   className?: string;
   variant?: 'default' | 'compact';
-  apiProduct?: any; // Original API product with variants
+  apiProduct?: import('@/features/products/types').Product;
   initialWishlistState?: boolean;
   onWishlistChange?: () => void | Promise<void>;
 }
@@ -25,18 +26,24 @@ interface ProductCardProps {
 export const ProductCard = ({ product, className, variant = 'default', apiProduct, initialWishlistState = false, onWishlistChange }: ProductCardProps) => {
   const router = useRouter();
   const productUrl = ROUTES.PRODUCT_DETAIL(product.id);
-  const isCompact = variant === 'compact';
-  const [isInWishlist, setIsInWishlist] = useState(initialWishlistState);
+  void variant;
+  const { incrementCartCount, incrementWishlistCount, decrementWishlistCount, wishlistedProductIds, cartedProductIds, addToWishlistedIds, removeFromWishlistedIds, addToCartedIds } = useCartWishlist();
+  const [isInWishlist, setIsInWishlist] = useState(() => wishlistedProductIds.has(product.id) || initialWishlistState);
+  const [isInCart, setIsInCart] = useState(() => cartedProductIds.has(product.id));
   const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
+  const [heartAnimation, setHeartAnimation] = useState<"like" | "unlike" | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const { incrementCartCount, incrementWishlistCount, decrementWishlistCount } = useCartWishlist();
 
   useEffect(() => {
-    setIsInWishlist(initialWishlistState);
-  }, [initialWishlistState]);
+    setIsInWishlist(wishlistedProductIds.has(product.id) || initialWishlistState);
+  }, [wishlistedProductIds, product.id, initialWishlistState]);
+
+  useEffect(() => {
+    setIsInCart(cartedProductIds.has(product.id));
+  }, [cartedProductIds, product.id]);
 
   useEffect(() => {
     if (isHovering && product.images.length > 1) {
@@ -67,30 +74,33 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
       return;
     }
 
-    // If no API product data, redirect to detail page
-    if (!apiProduct || !apiProduct.variants || apiProduct.variants.length === 0) {
+    if (!apiProduct || !(apiProduct.variants as unknown[]) || (apiProduct.variants as unknown[]).length === 0) {
       router.push(productUrl);
       return;
     }
 
+    setHeartAnimation(isInWishlist ? "unlike" : "like");
+    setTimeout(() => setHeartAnimation(null), 400);
     setIsAddingToWishlist(true);
     try {
+      // Use first variant and first available size (consistent for add & remove)
+        const firstVariant = apiProduct.variants[0];
+        const validSizes = (firstVariant.sizes || []).filter(
+          (s: ProductVariantSize | null | undefined): s is ProductVariantSize =>
+            s !== null && s !== undefined && !!s.size,
+        );
+        const firstSize = validSizes.length > 0 ? validSizes[0].size : "ONE_SIZE";
+
       if (isInWishlist) {
-        await wishlistService.removeFromWishlist(product.id);
+        await wishlistService.removeFromWishlist({
+          productId: product.id,
+          variantId: firstVariant.variantId,
+          size: firstSize,
+        });
         setIsInWishlist(false);
         decrementWishlistCount();
+        removeFromWishlistedIds(product.id);
       } else {
-        // Use first variant and first available size
-        const firstVariant = apiProduct.variants[0];
-        
-        // Filter out null/undefined sizes and get first valid size
-        const validSizes = (firstVariant.sizes || []).filter(
-          (s: any) => s !== null && s !== undefined && s.size
-        );
-        const firstSize = validSizes.length > 0 
-          ? validSizes[0].size 
-          : "ONE_SIZE";
-        
         await wishlistService.addToWishlist({
           productId: product.id,
           variantId: firstVariant.variantId,
@@ -98,6 +108,7 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         });
         setIsInWishlist(true);
         incrementWishlistCount();
+        addToWishlistedIds(product.id);
       }
       
       // Notify parent component to refresh wishlist
@@ -133,7 +144,7 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
       
       // Filter out null/undefined sizes and get first valid size
       const validSizes = (firstVariant.sizes || []).filter(
-        (s: any) => s !== null && s !== undefined && s.size
+        (s: ProductVariantSize | null | undefined): s is ProductVariantSize => s !== null && s !== undefined && !!s.size
       );
       const firstSize = validSizes.length > 0 
         ? validSizes[0].size 
@@ -145,7 +156,9 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         size: firstSize,
         quantity: 1,
       });
+      setIsInCart(true);
       incrementCartCount();
+      addToCartedIds(product.id);
     } catch (error) {
       console.error("Error adding to cart:", error);
     } finally {
@@ -201,6 +214,22 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
           </div>
         )}
 
+        <style>{`
+          @keyframes heart-like {
+            0%   { transform: scale(1); }
+            30%  { transform: scale(1.45); }
+            60%  { transform: scale(0.9); }
+            80%  { transform: scale(1.2); }
+            100% { transform: scale(1); }
+          }
+          @keyframes heart-unlike {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(0.7); }
+            100% { transform: scale(1); }
+          }
+          .heart-anim-like  { animation: heart-like  0.4s ease forwards; }
+          .heart-anim-unlike { animation: heart-unlike 0.35s ease forwards; }
+        `}</style>
         <button
           onClick={handleWishlistToggle}
           disabled={isAddingToWishlist}
@@ -208,7 +237,8 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         >
           <svg
             className={cn(
-              "w-4 h-4 sm:w-5 sm:h-5 transition-all duration-200",
+              "w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200",
+              heartAnimation === "like" ? "heart-anim-like" : heartAnimation === "unlike" ? "heart-anim-unlike" : "",
               isInWishlist
                 ? "text-red-500 fill-red-500"
                 : "text-gray-700 group-hover/heart:text-red-500 group-hover/heart:fill-red-500"
@@ -237,35 +267,49 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         )}
       </div>
 
-      <div className="p-2 sm:p-3">
+      <div className="pt-1.5 px-1.5 pb-2.5 sm:pt-2 sm:px-2 sm:pb-3">
         <button
-          onClick={handleAddToCart}
+          onClick={isInCart ? (e) => { e.preventDefault(); e.stopPropagation(); router.push(ROUTES.CART); } : handleAddToCart}
           disabled={isAddingToCart}
-          className="w-full border border-gray-300 rounded px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold font-poppins transition-colors flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50"
+          className="w-full border rounded px-2 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-sm font-semibold font-poppins transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2 disabled:opacity-50 whitespace-nowrap overflow-hidden"
           style={{
-            borderColor: isAddingToCart ? '#C1272D' : undefined,
-            color: isAddingToCart ? '#C1272D' : undefined,
+            borderColor: isInCart ? '#C1272D' : isAddingToCart ? '#C1272D' : undefined,
+            color: isInCart ? '#ffffff' : isAddingToCart ? '#C1272D' : undefined,
+            backgroundColor: isInCart ? '#C1272D' : undefined,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = '#C1272D';
-            e.currentTarget.style.color = '#C1272D';
+            if (!isInCart) {
+              e.currentTarget.style.borderColor = '#C1272D';
+              e.currentTarget.style.color = '#C1272D';
+            }
           }}
           onMouseLeave={(e) => {
-            if (!isAddingToCart) {
+            if (!isInCart && !isAddingToCart) {
               e.currentTarget.style.borderColor = '';
               e.currentTarget.style.color = '';
             }
           }}
         >
-          <svg
-            className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-          {isAddingToCart ? "ADDING..." : "ADD TO CART"}
+          {isInCart ? (
+            <>
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              GO TO BAG
+            </>
+          ) : (
+            <>
+              <svg
+                className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              {isAddingToCart ? "ADDING..." : "ADD TO CART"}
+            </>
+          )}
         </button>
 
         {product.sizes && product.sizes.length > 0 && (
@@ -302,21 +346,23 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
           className="!bg-gray-900 !text-white !text-xs sm:!text-sm !px-2 sm:!px-3 !py-1.5 sm:!py-2 !rounded !z-50"
         />
 
-        <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+        <div className="flex flex-col gap-0.5">
           {product.price?.current !== undefined ? (
             <>
-              <span className="text-base sm:text-lg font-bold text-gray-900 font-poppins">
-                Rs. {product.price.current.toLocaleString()}
-              </span>
-              {product.price.original && product.price.original > product.price.current && (
-                <>
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="text-base sm:text-lg font-bold text-gray-900 font-poppins">
+                  Rs. {product.price.current.toLocaleString()}
+                </span>
+                {product.price.original && product.price.original > product.price.current && (
                   <span className="text-xs sm:text-sm text-gray-400 line-through font-poppins">
                     Rs. {product.price.original.toLocaleString()}
                   </span>
-                  <span className="text-xs sm:text-sm text-orange-500 font-semibold font-poppins">
-                    ({product.price.discount}% OFF)
-                  </span>
-                </>
+                )}
+              </div>
+              {product.price.original && product.price.original > product.price.current && (
+                <span className="text-xs sm:text-sm text-orange-500 font-semibold font-poppins">
+                  ({product.price.discount}% OFF)
+                </span>
               )}
             </>
           ) : (

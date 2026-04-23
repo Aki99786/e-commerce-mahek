@@ -1,3 +1,9 @@
+export enum Availability {
+  IN_STOCK = "IN_STOCK",
+  OUT_OF_STOCK = "OUT_OF_STOCK",
+  LOW_STOCK = "LOW_STOCK",
+}
+
 export interface WishlistProductVariantSize {
   size: string;
   stock: number;
@@ -8,7 +14,7 @@ export interface WishlistProductVariant {
   color: string;
   sellingPrice: number;
   mrp: number;
-  sizes: WishlistProductVariantSize[];
+  sizes: (WishlistProductVariantSize | null)[]; // null for single-size items like sarees
   images: string[];
   sizeDetails: string;
 }
@@ -26,7 +32,7 @@ export interface WishlistProduct {
   variants: WishlistProductVariant[];
   averageRating: number;
   totalReviews: number;
-  reviews: any[];
+  reviews: unknown[];
   createdAt: string;
   updatedAt: string;
 }
@@ -41,10 +47,16 @@ export interface WishlistItem {
 
 export interface WishlistResponse {
   items: WishlistItem[];
-  total: number;
+  total?: number; // API may not return this field
 }
 
 export interface AddToWishlistRequest {
+  productId: string;
+  variantId: string;
+  size: string;
+}
+
+export interface RemoveFromWishlistRequest {
   productId: string;
   variantId: string;
   size: string;
@@ -62,7 +74,14 @@ export interface BulkMoveToCartItem {
   size: string;
 }
 
-export type BulkMoveToCartRequest = BulkMoveToCartItem[];
+export interface BulkMoveToCartRequest {
+  items: BulkMoveToCartItem[];
+}
+
+export interface BulkMoveToCartResponse {
+  message: string;
+  movedCount: number;
+}
 
 export interface AddToCartRequest {
   productId: string;

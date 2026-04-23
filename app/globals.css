@@ -24,9 +24,12 @@
   --color-error: #dc3545;
   --color-warning: #ffc107;
 
-  --font-family-playfair: var(--font-playfair), serif;
-  --font-family-inter: var(--font-inter), sans-serif;
-  --font-family-poppins: var(--font-poppins), sans-serif;
+  --font-playfair: "Playfair Display";
+  --font-inter: "Inter";
+  --font-poppins: "Poppins";
+  --font-family-playfair: "Playfair Display", serif;
+  --font-family-inter: "Inter", sans-serif;
+  --font-family-poppins: "Poppins", sans-serif;
 
   --spacing-18: 4.5rem;
   --spacing-22: 5.5rem;
@@ -69,9 +72,11 @@ h6 {
   font-weight: 600;
 }
 
-a {
-  transition: color 0.3s ease-in-out;
-  cursor: pointer;
+@layer base {
+  a {
+    transition: color 0.3s ease-in-out;
+    cursor: pointer;
+  }
 }
 
 img {
@@ -80,8 +85,15 @@ img {
 }
 
 .container-fluid {
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-fluid {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
 }
 
 @media (min-width: 1024px) {

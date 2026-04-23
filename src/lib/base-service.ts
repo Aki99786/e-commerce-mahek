@@ -38,19 +38,19 @@ export class BaseService {
     );
   }
 
-  protected async post<T>(endpoint: string, data?: any): Promise<T> {
+  protected async post<T>(endpoint: string, data?: unknown): Promise<T> {
     return this.handleRequest(`POST ${endpoint}`, () =>
       apiClient.post<T>(endpoint, data),
     );
   }
 
-  protected async put<T>(endpoint: string, data?: any): Promise<T> {
+  protected async put<T>(endpoint: string, data?: unknown): Promise<T> {
     return this.handleRequest(`PUT ${endpoint}`, () =>
       apiClient.put<T>(endpoint, data),
     );
   }
 
-  protected async delete<T>(endpoint: string, data?: any): Promise<T> {
+  protected async delete<T>(endpoint: string, data?: unknown): Promise<T> {
     return this.handleRequest(`DELETE ${endpoint}`, () =>
       apiClient.delete<T>(
         endpoint,

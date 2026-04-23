@@ -3,9 +3,10 @@ import { API_ENDPOINTS } from "@/lib/api-config";
 import type {
   WishlistResponse,
   AddToWishlistRequest,
+  RemoveFromWishlistRequest,
   MoveToCartRequest,
   BulkMoveToCartRequest,
-  AddToCartRequest,
+  BulkMoveToCartResponse,
 } from "../types";
 
 class WishlistService extends BaseService {
@@ -17,22 +18,28 @@ class WishlistService extends BaseService {
     return this.post<void>(API_ENDPOINTS.WISHLIST.ADD, data);
   }
 
-  async removeFromWishlist(productId: string): Promise<void> {
-    return this.delete<void>(API_ENDPOINTS.WISHLIST.REMOVE, { productId });
+  async removeFromWishlist(data: RemoveFromWishlistRequest): Promise<void> {
+    return this.delete<void>(API_ENDPOINTS.WISHLIST.REMOVE, data);
   }
 
   async moveToCart(data: MoveToCartRequest): Promise<void> {
     return this.post<void>(API_ENDPOINTS.WISHLIST.MOVE_TO_CART, data);
   }
 
-  async bulkMoveToCart(data: BulkMoveToCartRequest): Promise<void> {
-    return this.post<void>(API_ENDPOINTS.WISHLIST.BULK_MOVE_TO_CART, data);
+  async bulkMoveToCart(
+    data: BulkMoveToCartRequest,
+  ): Promise<BulkMoveToCartResponse> {
+    return this.post<BulkMoveToCartResponse>(
+      API_ENDPOINTS.WISHLIST.BULK_MOVE_TO_CART,
+      data,
+    );
   }
 
   async getWishlistCount(): Promise<number> {
     try {
       const response = await this.getWishlist();
-      return response.total;
+      // API does not return a `total` field; derive it from items.length
+      return response.total ?? response.items.length;
     } catch (error) {
       console.error("Error fetching wishlist count:", error);
       return 0;
