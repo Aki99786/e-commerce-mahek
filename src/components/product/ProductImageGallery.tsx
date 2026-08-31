@@ -34,7 +34,7 @@ export const ProductImageGallery = ({ images, productName: _productName, product
           <svg className="w-16 h-16 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          <p className="text-gray-500 font-poppins">No images available</p>
+          <p className="text-gray-500">No images available</p>
         </div>
       </div>
     );
@@ -123,7 +123,7 @@ export const ProductImageGallery = ({ images, productName: _productName, product
           {label && (
             <div className="absolute top-4 left-4 z-10">
               <span
-                className={`px-3 py-1.5 text-xs font-semibold text-white rounded font-poppins ${
+                className={`px-3 py-1.5 text-xs font-semibold text-white rounded ${
                   label.type === ProductLabelType.NEW ? "bg-cyan-500" : "bg-red-600"
                 }`}
               >
@@ -134,7 +134,7 @@ export const ProductImageGallery = ({ images, productName: _productName, product
 
           {bestseller && (
             <div className="absolute top-14 left-4 z-10">
-              <span className="px-3 py-1.5 text-xs font-semibold text-white bg-red-600 rounded font-poppins">
+              <span className="px-3 py-1.5 text-xs font-semibold text-white bg-red-600 rounded">
                 BEST SELLER
               </span>
             </div>

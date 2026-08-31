@@ -47,7 +47,7 @@ export function OtpInput({ value, onChange, error, disabled }: OtpInputProps) {
 
   return (
     <div className="space-y-3">
-      <label className="block text-xs font-poppins font-semibold uppercase tracking-widest text-gray-400 text-center">
+      <label className="block text-xs font-semibold uppercase tracking-widest text-gray-400 text-center">
         Enter 6-digit OTP
       </label>
       <div className="flex gap-2.5 justify-center">
@@ -65,7 +65,7 @@ export function OtpInput({ value, onChange, error, disabled }: OtpInputProps) {
             onKeyDown={(e: KeyboardEvent<HTMLInputElement>) => handleKeyDown(index, e)}
             onPaste={handlePaste}
             disabled={disabled}
-            className={`w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-bold font-poppins border-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-500 ${
+            className={`w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-bold border-2 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-500 ${
               error
                 ? "border-red-400 bg-red-50 text-red-600"
                 : value[index]
@@ -77,7 +77,7 @@ export function OtpInput({ value, onChange, error, disabled }: OtpInputProps) {
         ))}
       </div>
       {error && (
-        <p className="text-xs font-poppins text-red-500 text-center mt-1">{error}</p>
+        <p className="text-xs text-red-500 text-center mt-1">{error}</p>
       )}
     </div>
   );

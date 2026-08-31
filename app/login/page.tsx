@@ -4,7 +4,7 @@ import { LoginForm } from "./LoginForm";
 function LoginFallback() {
   return (
     <div className="flex-1 flex items-center justify-center">
-      <div className="animate-pulse text-text-secondary font-poppins">Loading...</div>
+      <div className="animate-pulse text-text-secondary">Loading...</div>
     </div>
   );
 }

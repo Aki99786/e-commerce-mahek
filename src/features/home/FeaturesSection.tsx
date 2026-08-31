@@ -38,8 +38,8 @@ export const FeaturesSection = () => {
                 </svg>
               </div>
               <div>
-                <h3 className="text-sm font-bold text-gray-900 font-playfair leading-tight">{title}</h3>
-                <p className="text-xs text-gray-500 font-poppins mt-0.5">{desc}</p>
+                <h3 className="text-sm font-bold text-gray-900 leading-tight">{title}</h3>
+                <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
               </div>
             </div>
           ))}

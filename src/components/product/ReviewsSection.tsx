@@ -26,12 +26,12 @@ export const ReviewsSection = ({ reviews, averageRating, totalReviews }: Reviews
               </svg>
             ))}
           </div>
-          <span className="text-sm text-gray-700 font-poppins">
+          <span className="text-sm text-gray-700">
             Based on {reviews.length} reviews {totalReviews}
           </span>
         </div>
 
-        <button className="bg-gray-900 text-white px-6 py-2.5 rounded font-semibold hover:bg-gray-800 transition-colors font-poppins flex items-center gap-2">
+        <button className="bg-gray-900 text-white px-6 py-2.5 rounded font-semibold hover:bg-gray-800 transition-colors flex items-center gap-2">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
           </svg>
@@ -40,7 +40,7 @@ export const ReviewsSection = ({ reviews, averageRating, totalReviews }: Reviews
       </div>
 
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-gray-900 font-poppins">CUSTOMER REVIEWS</h3>
+        <h3 className="text-lg font-semibold text-gray-900">CUSTOMER REVIEWS</h3>
 
         {reviews.map((review) => (
           <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
@@ -58,15 +58,15 @@ export const ReviewsSection = ({ reviews, averageRating, totalReviews }: Reviews
               ))}
             </div>
 
-            <h4 className="text-base font-semibold text-gray-900 mb-1 font-poppins">
+            <h4 className="text-base font-semibold text-gray-900 mb-1">
               {review.title}
             </h4>
 
-            <p className="text-sm text-gray-600 mb-3 font-poppins">
+            <p className="text-sm text-gray-600 mb-3">
               {review.author} on {review.date}
             </p>
 
-            <p className="text-gray-700 leading-relaxed font-poppins">
+            <p className="text-gray-700 leading-relaxed">
               {review.comment}
             </p>
           </div>

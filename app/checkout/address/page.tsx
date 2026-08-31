@@ -200,8 +200,8 @@ export default function CheckoutAddressPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-7 items-start">
           <div className="lg:col-span-2">
             <div className="mb-4">
-              <p className="text-[10px] font-poppins font-semibold uppercase tracking-widest text-rose-600 mb-1">Step 2 of 3</p>
-              <h1 className="text-xl font-playfair font-bold text-gray-900">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-rose-600 mb-1">Step 2 of 3</p>
+              <h1 className="text-xl font-bold text-gray-900">
                 Select Delivery Address
               </h1>
             </div>
@@ -214,11 +214,11 @@ export default function CheckoutAddressPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </div>
-                <p className="text-gray-700 font-poppins font-semibold text-sm mb-1">No saved addresses</p>
-                <p className="text-gray-400 font-poppins text-xs mb-5">Add an address to continue with checkout</p>
+                <p className="text-gray-700 font-semibold text-sm mb-1">No saved addresses</p>
+                <p className="text-gray-400 text-xs mb-5">Add an address to continue with checkout</p>
                 <button
                   onClick={handleAddNew}
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-rose-600 to-pink-600 text-white px-5 py-2.5 rounded-xl font-poppins font-semibold text-sm hover:from-rose-700 hover:to-pink-700 transition-all shadow-md"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-rose-600 to-pink-600 text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:from-rose-700 hover:to-pink-700 transition-all shadow-md"
                 >
                   <Plus size={14} />
                   Add Your First Address
@@ -239,7 +239,7 @@ export default function CheckoutAddressPage() {
 
                 <button
                   onClick={handleAddNew}
-                  className="w-full border-2 border-dashed border-rose-200 text-rose-500 py-3 rounded-xl font-poppins font-semibold text-sm hover:bg-rose-50 transition-colors flex items-center justify-center gap-2"
+                  className="w-full border-2 border-dashed border-rose-200 text-rose-500 py-3 rounded-xl font-semibold text-sm hover:bg-rose-50 transition-colors flex items-center justify-center gap-2"
                 >
                   <Plus size={14} />
                   Add New Address
@@ -256,7 +256,7 @@ export default function CheckoutAddressPage() {
                   <button
                     onClick={handleContinue}
                     disabled={!selectedId}
-                    className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white py-3 rounded-xl font-poppins font-bold text-sm tracking-wider shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white py-3 rounded-xl font-bold text-sm tracking-wider shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                   >
                     CONTINUE
                   </button>

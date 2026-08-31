@@ -274,7 +274,7 @@ export function CategoryPageContent({
         }`}
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <h2 className="text-base font-playfair font-bold text-gray-900">Filters</h2>
+          <h2 className="text-base font-bold text-gray-900">Filters</h2>
           <button
             onClick={() => setMobileFiltersOpen(false)}
             className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -298,11 +298,11 @@ export function CategoryPageContent({
         {/* Page heading + mobile filter button */}
         <div className="flex items-start justify-between mb-4 sm:mb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-playfair text-text-primary">
+            <h1 className="text-xl sm:text-2xl md:text-3xl text-text-primary">
               {pageHeading}
             </h1>
             {!loading && (
-              <p className="text-xs sm:text-sm font-poppins text-text-secondary mt-1">
+              <p className="text-xs sm:text-sm text-text-secondary mt-1">
                 {totalProducts} {totalProducts === 1 ? 'product' : 'products'} found
               </p>
             )}
@@ -310,7 +310,7 @@ export function CategoryPageContent({
           {/* Mobile/Tablet filter toggle */}
           <button
             onClick={() => setMobileFiltersOpen(true)}
-            className="lg:hidden flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm font-poppins font-medium text-gray-700 hover:border-gray-400 transition-colors flex-shrink-0 mt-1"
+            className="lg:hidden flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-400 transition-colors flex-shrink-0 mt-1"
           >
             <SlidersHorizontal className="w-4 h-4" />
             <span>Filters</span>
@@ -338,7 +338,7 @@ export function CategoryPageContent({
               </div>
             ) : products.length === 0 ? (
               <div className="text-center py-20">
-                <p className="text-lg sm:text-xl font-poppins text-text-secondary">
+                <p className="text-lg sm:text-xl text-text-secondary">
                   No products found matching your filters
                 </p>
               </div>

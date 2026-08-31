@@ -52,7 +52,7 @@ export function ProfileMenu({ activeTab = "profile" }: ProfileMenuProps) {
           }`}
         >
           <User className="w-5 h-5" />
-          <span className="text-sm font-poppins font-semibold">Profile</span>
+          <span className="text-sm font-semibold">Profile</span>
         </Link>
         <Link
           href="/wishlist"
@@ -63,7 +63,7 @@ export function ProfileMenu({ activeTab = "profile" }: ProfileMenuProps) {
           }`}
         >
           <Heart className="w-5 h-5" />
-          <span className="text-sm font-poppins font-semibold">Wishlist</span>
+          <span className="text-sm font-semibold">Wishlist</span>
         </Link>
         <Link
           href="/cart"
@@ -74,16 +74,16 @@ export function ProfileMenu({ activeTab = "profile" }: ProfileMenuProps) {
           }`}
         >
           <ShoppingBag className="w-5 h-5" />
-          <span className="text-sm font-poppins font-semibold">Bag</span>
+          <span className="text-sm font-semibold">Bag</span>
         </Link>
       </div>
 
       <div className="p-6">
         <div className="mb-6">
-          <h2 className="text-xl font-playfair font-bold text-primary mb-1">
+          <h2 className="text-xl font-bold text-primary mb-1">
             Hello {userData.name}
           </h2>
-          <p className="text-sm font-poppins text-text-secondary">
+          <p className="text-sm text-text-secondary">
             {userData.email}
           </p>
         </div>
@@ -106,7 +106,7 @@ export function ProfileMenu({ activeTab = "profile" }: ProfileMenuProps) {
                   className="flex items-center gap-3 py-3 px-2 rounded-lg hover:bg-background-light transition-colors group"
                 >
                   <Icon className="w-5 h-5 text-text-secondary group-hover:text-secondary transition-colors" />
-                  <span className="text-base font-poppins text-text-primary group-hover:text-secondary transition-colors">
+                  <span className="text-base text-text-primary group-hover:text-secondary transition-colors">
                     {item.label}
                   </span>
                 </Link>
@@ -121,7 +121,7 @@ export function ProfileMenu({ activeTab = "profile" }: ProfileMenuProps) {
             className="flex items-center gap-3 py-3 px-2 rounded-lg hover:bg-background-light transition-colors group mb-2"
           >
             <Edit className="w-5 h-5 text-text-secondary group-hover:text-secondary transition-colors" />
-            <span className="text-base font-poppins text-text-primary group-hover:text-secondary transition-colors">
+            <span className="text-base text-text-primary group-hover:text-secondary transition-colors">
               Edit Profile
             </span>
           </Link>
@@ -130,7 +130,7 @@ export function ProfileMenu({ activeTab = "profile" }: ProfileMenuProps) {
             className="w-full flex items-center gap-3 py-3 px-2 rounded-lg hover:bg-red-50 transition-colors group"
           >
             <LogOut className="w-5 h-5 text-text-secondary group-hover:text-red-600 transition-colors" />
-            <span className="text-base font-poppins text-text-primary group-hover:text-red-600 transition-colors">
+            <span className="text-base text-text-primary group-hover:text-red-600 transition-colors">
               Logout
             </span>
           </button>

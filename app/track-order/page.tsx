@@ -61,7 +61,7 @@ function PaymentBadge({ status }: { status: PaymentStatus }) {
   };
   return (
     <span
-      className={`text-xs font-poppins font-medium px-2.5 py-0.5 rounded-full ${colors[status] ?? "bg-gray-100 text-gray-600"}`}
+      className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${colors[status] ?? "bg-gray-100 text-gray-600"}`}
     >
       {PAYMENT_STATUS_LABELS[status] ?? status}
     </span>
@@ -76,7 +76,7 @@ function StatusTimeline({ status }: { status: OrderStatus }) {
     return (
       <div className="flex items-center gap-2 mt-3">
         <span className="w-2.5 h-2.5 rounded-full bg-red-500 flex-shrink-0" />
-        <span className="text-xs font-poppins text-red-600 font-medium">
+        <span className="text-xs text-red-600 font-medium">
           Order Cancelled
         </span>
       </div>
@@ -120,7 +120,7 @@ function StatusTimeline({ status }: { status: OrderStatus }) {
                 )}
               </div>
               <span
-                className={`text-[10px] font-poppins mt-1 whitespace-nowrap ${isCompleted ? "text-primary font-medium" : "text-gray-400"}`}
+                className={`text-[10px] mt-1 whitespace-nowrap ${isCompleted ? "text-primary font-medium" : "text-gray-400"}`}
               >
                 {ORDER_STATUS_LABELS[step]}
               </span>
@@ -146,16 +146,16 @@ function OrderCard({ order }: { order: Order }) {
       <div className="p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
-            <p className="text-xs font-poppins text-gray-400 mb-0.5">
+            <p className="text-xs text-gray-400 mb-0.5">
               Order ID
             </p>
-            <p className="text-sm font-poppins font-semibold text-gray-800 break-all">
+            <p className="text-sm font-semibold text-gray-800 break-all">
               #{order._id}
             </p>
           </div>
           <div className="flex flex-col items-end gap-1.5">
             <PaymentBadge status={order.paymentStatus} />
-            <p className="text-xs font-poppins text-gray-400">
+            <p className="text-xs text-gray-400">
               {formatDate(order.createdAt)}
             </p>
           </div>
@@ -174,7 +174,7 @@ function OrderCard({ order }: { order: Order }) {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-poppins font-medium text-gray-900 line-clamp-2 leading-snug">
+            <p className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug">
               {order.items[0]?.product.name}
               {order.items.length > 1 && (
                 <span className="text-gray-400 font-normal">
@@ -184,13 +184,13 @@ function OrderCard({ order }: { order: Order }) {
               )}
             </p>
             <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
-              <span className="text-xs font-poppins text-gray-500">
+              <span className="text-xs text-gray-500">
                 Size:{" "}
                 <span className="text-gray-700">
                   {order.items[0]?.size}
                 </span>
               </span>
-              <span className="text-xs font-poppins text-gray-500">
+              <span className="text-xs text-gray-500">
                 Qty:{" "}
                 <span className="text-gray-700">
                   {order.items[0]?.quantity}
@@ -199,7 +199,7 @@ function OrderCard({ order }: { order: Order }) {
               {order.items[0]?.product.variants?.find(
                 (v) => v.variantId === order.items[0]?.variantId
               )?.color && (
-                <span className="text-xs font-poppins text-gray-500">
+                <span className="text-xs text-gray-500">
                   Color:{" "}
                   <span className="text-gray-700">
                     {
@@ -211,7 +211,7 @@ function OrderCard({ order }: { order: Order }) {
                 </span>
               )}
             </div>
-            <p className="text-sm font-poppins font-semibold text-gray-900 mt-1.5">
+            <p className="text-sm font-semibold text-gray-900 mt-1.5">
               {formatCurrency(order.totalAmount)}
             </p>
           </div>
@@ -221,7 +221,7 @@ function OrderCard({ order }: { order: Order }) {
 
         <button
           onClick={() => setIsExpanded((prev) => !prev)}
-          className="mt-4 text-xs font-poppins text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+          className="mt-4 text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
         >
           {isExpanded ? "Hide details" : "View details"}
           <svg
@@ -243,7 +243,7 @@ function OrderCard({ order }: { order: Order }) {
       {isExpanded && (
         <div className="border-t border-gray-100 bg-gray-50 p-4 sm:p-5 space-y-4">
           <div>
-            <p className="text-xs font-poppins font-semibold text-gray-600 uppercase tracking-wide mb-2">
+            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
               All Items
             </p>
             <div className="space-y-2">
@@ -268,14 +268,14 @@ function OrderCard({ order }: { order: Order }) {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-poppins font-medium text-gray-800 line-clamp-1">
+                      <p className="text-xs font-medium text-gray-800 line-clamp-1">
                         {item.product.name}
                       </p>
-                      <p className="text-[11px] font-poppins text-gray-500">
+                      <p className="text-[11px] text-gray-500">
                         {item.size} · Qty {item.quantity}
                       </p>
                     </div>
-                    <p className="text-xs font-poppins font-semibold text-gray-800 flex-shrink-0">
+                    <p className="text-xs font-semibold text-gray-800 flex-shrink-0">
                       {formatCurrency(item.price)}
                     </p>
                   </div>
@@ -285,10 +285,10 @@ function OrderCard({ order }: { order: Order }) {
           </div>
 
           <div>
-            <p className="text-xs font-poppins font-semibold text-gray-600 uppercase tracking-wide mb-2">
+            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
               Shipping Address
             </p>
-            <div className="bg-white rounded-lg p-3 border border-gray-100 text-xs font-poppins text-gray-700 leading-relaxed">
+            <div className="bg-white rounded-lg p-3 border border-gray-100 text-xs text-gray-700 leading-relaxed">
               <p className="font-medium text-gray-800">
                 {order.shippingAddress.fullName}
               </p>
@@ -308,22 +308,22 @@ function OrderCard({ order }: { order: Order }) {
           </div>
 
           <div className="bg-white rounded-lg p-3 border border-gray-100">
-            <div className="flex justify-between items-center text-xs font-poppins text-gray-500 mb-1.5">
+            <div className="flex justify-between items-center text-xs text-gray-500 mb-1.5">
               <span>Subtotal ({order.items.length} items)</span>
               <span>{formatCurrency(order.totalAmount)}</span>
             </div>
-            <div className="flex justify-between items-center text-xs font-poppins text-gray-500 mb-2">
+            <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
               <span>Shipping</span>
               <span className="text-green-600">FREE</span>
             </div>
-            <div className="flex justify-between items-center text-sm font-poppins font-semibold text-gray-900 border-t border-gray-100 pt-2">
+            <div className="flex justify-between items-center text-sm font-semibold text-gray-900 border-t border-gray-100 pt-2">
               <span>Total</span>
               <span>{formatCurrency(order.totalAmount)}</span>
             </div>
           </div>
 
           {order.razorpayOrderId && (
-            <div className="text-[11px] font-poppins text-gray-400">
+            <div className="text-[11px] text-gray-400">
               <p>
                 Razorpay Order:{" "}
                 <span className="text-gray-600">
@@ -429,10 +429,10 @@ export default function TrackOrderPage() {
     <div className="flex-1 bg-background-light py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-playfair font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             My Orders
           </h1>
-          <p className="text-sm font-poppins text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Track and manage all your orders
           </p>
         </div>
@@ -441,7 +441,7 @@ export default function TrackOrderPage() {
 
         {!isFetching && fetchError && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center">
-            <p className="text-sm font-poppins text-red-600">{fetchError}</p>
+            <p className="text-sm text-red-600">{fetchError}</p>
             <button
               onClick={() => {
                 setFetchError(null);
@@ -454,7 +454,7 @@ export default function TrackOrderPage() {
                   )
                   .finally(() => setIsFetching(false));
               }}
-              className="mt-3 text-sm font-poppins font-medium text-primary hover:text-primary/80 transition-colors"
+              className="mt-3 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
             >
               Try again
             </button>
@@ -478,15 +478,15 @@ export default function TrackOrderPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-lg font-playfair font-semibold text-gray-800 mb-1">
+            <h2 className="text-lg font-semibold text-gray-800 mb-1">
               No orders yet
             </h2>
-            <p className="text-sm font-poppins text-gray-500 mb-5">
+            <p className="text-sm text-gray-500 mb-5">
               Looks like you haven&apos;t placed any orders. Start shopping!
             </p>
             <Link
               href={ROUTES.SHOP}
-              className="inline-block bg-primary text-white text-sm font-poppins font-medium px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors"
+              className="inline-block bg-primary text-white text-sm font-medium px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors"
             >
               Shop Now
             </Link>
@@ -495,7 +495,7 @@ export default function TrackOrderPage() {
 
         {!isFetching && !fetchError && orders.length > 0 && (
           <div className="space-y-4">
-            <p className="text-xs font-poppins text-gray-400">
+            <p className="text-xs text-gray-400">
               {orders.length} {orders.length === 1 ? "order" : "orders"} found
             </p>
             {orders.map((order) => (

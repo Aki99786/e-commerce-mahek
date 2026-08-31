@@ -80,10 +80,10 @@ export default function ForgotPasswordPage() {
           </div>
 
           <div className="space-y-3">
-            <p className="text-lg font-inter font-semibold text-text-primary">
+            <p className="text-lg font-semibold text-text-primary">
               {AUTH_MESSAGES.PASSWORD_RESET_SENT}
             </p>
-            <p className="text-sm font-inter text-text-secondary leading-relaxed">
+            <p className="text-sm text-text-secondary leading-relaxed">
               We&apos;ve sent password reset instructions to{" "}
               <span className="font-semibold text-secondary">{formData.email}</span>
             </p>
@@ -103,11 +103,11 @@ export default function ForgotPasswordPage() {
               <div className="w-full border-t border-border"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-text-secondary font-inter">or</span>
+              <span className="px-4 bg-white text-text-secondary">or</span>
             </div>
           </div>
 
-          <p className="text-sm font-inter text-text-secondary">
+          <p className="text-sm text-text-secondary">
             Didn&apos;t receive the email?{" "}
             <button
               onClick={() => {
@@ -144,7 +144,7 @@ export default function ForgotPasswordPage() {
                 clipRule="evenodd"
               />
             </svg>
-            <p className="text-sm font-inter text-text-primary leading-relaxed">
+            <p className="text-sm text-text-primary leading-relaxed">
               Enter the email address associated with your account and we&apos;ll
               send you a link to reset your password.
             </p>
@@ -176,14 +176,14 @@ export default function ForgotPasswordPage() {
             <div className="w-full border-t border-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-text-secondary font-inter">or</span>
+            <span className="px-4 bg-white text-text-secondary">or</span>
           </div>
         </div>
 
         <div className="text-center">
           <Link
             href="/login"
-            className="text-sm font-inter font-semibold text-secondary hover:text-secondary-dark transition-colors inline-flex items-center gap-2 underline-offset-2 hover:underline"
+            className="text-sm font-semibold text-secondary hover:text-secondary-dark transition-colors inline-flex items-center gap-2 underline-offset-2 hover:underline"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

@@ -22,7 +22,7 @@ export const Price = ({
     <div className={cn("flex items-center gap-2", className)}>
       <span
         className={cn(
-          "font-inter font-normal text-text-primary tabular-nums",
+          "font-normal text-text-primary tabular-nums",
           currentClassName
         )}
       >
@@ -31,7 +31,7 @@ export const Price = ({
       {hasDiscount && (
         <span
           className={cn(
-            "font-inter text-sm text-text-muted line-through tabular-nums",
+            "text-sm text-text-muted line-through tabular-nums",
             originalClassName
           )}
         >

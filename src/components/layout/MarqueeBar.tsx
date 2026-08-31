@@ -6,7 +6,7 @@ export const MarqueeBar = () => {
       <div className="flex animate-marquee whitespace-nowrap">
         {[...ANNOUNCEMENT_MESSAGES, ...ANNOUNCEMENT_MESSAGES].map((message, index) => (
           <div key={index} className="flex items-center px-4 md:px-6">
-            <a href="#" className="text-white text-[10px] md:text-xs lg:text-sm font-inter font-normal">
+            <a href="#" className="text-white text-[10px] md:text-xs lg:text-sm font-normal">
               {message}
             </a>
             {index < ANNOUNCEMENT_MESSAGES.length * 2 - 1 && (

@@ -188,7 +188,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 )}
 
                 {/* Image Counter */}
-                <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-poppins">
+                <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
                   {selectedImageIndex + 1}/{images.length}
                 </div>
 
@@ -248,13 +248,13 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           <div className="flex flex-col">
             {/* Brand */}
             <div className="mb-3">
-              <span className="inline-block px-4 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-poppins font-medium">
+              <span className="inline-block px-4 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-medium">
                 {product.brand}
               </span>
             </div>
 
             {/* Product Name */}
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-playfair font-bold text-gray-900 mb-3 sm:mb-4">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
               {product.name}
             </h1>
 
@@ -272,10 +272,10 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   />
                 ))}
               </div>
-              <span className="font-poppins font-semibold text-gray-900 text-sm sm:text-base">
+              <span className="font-semibold text-gray-900 text-sm sm:text-base">
                 {product.averageRating.toFixed(1)}
               </span>
-              <span className="font-poppins text-gray-500 text-sm sm:text-base">
+              <span className="text-gray-500 text-sm sm:text-base">
                 ({product.totalReviews} ratings)
               </span>
             </div>
@@ -283,33 +283,33 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             {/* Pricing */}
             <div className="mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-gray-200">
               <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mb-2">
-                <span className="text-3xl sm:text-4xl font-poppins font-bold text-gray-900">
+                <span className="text-3xl sm:text-4xl font-bold text-gray-900">
                   ₹{selectedVariant.sellingPrice.toLocaleString()}
                 </span>
                 {selectedVariant.mrp > selectedVariant.sellingPrice && (
                   <>
-                    <span className="text-xl sm:text-2xl font-poppins text-gray-400 line-through">
+                    <span className="text-xl sm:text-2xl text-gray-400 line-through">
                       ₹{selectedVariant.mrp.toLocaleString()}
                     </span>
-                    <span className="px-2 sm:px-3 py-1 bg-orange-100 text-orange-600 rounded-md text-xs sm:text-sm font-poppins font-semibold">
+                    <span className="px-2 sm:px-3 py-1 bg-orange-100 text-orange-600 rounded-md text-xs sm:text-sm font-semibold">
                       {discount}% OFF
                     </span>
                   </>
                 )}
               </div>
               {selectedVariant.mrp > selectedVariant.sellingPrice && (
-                <p className="text-green-600 font-poppins text-sm font-medium">
+                <p className="text-green-600 text-sm font-medium">
                   You save ₹{(selectedVariant.mrp - selectedVariant.sellingPrice).toLocaleString()}!
                 </p>
               )}
-              <p className="text-gray-500 font-poppins text-sm mt-1">
+              <p className="text-gray-500 text-sm mt-1">
                 inclusive of all taxes
               </p>
             </div>
 
             {/* Color Selection */}
             <div className="mb-4 sm:mb-6">
-              <h3 className="font-poppins font-semibold text-gray-900 mb-3 uppercase text-sm tracking-wide">
+              <h3 className="font-semibold text-gray-900 mb-3 uppercase text-sm tracking-wide">
                 Select Color
               </h3>
               <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -334,12 +334,12 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                       }`}
                     >
                       <div className="text-left">
-                        <p className={`font-poppins font-medium text-sm ${
+                        <p className={`font-medium text-sm ${
                           isSelected ? "text-pink-700" : "text-gray-900"
                         }`}>
                           {variant.color}
                         </p>
-                        <p className="font-poppins text-xs text-gray-600 mt-0.5">
+                        <p className="text-xs text-gray-600 mt-0.5">
                           ₹{variant.sellingPrice.toLocaleString()}
                           {variantDiscount > 0 && (
                             <span className="text-green-600 ml-1">
@@ -357,7 +357,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             {/* Size Selection */}
             {hasValidSizes && (
               <div className="mb-6 sm:mb-8">
-                <h3 className="font-poppins font-semibold text-gray-900 mb-3 uppercase text-sm tracking-wide">
+                <h3 className="font-semibold text-gray-900 mb-3 uppercase text-sm tracking-wide">
                   Select Size
                 </h3>
                 <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -378,7 +378,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                           : "border-gray-200 hover:border-gray-300 bg-white text-gray-900"
                       }`}
                     >
-                      <span className="font-poppins font-medium text-sm">
+                      <span className="font-medium text-sm">
                         {sizeOption.size}
                       </span>
                       {isOutOfStock && (
@@ -397,7 +397,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             <button
               onClick={handleAddToCart}
               disabled={!isInCart && (hasValidSizes ? (!selectedSize || selectedSize.stock === 0 || isAddingToCart) : isAddingToCart)}
-              className={`w-full font-poppins font-semibold py-3.5 sm:py-4 px-6 sm:px-8 rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg mb-4 ${
+              className={`w-full font-semibold py-3.5 sm:py-4 px-6 sm:px-8 rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg mb-4 ${
                 isInCart
                   ? "bg-white border-2 border-pink-600 text-pink-600 hover:bg-pink-50 shadow-pink-100 cursor-pointer"
                   : "bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white shadow-pink-200 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed"
@@ -415,13 +415,13 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
             {/* Product Details */}
             <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
-              <h3 className="font-poppins font-semibold text-gray-900 mb-3 sm:mb-4 uppercase text-sm tracking-wide">
+              <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 uppercase text-sm tracking-wide">
                 Product Details
               </h3>
               <div className="space-y-3">
                 {product.description && (
                   <div 
-                    className="font-poppins text-sm text-gray-700 prose prose-sm max-w-none"
+                    className="text-sm text-gray-700 prose prose-sm max-w-none"
                     dangerouslySetInnerHTML={{ __html: product.description }}
                   />
                 )}
@@ -430,51 +430,51 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
             {/* Specifications */}
             <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mt-4">
-              <h3 className="font-poppins font-semibold text-gray-900 mb-3 sm:mb-4 uppercase text-sm tracking-wide">
+              <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 uppercase text-sm tracking-wide">
                 Specifications
               </h3>
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <p className="font-poppins text-xs text-gray-500 uppercase tracking-wide mb-1">
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
                     Fabric
                   </p>
-                  <p className="font-poppins text-sm text-gray-900 font-medium">
+                  <p className="text-sm text-gray-900 font-medium">
                     {product.fabric}
                   </p>
                 </div>
                 <div>
-                  <p className="font-poppins text-xs text-gray-500 uppercase tracking-wide mb-1">
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
                     Pattern
                   </p>
-                  <p className="font-poppins text-sm text-gray-900 font-medium">
+                  <p className="text-sm text-gray-900 font-medium">
                     {product.pattern}
                   </p>
                 </div>
                 {product.sleeveType && (
                   <div>
-                    <p className="font-poppins text-xs text-gray-500 uppercase tracking-wide mb-1">
+                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
                       Sleeve Type
                     </p>
-                    <p className="font-poppins text-sm text-gray-900 font-medium">
+                    <p className="text-sm text-gray-900 font-medium">
                       {product.sleeveType}
                     </p>
                   </div>
                 )}
                 {product.neckType && (
                   <div>
-                    <p className="font-poppins text-xs text-gray-500 uppercase tracking-wide mb-1">
+                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
                       Neck Type
                     </p>
-                    <p className="font-poppins text-sm text-gray-900 font-medium">
+                    <p className="text-sm text-gray-900 font-medium">
                       {product.neckType}
                     </p>
                   </div>
                 )}
                 <div>
-                  <p className="font-poppins text-xs text-gray-500 uppercase tracking-wide mb-1">
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
                     Total Stock
                   </p>
-                  <p className="font-poppins text-sm text-gray-900 font-medium">
+                  <p className="text-sm text-gray-900 font-medium">
                     {hasValidSizes ? (selectedSize && selectedSize.stock > 0 ? `${selectedSize.stock} units` : "Out of Stock") : "One Size"}
                   </p>
                 </div>

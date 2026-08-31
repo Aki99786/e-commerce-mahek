@@ -53,7 +53,7 @@ export const Pagination = ({
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 sm:py-2 border border-border rounded text-xs sm:text-sm font-poppins hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 sm:py-2 border border-border rounded text-xs sm:text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         <span className="hidden xs:inline">Previous</span>
@@ -66,7 +66,7 @@ export const Pagination = ({
               <button
                 onClick={() => onPageChange(page)}
                 role="button"
-                className={`min-w-[32px] sm:min-w-[40px] h-8 sm:h-10 px-2 sm:px-3 rounded text-xs sm:text-sm font-poppins transition-colors cursor-pointer ${
+                className={`min-w-[32px] sm:min-w-[40px] h-8 sm:h-10 px-2 sm:px-3 rounded text-xs sm:text-sm transition-colors cursor-pointer ${
                   currentPage === page
                     ? "bg-primary text-white font-semibold"
                     : "border border-border hover:bg-gray-50"
@@ -75,7 +75,7 @@ export const Pagination = ({
                 {page}
               </button>
             ) : (
-              <span className="px-1 sm:px-2 text-gray-400 font-poppins text-xs sm:text-sm">...</span>
+              <span className="px-1 sm:px-2 text-gray-400 text-xs sm:text-sm">...</span>
             )}
           </div>
         ))}
@@ -85,7 +85,7 @@ export const Pagination = ({
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         role="button"
-        className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 sm:py-2 border border-border rounded text-xs sm:text-sm font-poppins cursor-pointer hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 sm:py-2 border border-border rounded text-xs sm:text-sm cursor-pointer hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         <span className="hidden xs:inline">Next</span>
         <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

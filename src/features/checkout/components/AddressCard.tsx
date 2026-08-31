@@ -47,11 +47,11 @@ export function AddressCard({
         <div className="flex-1 min-w-0">
           {/* Name + badge */}
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <span className="font-poppins font-bold text-gray-900 text-sm">
+            <span className="font-bold text-gray-900 text-sm">
               {address.fullName}
             </span>
             {address.isDefault && (
-              <span className="text-[10px] font-poppins font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                 Default
               </span>
             )}
@@ -64,11 +64,11 @@ export function AddressCard({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <div>
-              <p className="text-xs font-poppins text-gray-600 leading-relaxed">
+              <p className="text-xs text-gray-600 leading-relaxed">
                 {address.addressLine1}
                 {address.addressLine2 && `, ${address.addressLine2}`}
               </p>
-              <p className="text-xs font-poppins text-gray-600">
+              <p className="text-xs text-gray-600">
                 {address.city}, {address.state} — {address.pincode}
               </p>
             </div>
@@ -79,7 +79,7 @@ export function AddressCard({
             <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
-            <p className="text-xs font-poppins text-gray-600">
+            <p className="text-xs text-gray-600">
               <span className="font-semibold text-gray-800">{address.phone}</span>
             </p>
           </div>
@@ -91,14 +91,14 @@ export function AddressCard({
         <div className="flex items-center gap-2 px-5 pb-3 pl-[2.75rem]">
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(address); }}
-            className="flex items-center gap-1.5 text-xs font-poppins font-semibold text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <Pencil size={12} />
             Edit
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(address._id); }}
-            className="flex items-center gap-1.5 text-xs font-poppins font-semibold text-red-500 bg-white border border-red-100 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-semibold text-red-500 bg-white border border-red-100 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors"
           >
             <Trash2 size={12} />
             Delete

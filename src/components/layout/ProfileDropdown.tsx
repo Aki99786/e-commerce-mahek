@@ -92,7 +92,7 @@ export function ProfileDropdown() {
         aria-expanded={isOpen}
       >
         <div className="w-full h-full bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center">
-          <span className="text-white text-xs font-bold font-poppins leading-none">{initials}</span>
+          <span className="text-white text-xs font-bold leading-none">{initials}</span>
         </div>
       </button>
 
@@ -106,13 +106,13 @@ export function ProfileDropdown() {
         {/* Header — gradient band with avatar + user info */}
         <div className="bg-gradient-to-r from-[#1a0a0a] to-[#3d1515] px-4 py-4 flex items-center gap-3">
           <div className="w-11 h-11 rounded-full bg-white/15 ring-2 ring-white/30 flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-sm font-bold font-poppins">{initials}</span>
+            <span className="text-white text-sm font-bold">{initials}</span>
           </div>
           <div className="min-w-0">
-            <p className="text-white font-playfair font-bold text-sm leading-tight truncate">
+            <p className="text-white font-bold text-sm leading-tight truncate">
               {userData.name}
             </p>
-            <p className="text-white/60 font-poppins text-[11px] mt-0.5 truncate">
+            <p className="text-white/60 text-[11px] mt-0.5 truncate">
               {userData.email}
             </p>
           </div>
@@ -132,7 +132,7 @@ export function ProfileDropdown() {
                 <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-rose-100 flex items-center justify-center flex-shrink-0 transition-colors">
                   <Icon className="w-3.5 h-3.5 text-gray-500 group-hover:text-rose-600 transition-colors" />
                 </div>
-                <span className="text-sm font-poppins text-gray-700 group-hover:text-rose-700 transition-colors font-medium">
+                <span className="text-sm text-gray-700 group-hover:text-rose-700 transition-colors font-medium">
                   {item.label}
                 </span>
                 <svg className="w-3.5 h-3.5 text-gray-300 group-hover:text-rose-400 ml-auto transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,7 +156,7 @@ export function ProfileDropdown() {
             <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-rose-100 flex items-center justify-center flex-shrink-0 transition-colors">
               <Edit className="w-3.5 h-3.5 text-gray-500 group-hover:text-rose-600 transition-colors" />
             </div>
-            <span className="text-sm font-poppins text-gray-700 group-hover:text-rose-700 transition-colors font-medium">
+            <span className="text-sm text-gray-700 group-hover:text-rose-700 transition-colors font-medium">
               Edit Profile
             </span>
             <svg className="w-3.5 h-3.5 text-gray-300 group-hover:text-rose-400 ml-auto transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -171,7 +171,7 @@ export function ProfileDropdown() {
             <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-red-100 flex items-center justify-center flex-shrink-0 transition-colors">
               <LogOut className="w-3.5 h-3.5 text-gray-500 group-hover:text-red-600 transition-colors" />
             </div>
-            <span className="text-sm font-poppins text-gray-700 group-hover:text-red-600 transition-colors font-medium">
+            <span className="text-sm text-gray-700 group-hover:text-red-600 transition-colors font-medium">
               Logout
             </span>
           </button>

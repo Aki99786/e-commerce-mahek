@@ -193,24 +193,24 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         </Link>
 
         {product.label?.type === ProductLabelType.NEW && (
-          <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 sm:px-2 sm:py-1 uppercase font-poppins rounded-sm" style={{ backgroundColor: '#C1272D' }}>
+          <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 sm:px-2 sm:py-1 uppercase rounded-sm" style={{ backgroundColor: '#C1272D' }}>
             NEW
           </div>
         )}
 
         {product.label?.type === ProductLabelType.SALE && (
-          <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 sm:px-2 sm:py-1 uppercase font-poppins rounded-sm" style={{ backgroundColor: '#C1272D' }}>
+          <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 sm:px-2 sm:py-1 uppercase rounded-sm" style={{ backgroundColor: '#C1272D' }}>
             SALE
           </div>
         )}
 
         {product.rating && product.rating.average > 0 && (
           <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 bg-white rounded px-1.5 py-0.5 sm:px-2 sm:py-1 shadow-sm flex items-center gap-0.5 sm:gap-1">
-            <span className="text-[10px] sm:text-xs font-semibold font-poppins">{product.rating.average.toFixed(1)}</span>
+            <span className="text-[10px] sm:text-xs font-semibold">{product.rating.average.toFixed(1)}</span>
             <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-400 fill-current" viewBox="0 0 20 20">
               <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
             </svg>
-            <span className="text-[10px] sm:text-xs text-gray-400 font-poppins">| {product.rating.count}</span>
+            <span className="text-[10px] sm:text-xs text-gray-400">| {product.rating.count}</span>
           </div>
         )}
 
@@ -271,7 +271,7 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         <button
           onClick={isInCart ? (e) => { e.preventDefault(); e.stopPropagation(); router.push(ROUTES.CART); } : handleAddToCart}
           disabled={isAddingToCart}
-          className="w-full border rounded px-2 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-sm font-semibold font-poppins transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2 disabled:opacity-50 whitespace-nowrap overflow-hidden"
+          className="w-full border rounded px-2 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2 disabled:opacity-50 whitespace-nowrap overflow-hidden"
           style={{
             borderColor: isInCart ? '#C1272D' : isAddingToCart ? '#C1272D' : undefined,
             color: isInCart ? '#ffffff' : isAddingToCart ? '#C1272D' : undefined,
@@ -313,14 +313,14 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         </button>
 
         {product.sizes && product.sizes.length > 0 && (
-          <div className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-gray-600 font-poppins">
+          <div className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-gray-600">
             Sizes: {product.sizes.slice(0, 3).map(s => s.name).join(", ")}{product.sizes.length > 3 ? "..." : ""}
           </div>
         )}
 
         <Link href={productUrl}>
           <h3 
-            className="text-xs sm:text-sm font-medium text-gray-900 mt-2 sm:mt-3 mb-1 sm:mb-2 font-poppins hover:text-gray-700 transition-colors line-clamp-2 uppercase"
+            className="text-xs sm:text-sm font-medium text-gray-900 mt-2 sm:mt-3 mb-1 sm:mb-2 hover:text-gray-700 transition-colors line-clamp-2 uppercase"
             data-tooltip-id={`product-card-${product.id}`}
             data-tooltip-content={product.name}
           >
@@ -334,7 +334,7 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         />
 
         <p 
-          className="text-[10px] sm:text-xs text-gray-500 font-poppins line-clamp-1 mb-1.5 sm:mb-2"
+          className="text-[10px] sm:text-xs text-gray-500 line-clamp-1 mb-1.5 sm:mb-2"
           data-tooltip-id={`product-desc-${product.id}`}
           data-tooltip-content={product.shortDescription || product.category}
         >
@@ -350,23 +350,23 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
           {product.price?.current !== undefined ? (
             <>
               <div className="flex items-baseline gap-1.5 flex-wrap">
-                <span className="text-base sm:text-lg font-bold text-gray-900 font-poppins">
+                <span className="text-base sm:text-lg font-bold text-gray-900">
                   Rs. {product.price.current.toLocaleString()}
                 </span>
                 {product.price.original && product.price.original > product.price.current && (
-                  <span className="text-xs sm:text-sm text-gray-400 line-through font-poppins">
+                  <span className="text-xs sm:text-sm text-gray-400 line-through">
                     Rs. {product.price.original.toLocaleString()}
                   </span>
                 )}
               </div>
               {product.price.original && product.price.original > product.price.current && (
-                <span className="text-xs sm:text-sm text-orange-500 font-semibold font-poppins">
+                <span className="text-xs sm:text-sm text-orange-500 font-semibold">
                   ({product.price.discount}% OFF)
                 </span>
               )}
             </>
           ) : (
-            <span className="text-xs sm:text-sm text-gray-500 font-poppins">Price not available</span>
+            <span className="text-xs sm:text-sm text-gray-500">Price not available</span>
           )}
         </div>
       </div>

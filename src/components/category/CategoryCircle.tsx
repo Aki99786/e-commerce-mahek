@@ -27,7 +27,7 @@ export const CategoryCircle = ({
             sizes="(max-width: 640px) 112px, (max-width: 768px) 128px, (max-width: 1024px) 160px, 192px"
           />
         </div>
-        <p className="mt-2 sm:mt-3 md:mt-4 text-center text-xs md:text-sm font-medium font-poppins text-gray-700 group-hover:text-rose-700 transition-colors duration-200">
+        <p className="mt-2 sm:mt-3 md:mt-4 text-center text-xs md:text-sm font-medium text-gray-700 group-hover:text-rose-700 transition-colors duration-200">
           {name}
         </p>
       </Link>

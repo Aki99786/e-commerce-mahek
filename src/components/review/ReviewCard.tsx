@@ -17,19 +17,19 @@ export const ReviewCard = ({ review, className }: ReviewCardProps) => {
           </div>
 
           <div>
-            <h3 className="text-base md:text-lg font-bold text-gray-900 font-playfair">{review.customerName}</h3>
-            <p className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wide font-poppins">{review.location}</p>
+            <h3 className="text-base md:text-lg font-bold text-gray-900">{review.customerName}</h3>
+            <p className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wide">{review.location}</p>
           </div>
         </div>
 
         <Rating rating={review.rating} className="flex-shrink-0" />
       </div>
 
-      <h4 className="text-base md:text-lg font-bold text-gray-900 mb-2 md:mb-3 font-playfair">{review.title}</h4>
+      <h4 className="text-base md:text-lg font-bold text-gray-900 mb-2 md:mb-3">{review.title}</h4>
 
-      <p className="text-gray-600 text-xs md:text-sm leading-relaxed mb-3 md:mb-4 font-poppins">{review.comment}</p>
+      <p className="text-gray-600 text-xs md:text-sm leading-relaxed mb-3 md:mb-4">{review.comment}</p>
 
-      <p className="text-gray-400 text-[10px] md:text-xs font-poppins">{review.date}</p>
+      <p className="text-gray-400 text-[10px] md:text-xs">{review.date}</p>
     </div>
   );
 };

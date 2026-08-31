@@ -50,10 +50,10 @@ export const StickyCartBar = ({
             </div>
 
             <div className="flex-1 min-w-0">
-              <h3 className="text-xs md:text-sm font-semibold text-white truncate font-poppins">
+              <h3 className="text-xs md:text-sm font-semibold text-white truncate">
                 {product.name}
               </h3>
-              <p className="text-xs text-gray-300 font-poppins truncate">
+              <p className="text-xs text-gray-300 truncate">
                 {selectedColor} / {selectedSize} - ₹{(product.price.current ?? 0).toLocaleString()}
               </p>
             </div>
@@ -69,7 +69,7 @@ export const StickyCartBar = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                 </svg>
               </button>
-              <span className="w-10 h-8 flex items-center justify-center text-sm font-poppins text-white border-x border-gray-600">
+              <span className="w-10 h-8 flex items-center justify-center text-sm text-white border-x border-gray-600">
                 {quantity}
               </span>
               <button
@@ -84,7 +84,7 @@ export const StickyCartBar = ({
 
             <button
               onClick={onAddToCart}
-              className="bg-primary text-white px-4 py-2 md:px-6 md:py-2.5 rounded-lg text-sm md:text-base font-semibold hover:bg-primary/90 transition-colors font-poppins whitespace-nowrap"
+              className="bg-primary text-white px-4 py-2 md:px-6 md:py-2.5 rounded-lg text-sm md:text-base font-semibold hover:bg-primary/90 transition-colors whitespace-nowrap"
             >
               Add to cart
             </button>

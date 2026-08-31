@@ -37,14 +37,14 @@ export const BestSellingSection = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16">
         <div className="flex items-end justify-between mb-6 md:mb-8 lg:mb-10">
           <div>
-            <p className="text-[10px] md:text-xs font-poppins font-semibold uppercase tracking-widest text-rose-600 mb-1.5">Top Picks</p>
-            <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 font-playfair tracking-tight">
+            <p className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-rose-600 mb-1.5">Top Picks</p>
+            <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">
               Best Selling
             </h2>
           </div>
           <Link
             href={ROUTES.SHOP}
-            className="flex items-center gap-1 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors font-poppins"
+            className="flex items-center gap-1 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors"
           >
             View All
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -4,7 +4,7 @@ import { SOCIAL_LINKS } from "@/constants/site";
 
 export const TopBar = () => {
   return (
-    <div className="bg-[#2c2c2c] text-white text-xs font-inter">
+    <div className="bg-[#2c2c2c] text-white text-xs">
       <div className="container-fluid">
         <div className="flex items-center justify-between min-h-[32px] py-2">
           <div className="hidden lg:flex items-center gap-2">

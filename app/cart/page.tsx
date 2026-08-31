@@ -135,8 +135,8 @@ export default function CartPage() {
 
         {/* Page Header */}
         <div className="mb-5 sm:mb-7">
-          <h1 className="text-2xl sm:text-3xl font-playfair font-bold text-gray-900">Shopping Cart</h1>
-          <p className="text-sm text-gray-500 font-poppins mt-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Shopping Cart</h1>
+          <p className="text-sm text-gray-500 mt-1">
             {totalItems} {totalItems === 1 ? 'item' : 'items'} in your cart
           </p>
         </div>
@@ -158,7 +158,7 @@ export default function CartPage() {
             <div className="flex justify-end pt-1">
               <button
                 onClick={handleClearCart}
-                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 font-poppins transition-colors"
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -174,16 +174,16 @@ export default function CartPage() {
 
               {/* Summary header */}
               <div className="bg-gradient-to-r from-[#1a0a0a] to-[#3d1515] px-5 py-4">
-                <h2 className="text-base font-playfair font-bold text-white">Order Summary</h2>
+                <h2 className="text-base font-bold text-white">Order Summary</h2>
               </div>
 
               {/* Summary body */}
               <div className="px-5 py-4 space-y-3">
-                <div className="flex justify-between items-center font-poppins text-sm">
+                <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-500">Subtotal ({totalItems} {totalItems === 1 ? 'item' : 'items'})</span>
                   <span className="font-semibold text-gray-900">₹{totalAmount.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between items-center font-poppins text-sm">
+                <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-500">Shipping</span>
                   <span className="font-semibold text-green-600 flex items-center gap-1">
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,7 +193,7 @@ export default function CartPage() {
                   </span>
                 </div>
 
-                <div className="border-t border-gray-100 pt-3 flex justify-between items-center font-poppins">
+                <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
                   <span className="font-bold text-gray-900 text-base">Total</span>
                   <span className="font-bold text-lg text-gray-900">₹{totalAmount.toLocaleString()}</span>
                 </div>
@@ -203,7 +203,7 @@ export default function CartPage() {
               <div className="px-5 pb-5 space-y-2.5">
                 <button
                   onClick={() => router.push(ROUTES.CHECKOUT)}
-                  className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white py-3 rounded-xl font-poppins font-semibold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                  className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white py-3 rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -213,7 +213,7 @@ export default function CartPage() {
 
                 <button
                   onClick={() => router.push(ROUTES.SHOP)}
-                  className="w-full border border-gray-200 text-gray-600 py-3 rounded-xl font-poppins font-medium text-sm hover:bg-gray-50 transition-colors"
+                  className="w-full border border-gray-200 text-gray-600 py-3 rounded-xl font-medium text-sm hover:bg-gray-50 transition-colors"
                 >
                   Continue Shopping
                 </button>
@@ -221,13 +221,13 @@ export default function CartPage() {
 
               {/* Trust badges */}
               <div className="border-t border-gray-100 px-5 py-3 flex items-center justify-center gap-4">
-                <div className="flex items-center gap-1.5 text-[11px] font-poppins text-gray-400">
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
                   <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                   Secure Checkout
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] font-poppins text-gray-400">
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
                   <svg className="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                   </svg>

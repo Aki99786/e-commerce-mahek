@@ -101,10 +101,10 @@ export function ProductFilters({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-playfair font-bold">FILTERS</h3>
+        <h3 className="text-lg font-bold">FILTERS</h3>
         <button
           onClick={clearFilters}
-          className="text-sm text-secondary hover:underline font-poppins"
+          className="text-sm text-secondary hover:underline"
         >
           Clear All
         </button>
@@ -112,7 +112,7 @@ export function ProductFilters({
 
       {/* Sort */}
       <div className="border-b border-border-light pb-4">
-        <h4 className="font-poppins font-semibold mb-3">Sort by</h4>
+        <h4 className="font-semibold mb-3">Sort by</h4>
         <select
           value={filters.sort || ""}
           onChange={(e) =>
@@ -121,7 +121,7 @@ export function ProductFilters({
               e.target.value || undefined
             )
           }
-          className="w-full p-2 border border-border-light rounded-md font-poppins text-sm"
+          className="w-full p-2 border border-border-light rounded-md text-sm"
         >
           <option value="">Recommended</option>
           <option value="newest">What&apos;s New</option>
@@ -134,7 +134,7 @@ export function ProductFilters({
 
       {/* Price Range */}
       <div className="border-b border-border-light pb-4">
-        <h4 className="font-poppins font-semibold mb-3">Price Range</h4>
+        <h4 className="font-semibold mb-3">Price Range</h4>
         <div className="space-y-3">
           <div className="flex gap-2">
             <input
@@ -147,7 +147,7 @@ export function ProductFilters({
                   filters.maxPrice
                 )
               }
-              className="w-full p-2 border border-border-light rounded-md font-poppins text-sm"
+              className="w-full p-2 border border-border-light rounded-md text-sm"
             />
             <input
               type="number"
@@ -159,7 +159,7 @@ export function ProductFilters({
                   e.target.value ? Number(e.target.value) : undefined
                 )
               }
-              className="w-full p-2 border border-border-light rounded-md font-poppins text-sm"
+              className="w-full p-2 border border-border-light rounded-md text-sm"
             />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -173,7 +173,7 @@ export function ProductFilters({
               <button
                 key={range.label}
                 onClick={() => handlePriceChange(range.min, range.max)}
-                className={`px-3 py-1 text-xs border rounded-full font-poppins transition-colors ${
+                className={`px-3 py-1 text-xs border rounded-full transition-colors ${
                   filters.minPrice === range.min &&
                   filters.maxPrice === range.max
                     ? "bg-secondary text-white border-secondary"
@@ -191,7 +191,7 @@ export function ProductFilters({
       {availableColors.length > 0 && (
         <div className="border-b border-border-light pb-4">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-poppins font-semibold uppercase text-sm">COLOR</h4>
+            <h4 className="font-semibold uppercase text-sm">COLOR</h4>
             <button className="text-gray-400 hover:text-gray-600">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -206,7 +206,7 @@ export function ProductFilters({
               placeholder="Search colors..."
               value={colorSearchQuery}
               onChange={(e) => setColorSearchQuery(e.target.value)}
-              className="w-full px-3 py-2 pr-8 border border-border-light rounded-md font-poppins text-sm focus:outline-none focus:border-secondary"
+              className="w-full px-3 py-2 pr-8 border border-border-light rounded-md text-sm focus:outline-none focus:border-secondary"
             />
             <svg className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -243,10 +243,10 @@ export function ProductFilters({
                       className="w-5 h-5 rounded-full border border-gray-300 flex-shrink-0"
                       style={{ backgroundColor: bgColor }}
                     />
-                    <span className="flex-1 text-sm font-poppins capitalize">
+                    <span className="flex-1 text-sm capitalize">
                       {color}
                     </span>
-                    <span className="text-xs text-gray-400 font-poppins">
+                    <span className="text-xs text-gray-400">
                       ({count})
                     </span>
                   </label>
@@ -259,7 +259,7 @@ export function ProductFilters({
       {/* Sizes */}
       {availableSizes.length > 0 && (
         <div className="border-b border-border-light pb-4">
-          <h4 className="font-poppins font-semibold mb-3">Size</h4>
+          <h4 className="font-semibold mb-3">Size</h4>
           <div className="flex flex-wrap gap-2">
             {availableSizes.filter(size => size).map((size) => (
               <button
@@ -270,7 +270,7 @@ export function ProductFilters({
                     filters.size === size ? undefined : size
                   )
                 }
-                className={`px-3 py-1 text-sm border rounded-md font-poppins transition-colors ${
+                className={`px-3 py-1 text-sm border rounded-md transition-colors ${
                   filters.size === size
                     ? "bg-secondary text-white border-secondary"
                     : "border-border-light hover:border-secondary"
@@ -285,7 +285,7 @@ export function ProductFilters({
 
       {/* Availability */}
       <div className="border-b border-border-light pb-4">
-        <h4 className="font-poppins font-semibold mb-3">Availability</h4>
+        <h4 className="font-semibold mb-3">Availability</h4>
         <div className="space-y-2">
           {[
             { label: "In Stock", value: "inStock" as const },
@@ -310,7 +310,7 @@ export function ProductFilters({
                 }
                 className="w-4 h-4 text-secondary"
               />
-              <span className="text-sm font-poppins">{option.label}</span>
+              <span className="text-sm">{option.label}</span>
             </label>
           ))}
         </div>

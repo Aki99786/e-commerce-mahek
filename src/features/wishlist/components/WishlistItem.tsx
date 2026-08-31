@@ -51,13 +51,13 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
       <Link href={`/product/${item.product._id}`} className="flex-shrink-0">
         <div className="relative w-20 h-24 sm:w-24 sm:h-28 rounded-xl overflow-hidden bg-gray-50">
           {item.product.discountPercent > 0 && (
-            <span className="absolute top-1.5 left-1.5 bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md font-poppins z-10 leading-none">
+            <span className="absolute top-1.5 left-1.5 bg-rose-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md z-10 leading-none">
               -{item.product.discountPercent}%
             </span>
           )}
           {isOutOfStock && (
             <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10">
-              <span className="text-[9px] font-bold font-poppins text-red-500 bg-white/90 px-1.5 py-0.5 rounded">Out of Stock</span>
+              <span className="text-[9px] font-bold text-red-500 bg-white/90 px-1.5 py-0.5 rounded">Out of Stock</span>
             </div>
           )}
           <Image
@@ -76,7 +76,7 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
           {/* Name + remove */}
           <div className="flex items-start justify-between gap-2 mb-1.5">
             <Link href={`/product/${item.product._id}`} className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-gray-900 font-playfair hover:text-rose-700 transition-colors line-clamp-2 leading-snug">
+              <h3 className="text-sm font-semibold text-gray-900 hover:text-rose-700 transition-colors line-clamp-2 leading-snug">
                 {item.product.name}
               </h3>
             </Link>
@@ -95,12 +95,12 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
           {/* Color + size pills */}
           <div className="flex flex-wrap gap-1.5 mb-2">
             {item.product.selectedColor && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-[11px] font-poppins text-gray-600 capitalize">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-[11px] text-gray-600 capitalize">
                 {item.product.selectedColor}
               </span>
             )}
             {item.size && item.size !== "ONE_SIZE" && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-[11px] font-poppins text-gray-600">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-[11px] text-gray-600">
                 Size: {item.size}
               </span>
             )}
@@ -110,15 +110,15 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
         {/* Price + CTA */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-base font-bold text-gray-900 font-poppins">
+            <span className="text-base font-bold text-gray-900">
               ₹{item.product.price.toLocaleString()}
             </span>
             {item.product.oldPrice > item.product.price && (
               <>
-                <span className="text-xs text-gray-400 line-through font-poppins">
+                <span className="text-xs text-gray-400 line-through">
                   ₹{item.product.oldPrice.toLocaleString()}
                 </span>
-                <span className="text-[11px] text-rose-500 font-semibold font-poppins">
+                <span className="text-[11px] text-rose-500 font-semibold">
                   {item.product.discountPercent}% off
                 </span>
               </>
@@ -128,7 +128,7 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
           <button
             onClick={isInCart ? () => router.push(ROUTES.CART) : handleAddToCart}
             disabled={isAddingToCart || isOutOfStock}
-            className={`flex items-center gap-1.5 px-4 py-2 text-xs font-semibold font-poppins rounded-xl transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${
+            className={`flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${
               isInCart
                 ? "bg-gray-900 text-white hover:bg-gray-700"
                 : "bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white shadow-sm hover:shadow-md"

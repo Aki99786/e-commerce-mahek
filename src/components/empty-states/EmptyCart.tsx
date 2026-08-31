@@ -52,17 +52,17 @@ export function EmptyCart({ isAuthenticated = false }: EmptyCartProps) {
             </div>
           </div>
 
-          <h1 className="text-3xl font-playfair font-bold text-primary mb-3">
+          <h1 className="text-3xl font-bold text-primary mb-3">
             PLEASE LOG IN
           </h1>
           
-          <p className="text-base font-poppins text-text-secondary mb-8">
+          <p className="text-base text-text-secondary mb-8">
             Login to view items in your bag.
           </p>
 
           <Link
             href={buildLoginUrl(pathname)}
-            className="inline-block px-8 py-3 bg-white text-secondary border-2 border-secondary rounded-lg font-poppins font-semibold text-base hover:bg-secondary hover:text-white transition-all duration-300 shadow-sm hover:shadow-md"
+            className="inline-block px-8 py-3 bg-white text-secondary border-2 border-secondary rounded-lg font-semibold text-base hover:bg-secondary hover:text-white transition-all duration-300 shadow-sm hover:shadow-md"
           >
             LOGIN
           </Link>
@@ -110,17 +110,17 @@ export function EmptyCart({ isAuthenticated = false }: EmptyCartProps) {
         </div>
       </div>
 
-      <h2 className="text-2xl font-playfair font-bold text-primary mb-2">
+      <h2 className="text-2xl font-bold text-primary mb-2">
         Hey, it feels so light!
       </h2>
       
-      <p className="text-sm font-poppins text-text-secondary mb-6">
+      <p className="text-sm text-text-secondary mb-6">
         There is nothing in your bag. Let&apos;s add some items.
       </p>
 
       <Link
         href="/wishlist"
-        className="inline-block px-6 py-2.5 bg-white text-secondary border-2 border-secondary rounded-lg font-poppins font-semibold text-sm hover:bg-secondary hover:text-white transition-all duration-300 shadow-sm hover:shadow-md"
+        className="inline-block px-6 py-2.5 bg-white text-secondary border-2 border-secondary rounded-lg font-semibold text-sm hover:bg-secondary hover:text-white transition-all duration-300 shadow-sm hover:shadow-md"
       >
         ADD ITEMS FROM WISHLIST
       </Link>

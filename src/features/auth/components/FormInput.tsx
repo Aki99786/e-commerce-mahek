@@ -19,14 +19,14 @@ export const FormInput = ({
     <div className="w-full">
       <label
         htmlFor={name}
-        className="block text-sm font-semibold text-text-primary mb-2.5 font-inter"
+        className="block text-sm font-semibold text-text-primary mb-2.5"
       >
         {label}
       </label>
       <input
         id={name}
         name={name}
-        className={`w-full px-4 py-3.5 border-2 rounded-lg font-inter text-base transition-all duration-300 focus:outline-none focus:ring-4 placeholder:text-text-light bg-white ${
+        className={`w-full px-4 py-3.5 border-2 rounded-lg text-base transition-all duration-300 focus:outline-none focus:ring-4 placeholder:text-text-light bg-white ${
           error
             ? "border-error focus:ring-error/10 focus:border-error"
             : "border-border focus:border-secondary focus:ring-secondary/10 hover:border-border-dark"
@@ -34,7 +34,7 @@ export const FormInput = ({
         {...props}
       />
       {error && (
-        <p className="mt-2 text-sm text-error font-inter flex items-center gap-1">
+        <p className="mt-2 text-sm text-error flex items-center gap-1">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"

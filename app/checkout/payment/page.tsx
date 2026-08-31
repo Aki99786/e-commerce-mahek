@@ -111,8 +111,8 @@ export default function CheckoutPaymentPage() {
 
               {/* Step label */}
               <div>
-                <p className="text-[10px] font-poppins font-semibold uppercase tracking-widest text-rose-600 mb-1">Step 3 of 3</p>
-                <h1 className="text-xl font-playfair font-bold text-gray-900">Payment</h1>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-rose-600 mb-1">Step 3 of 3</p>
+                <h1 className="text-xl font-bold text-gray-900">Payment</h1>
               </div>
 
               {/* Delivery address summary */}
@@ -124,22 +124,22 @@ export default function CheckoutPaymentPage() {
                         <MapPin size={15} className="text-rose-500" />
                       </div>
                       <div>
-                        <p className="font-poppins font-semibold text-gray-900 text-sm">
+                        <p className="font-semibold text-gray-900 text-sm">
                           Delivering to <span className="text-rose-600">{selectedAddress.fullName}</span>
                         </p>
-                        <p className="text-xs text-gray-500 font-poppins mt-0.5 leading-relaxed">
+                        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
                           {selectedAddress.addressLine1}
                           {selectedAddress.addressLine2 ? `, ${selectedAddress.addressLine2}` : ""}
                           , {selectedAddress.city}, {selectedAddress.state} — {selectedAddress.pincode}
                         </p>
-                        <p className="text-xs text-gray-500 font-poppins mt-0.5">
+                        <p className="text-xs text-gray-500 mt-0.5">
                           📞 {selectedAddress.phone}
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={() => router.push(ROUTES.CHECKOUT_ADDRESS)}
-                      className="flex items-center gap-1.5 text-xs font-poppins font-semibold text-rose-600 border border-rose-200 bg-rose-50 px-3 py-1.5 rounded-lg hover:bg-rose-100 transition-colors flex-shrink-0"
+                      className="flex items-center gap-1.5 text-xs font-semibold text-rose-600 border border-rose-200 bg-rose-50 px-3 py-1.5 rounded-lg hover:bg-rose-100 transition-colors flex-shrink-0"
                     >
                       <Pencil size={11} />
                       Change
@@ -153,7 +153,7 @@ export default function CheckoutPaymentPage() {
                 {/* Security badge */}
                 <div className="flex items-center gap-2.5 px-5 py-3.5 bg-green-50 border-b border-green-100">
                   <ShieldCheck size={16} className="text-green-600 flex-shrink-0" />
-                  <p className="text-xs font-poppins text-green-700">
+                  <p className="text-xs text-green-700">
                     All payments are <span className="font-bold">100% secure</span> and encrypted via Razorpay
                   </p>
                 </div>
@@ -166,10 +166,10 @@ export default function CheckoutPaymentPage() {
                         <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-poppins font-bold text-gray-900 text-sm">Pay via Razorpay</p>
-                        <p className="text-xs font-poppins text-gray-400 mt-0.5">UPI · Cards · Net Banking · Wallets · EMI</p>
+                        <p className="font-bold text-gray-900 text-sm">Pay via Razorpay</p>
+                        <p className="text-xs text-gray-400 mt-0.5">UPI · Cards · Net Banking · Wallets · EMI</p>
                       </div>
-                      <span className="flex-shrink-0 text-[11px] font-bold font-poppins text-[#072654] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md tracking-tight">
+                      <span className="flex-shrink-0 text-[11px] font-bold text-[#072654] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md tracking-tight">
                         rzp
                       </span>
                     </div>
@@ -177,12 +177,12 @@ export default function CheckoutPaymentPage() {
 
                   {/* Accepted methods */}
                   <div className="mb-5">
-                    <p className="text-[10px] font-poppins font-semibold uppercase tracking-widest text-gray-400 mb-2">Accepted Methods</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Accepted Methods</p>
                     <div className="flex items-center gap-2 flex-wrap">
                       {["VISA", "Mastercard", "RuPay", "UPI", "Net Banking"].map((method) => (
                         <span
                           key={method}
-                          className="text-[11px] font-poppins font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-lg"
+                          className="text-[11px] font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-lg"
                         >
                           {method}
                         </span>
@@ -194,7 +194,7 @@ export default function CheckoutPaymentPage() {
                   <button
                     onClick={handlePayNow}
                     disabled={isProcessing || !razorpayReady}
-                    className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white py-3.5 rounded-xl font-poppins font-bold text-sm tracking-wider shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white py-3.5 rounded-xl font-bold text-sm tracking-wider shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                   >
                     {isProcessing ? (
                       <>
@@ -216,7 +216,7 @@ export default function CheckoutPaymentPage() {
                     )}
                   </button>
 
-                  <p className="text-[11px] text-gray-400 font-poppins text-center mt-3 leading-relaxed">
+                  <p className="text-[11px] text-gray-400 text-center mt-3 leading-relaxed">
                     By placing the order, you agree to Mahek Sarees{" "}
                     <span className="underline cursor-pointer">Terms of Use</span> and{" "}
                     <span className="underline cursor-pointer">Privacy Policy</span>

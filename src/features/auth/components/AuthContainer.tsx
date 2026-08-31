@@ -21,18 +21,18 @@ export const AuthContainer = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
           </div>
-          <p className="text-xs font-poppins font-semibold uppercase tracking-widest text-rose-600">Mahek Sarees</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-rose-600">Mahek Sarees</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="h-1 bg-gradient-to-r from-rose-600 via-pink-500 to-rose-600" />
           <div className="p-7 sm:p-8">
             <div className="text-center mb-7">
-              <h1 className="text-2xl font-playfair font-bold text-gray-900 tracking-tight">
+              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
                 {title}
               </h1>
               {subtitle && (
-                <p className="text-sm font-poppins text-gray-500 mt-1.5 leading-relaxed">
+                <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
                   {subtitle}
                 </p>
               )}

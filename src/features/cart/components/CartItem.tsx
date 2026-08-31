@@ -66,7 +66,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
             <div className="flex items-start justify-between gap-2 mb-1.5">
               <Link href={productUrl} className="flex-1 min-w-0">
                 <h3
-                  className="font-playfair font-semibold text-sm sm:text-base text-gray-900 hover:text-rose-700 transition-colors line-clamp-2 leading-snug"
+                  className="font-semibold text-sm sm:text-base text-gray-900 hover:text-rose-700 transition-colors line-clamp-2 leading-snug"
                   data-tooltip-id={`product-name-${item.variantId}-${item.size}`}
                   data-tooltip-content={item.product.name}
                 >
@@ -92,10 +92,10 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
 
             {/* Color + Size pills */}
             <div className="flex flex-wrap gap-1.5 mb-2">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs font-poppins text-gray-600">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs text-gray-600">
                 {colorName}
               </span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs font-poppins text-gray-600">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs text-gray-600">
                 Size: {item.size}
               </span>
             </div>
@@ -112,7 +112,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
               >
                 −
               </button>
-              <span className="w-8 h-8 flex items-center justify-center border-x border-gray-200 font-poppins font-semibold text-sm text-gray-900">
+              <span className="w-8 h-8 flex items-center justify-center border-x border-gray-200 font-semibold text-sm text-gray-900">
                 {isUpdating ? (
                   <svg className="w-3 h-3 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -131,11 +131,11 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
 
             {/* Price */}
             <div className="text-right">
-              <p className="text-base sm:text-lg font-bold font-poppins text-gray-900">
+              <p className="text-base sm:text-lg font-bold text-gray-900">
                 ₹{subtotal.toLocaleString()}
               </p>
               {item.quantity > 1 && (
-                <p className="text-[11px] text-gray-400 font-poppins">
+                <p className="text-[11px] text-gray-400">
                   ₹{item.price.toLocaleString()} each
                 </p>
               )}

@@ -23,24 +23,24 @@ export const HeroSection = () => {
             {/* Label pill */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm mb-4">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
-              <p className="text-white text-[10px] md:text-xs tracking-[0.18em] font-poppins font-medium uppercase">
+              <p className="text-white text-[10px] md:text-xs tracking-[0.18em] font-medium uppercase">
                 Celebrate in Style
               </p>
             </div>
 
-            <h1 className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-4 font-playfair drop-shadow-md">
+            <h1 className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-4 drop-shadow-md">
               Bright Look for<br />
               <span className="text-rose-300">Special</span> Moments
             </h1>
 
-            <p className="text-white/80 text-sm md:text-base mb-7 font-poppins font-light leading-relaxed max-w-sm">
+            <p className="text-white/80 text-sm md:text-base mb-7 font-light leading-relaxed max-w-sm">
               The Perfect Indian Collection — Designer Wear for Every Occasion
             </p>
 
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href={ROUTES.SHOP}
-                className="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 text-sm font-semibold tracking-wide transition-all duration-200 font-poppins rounded-xl shadow-lg hover:shadow-rose-500/30"
+                className="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 text-sm font-semibold tracking-wide transition-all duration-200 rounded-xl shadow-lg hover:shadow-rose-500/30"
               >
                 Shop Now
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,7 +49,7 @@ export const HeroSection = () => {
               </Link>
               <Link
                 href={ROUTES.TRENDING}
-                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white px-6 py-3 text-sm font-semibold tracking-wide backdrop-blur-sm transition-all duration-200 font-poppins rounded-xl"
+                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white px-6 py-3 text-sm font-semibold tracking-wide backdrop-blur-sm transition-all duration-200 rounded-xl"
               >
                 Trending Now
               </Link>

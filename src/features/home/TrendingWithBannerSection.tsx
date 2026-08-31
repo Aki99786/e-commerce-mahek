@@ -80,10 +80,10 @@ export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'T
           <div className="lg:col-span-3">
             <div className="flex items-end justify-between mb-4 md:mb-6">
               <div>
-                <p className="text-[10px] md:text-xs font-poppins font-semibold uppercase tracking-widest text-rose-600 mb-1.5">New Arrivals</p>
-                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 font-playfair tracking-tight">{title}</h2>
+                <p className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-rose-600 mb-1.5">New Arrivals</p>
+                <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">{title}</h2>
               </div>
-              <Link href={ROUTES.SHOP} className="flex items-center gap-1 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors font-poppins whitespace-nowrap">
+              <Link href={ROUTES.SHOP} className="flex items-center gap-1 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors whitespace-nowrap">
                 View All
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

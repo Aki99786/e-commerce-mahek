@@ -58,12 +58,12 @@ export const FlashSaleSection = () => {
                 <svg className="w-3.5 h-3.5 text-rose-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
                 </svg>
-                <span className="text-[10px] font-poppins font-bold uppercase tracking-widest text-rose-300">Limited Time</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-rose-300">Limited Time</span>
               </div>
-              <h2 className="font-playfair text-2xl font-bold leading-tight md:text-3xl lg:text-4xl tracking-tight">
+              <h2 className="text-2xl font-bold leading-tight md:text-3xl lg:text-4xl tracking-tight">
                 Flash Sale <span className="text-rose-400">Now On!</span>
               </h2>
-              <p className="mt-1.5 text-sm text-white/70 md:text-base font-poppins">
+              <p className="mt-1.5 text-sm text-white/70 md:text-base">
                 Score big savings on all your favorites
               </p>
             </div>
@@ -76,11 +76,11 @@ export const FlashSaleSection = () => {
                   <div key={label} className="flex items-center gap-2">
                     <div className="text-center">
                       <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm flex items-center justify-center">
-                        <span className="text-xl md:text-2xl font-extrabold text-white font-poppins tabular-nums">
+                        <span className="text-xl md:text-2xl font-extrabold text-white tabular-nums">
                           {String(value).padStart(2, "0")}
                         </span>
                       </div>
-                      <p className="mt-1.5 text-[9px] md:text-[10px] font-bold tracking-widest text-white/60 font-poppins">{label}</p>
+                      <p className="mt-1.5 text-[9px] md:text-[10px] font-bold tracking-widest text-white/60">{label}</p>
                     </div>
                     {i < timerUnits.length - 1 && (
                       <span className="text-white/40 font-bold text-lg mb-4">:</span>
@@ -92,7 +92,7 @@ export const FlashSaleSection = () => {
               {/* CTA */}
               <Link
                 href={ROUTES.SALE}
-                className="inline-flex items-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-700 px-6 py-3 font-poppins text-sm font-semibold text-white shadow-lg hover:shadow-rose-500/30 transition-all"
+                className="inline-flex items-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-700 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-rose-500/30 transition-all"
               >
                 Shop Sale
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

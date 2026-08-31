@@ -62,7 +62,7 @@ export const SizeGuideModal = ({ isOpen, onClose }: SizeGuideModalProps) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900 font-playfair">Size Guide</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Size Guide</h2>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
@@ -74,23 +74,23 @@ export const SizeGuideModal = ({ isOpen, onClose }: SizeGuideModalProps) => {
         </div>
 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-          <p className="text-sm text-gray-600 mb-6 font-poppins">
+          <p className="text-sm text-gray-600 mb-6">
             This is a standardised guide to give you an idea of what size you will need, however some brands may vary from these conversions.
           </p>
 
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 font-poppins">{SIZE_CHART_DATA.title}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{SIZE_CHART_DATA.title}</h3>
 
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-gray-900">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider font-poppins border border-gray-700">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider border border-gray-700">
                     SIZE
                   </th>
                   {SIZE_CHART_DATA.sizes.map((size, index) => (
                     <th
                       key={index}
-                      className="px-4 py-3 text-center text-xs font-semibold text-white uppercase tracking-wider font-poppins border border-gray-700"
+                      className="px-4 py-3 text-center text-xs font-semibold text-white uppercase tracking-wider border border-gray-700"
                     >
                       {size}
                     </th>
@@ -103,13 +103,13 @@ export const SizeGuideModal = ({ isOpen, onClose }: SizeGuideModalProps) => {
                     key={rowIndex}
                     className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}
                   >
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900 font-poppins border border-gray-200">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900 border border-gray-200">
                       {measurement.label}
                     </td>
                     {measurement.values.map((value, colIndex) => (
                       <td
                         key={colIndex}
-                        className="px-4 py-3 text-sm text-gray-700 text-center font-poppins border border-gray-200"
+                        className="px-4 py-3 text-sm text-gray-700 text-center border border-gray-200"
                       >
                         {value}
                       </td>
