@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ProductsListParams } from "../types";
 
 interface ColorOption {
@@ -71,14 +71,31 @@ export function ProductFilters({
     }
   );
   const [colorSearchQuery, setColorSearchQuery] = useState("");
+  const [minPriceDraft, setMinPriceDraft] = useState(
+    initialFilters?.minPrice?.toString() ?? "",
+  );
+  const [maxPriceDraft, setMaxPriceDraft] = useState(
+    initialFilters?.maxPrice?.toString() ?? "",
+  );
+  const priceDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Update local filters when initialFilters change (from URL)
   useEffect(() => {
     if (initialFilters) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setFilters(initialFilters);
+      setMinPriceDraft(initialFilters.minPrice?.toString() ?? "");
+      setMaxPriceDraft(initialFilters.maxPrice?.toString() ?? "");
     }
   }, [initialFilters]);
+
+  useEffect(() => {
+    return () => {
+      if (priceDebounceRef.current) {
+        clearTimeout(priceDebounceRef.current);
+      }
+    };
+  }, []);
 
   const handleFilterChange = (key: keyof ProductsListParams, value: string | number | undefined) => {
     const newFilters = { ...filters, [key]: value, page: 1 };
@@ -87,12 +104,33 @@ export function ProductFilters({
   };
 
   const handlePriceChange = (min?: number, max?: number) => {
+    if (priceDebounceRef.current) {
+      clearTimeout(priceDebounceRef.current);
+      priceDebounceRef.current = null;
+    }
+    setMinPriceDraft(min?.toString() ?? "");
+    setMaxPriceDraft(max?.toString() ?? "");
     const newFilters = { ...filters, minPrice: min, maxPrice: max, page: 1 };
     setFilters(newFilters);
     onFilterChange(newFilters);
   };
 
+  const schedulePriceChange = (min?: number, max?: number) => {
+    if (priceDebounceRef.current) {
+      clearTimeout(priceDebounceRef.current);
+    }
+    priceDebounceRef.current = setTimeout(() => {
+      handlePriceChange(min, max);
+    }, 400);
+  };
+
   const clearFilters = () => {
+    if (priceDebounceRef.current) {
+      clearTimeout(priceDebounceRef.current);
+      priceDebounceRef.current = null;
+    }
+    setMinPriceDraft("");
+    setMaxPriceDraft("");
     const newFilters = { limit: 10, page: 1 };
     setFilters(newFilters);
     onFilterChange(newFilters);
@@ -140,25 +178,29 @@ export function ProductFilters({
             <input
               type="number"
               placeholder="Min"
-              value={filters.minPrice || ""}
-              onChange={(e) =>
-                handlePriceChange(
-                  e.target.value ? Number(e.target.value) : undefined,
-                  filters.maxPrice
-                )
-              }
+              value={minPriceDraft}
+              onChange={(e) => {
+                const value = e.target.value;
+                setMinPriceDraft(value);
+                schedulePriceChange(
+                  value ? Number(value) : undefined,
+                  maxPriceDraft ? Number(maxPriceDraft) : undefined,
+                );
+              }}
               className="w-full p-2 border border-border-light rounded-md text-sm"
             />
             <input
               type="number"
               placeholder="Max"
-              value={filters.maxPrice || ""}
-              onChange={(e) =>
-                handlePriceChange(
-                  filters.minPrice,
-                  e.target.value ? Number(e.target.value) : undefined
-                )
-              }
+              value={maxPriceDraft}
+              onChange={(e) => {
+                const value = e.target.value;
+                setMaxPriceDraft(value);
+                schedulePriceChange(
+                  minPriceDraft ? Number(minPriceDraft) : undefined,
+                  value ? Number(value) : undefined,
+                );
+              }}
               className="w-full p-2 border border-border-light rounded-md text-sm"
             />
           </div>

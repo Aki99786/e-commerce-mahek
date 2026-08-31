@@ -1,5 +1,6 @@
 import apiClient from "@/lib/api-client";
 import { API_CONFIG, API_ENDPOINTS } from "@/lib/api-config";
+import { notifyAuthChange } from "@/lib/auth-utils";
 import type {
   SendOtpRequest,
   SendOtpResponse,
@@ -71,6 +72,7 @@ class AuthService {
   setAuthToken(token: string): void {
     if (this.isClient()) {
       localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+      notifyAuthChange();
     }
   }
 
@@ -84,6 +86,7 @@ class AuthService {
   setUserData(userData: UserData): void {
     if (this.isClient()) {
       localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+      notifyAuthChange();
     }
   }
 
@@ -99,6 +102,7 @@ class AuthService {
     if (this.isClient()) {
       localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+      notifyAuthChange();
     }
   }
 }

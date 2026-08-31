@@ -6,6 +6,14 @@ export interface UICartItem extends CartItem {
 }
 
 export async function enrichCartItemWithImages(item: CartItem): Promise<UICartItem> {
+  if (item.images && item.images.length > 0) {
+    return { ...item, images: item.images };
+  }
+
+  if (item.product?.allImages && item.product.allImages.length > 0) {
+    return { ...item, images: item.product.allImages };
+  }
+
   try {
     const product = await productService.getProductById(item.product._id);
     

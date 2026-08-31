@@ -1,9 +1,9 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, ReactNode } from "react";
 import { cartService } from "@/features/cart/services/cart.service";
 import { wishlistService } from "@/features/wishlist/services/wishlist.service";
-import { isAuthenticated } from "@/lib/auth-utils";
+import { AUTH_CHANGE_EVENT, isAuthenticated } from "@/lib/auth-utils";
 
 interface CartWishlistContextType {
   cartCount: number;
@@ -22,100 +22,145 @@ interface CartWishlistContextType {
 
 const CartWishlistContext = createContext<CartWishlistContextType | undefined>(undefined);
 
+function setsEqual(a: Set<string>, b: Set<string>): boolean {
+  if (a.size !== b.size) return false;
+  for (const value of a) {
+    if (!b.has(value)) return false;
+  }
+  return true;
+}
+
 export function CartWishlistProvider({ children }: { children: ReactNode }) {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [wishlistedProductIds, setWishlistedProductIds] = useState<Set<string>>(new Set());
   const [cartedProductIds, setCartedProductIds] = useState<Set<string>>(new Set());
-  const [mounted, setMounted] = useState(false);
+  const inFlightRef = useRef(false);
 
-  const fetchCounts = async () => {
+  const fetchCounts = useCallback(async () => {
+    if (inFlightRef.current) return;
+
     if (!isAuthenticated()) {
-      setCartCount(0);
-      setWishlistCount(0);
-      setWishlistedProductIds(new Set());
+      setCartCount((prev) => (prev === 0 ? prev : 0));
+      setWishlistCount((prev) => (prev === 0 ? prev : 0));
+      setWishlistedProductIds((prev) => (prev.size === 0 ? prev : new Set()));
+      setCartedProductIds((prev) => (prev.size === 0 ? prev : new Set()));
       return;
     }
 
+    inFlightRef.current = true;
     try {
       const [cartList, wishlist] = await Promise.all([
         cartService.getCartList(),
         wishlistService.getWishlist(),
       ]);
-      setCartCount(cartList.items.reduce((total, item) => total + item.quantity, 0));
-      setWishlistCount(wishlist.items.length);
-      setWishlistedProductIds(new Set(wishlist.items.filter((item) => item.product != null).map((item) => item.product._id)));
-      setCartedProductIds(new Set(cartList.items.filter((item) => item.product != null).map((item) => item.product._id)));
+
+      const nextCartCount = cartList.items.reduce((total, item) => total + item.quantity, 0);
+      const nextWishlistCount = wishlist.items.length;
+      const nextWishlistedIds = new Set(
+        wishlist.items.filter((item) => item.product != null).map((item) => item.product._id),
+      );
+      const nextCartedIds = new Set(
+        cartList.items.filter((item) => item.product != null).map((item) => item.product._id),
+      );
+
+      setCartCount((prev) => (prev === nextCartCount ? prev : nextCartCount));
+      setWishlistCount((prev) => (prev === nextWishlistCount ? prev : nextWishlistCount));
+      setWishlistedProductIds((prev) => (setsEqual(prev, nextWishlistedIds) ? prev : nextWishlistedIds));
+      setCartedProductIds((prev) => (setsEqual(prev, nextCartedIds) ? prev : nextCartedIds));
     } catch (error) {
       console.error("Error fetching counts:", error);
+    } finally {
+      inFlightRef.current = false;
     }
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCounts();
 
-    const handleStorageChange = () => {
+    const handleAuthOrStorageChange = () => {
       fetchCounts();
     };
 
-    window.addEventListener("storage", handleStorageChange);
-
-    const interval = setInterval(() => {
-      if (isAuthenticated()) {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && isAuthenticated()) {
         fetchCounts();
       }
-    }, 30000);
+    };
+
+    window.addEventListener("storage", handleAuthOrStorageChange);
+    window.addEventListener(AUTH_CHANGE_EVENT, handleAuthOrStorageChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      clearInterval(interval);
+      window.removeEventListener("storage", handleAuthOrStorageChange);
+      window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthOrStorageChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [mounted]);
+  }, [fetchCounts]);
 
-  const refreshCounts = async () => {
-    await fetchCounts();
-  };
-
-  const incrementCartCount = () => setCartCount((prev) => prev + 1);
-  const decrementCartCount = () => setCartCount((prev) => Math.max(0, prev - 1));
-  const incrementWishlistCount = () => setWishlistCount((prev) => prev + 1);
-  const decrementWishlistCount = () => setWishlistCount((prev) => Math.max(0, prev - 1));
-  const addToWishlistedIds = (productId: string) =>
-    setWishlistedProductIds((prev) => new Set(prev).add(productId));
-  const removeFromWishlistedIds = (productId: string) =>
+  const incrementCartCount = useCallback(() => setCartCount((prev) => prev + 1), []);
+  const decrementCartCount = useCallback(() => setCartCount((prev) => Math.max(0, prev - 1)), []);
+  const incrementWishlistCount = useCallback(() => setWishlistCount((prev) => prev + 1), []);
+  const decrementWishlistCount = useCallback(() => setWishlistCount((prev) => Math.max(0, prev - 1)), []);
+  const addToWishlistedIds = useCallback((productId: string) => {
     setWishlistedProductIds((prev) => {
+      if (prev.has(productId)) return prev;
+      const next = new Set(prev);
+      next.add(productId);
+      return next;
+    });
+  }, []);
+  const removeFromWishlistedIds = useCallback((productId: string) => {
+    setWishlistedProductIds((prev) => {
+      if (!prev.has(productId)) return prev;
       const next = new Set(prev);
       next.delete(productId);
       return next;
     });
-  const addToCartedIds = (productId: string) =>
-    setCartedProductIds((prev) => new Set(prev).add(productId));
+  }, []);
+  const addToCartedIds = useCallback((productId: string) => {
+    setCartedProductIds((prev) => {
+      if (prev.has(productId)) return prev;
+      const next = new Set(prev);
+      next.add(productId);
+      return next;
+    });
+  }, []);
+
+  const value = useMemo<CartWishlistContextType>(
+    () => ({
+      cartCount,
+      wishlistCount,
+      wishlistedProductIds,
+      cartedProductIds,
+      refreshCounts: fetchCounts,
+      incrementCartCount,
+      decrementCartCount,
+      incrementWishlistCount,
+      decrementWishlistCount,
+      addToWishlistedIds,
+      removeFromWishlistedIds,
+      addToCartedIds,
+    }),
+    [
+      cartCount,
+      wishlistCount,
+      wishlistedProductIds,
+      cartedProductIds,
+      fetchCounts,
+      incrementCartCount,
+      decrementCartCount,
+      incrementWishlistCount,
+      decrementWishlistCount,
+      addToWishlistedIds,
+      removeFromWishlistedIds,
+      addToCartedIds,
+    ],
+  );
 
   return (
-    <CartWishlistContext.Provider
-      value={{
-        cartCount,
-        wishlistCount,
-        wishlistedProductIds,
-        cartedProductIds,
-        refreshCounts,
-        incrementCartCount,
-        decrementCartCount,
-        incrementWishlistCount,
-        decrementWishlistCount,
-        addToWishlistedIds,
-        removeFromWishlistedIds,
-        addToCartedIds,
-      }}
-    >
+    <CartWishlistContext.Provider value={value}>
       {children}
     </CartWishlistContext.Provider>
   );

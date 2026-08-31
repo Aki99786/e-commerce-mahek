@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
 import { ProductFilters } from "./ProductFilters";
@@ -25,6 +25,8 @@ interface CategoryPageContentProps {
   categoryType?: string;
 }
 
+const filterOptionsCache = new Map<string, Product[]>();
+
 export function CategoryPageContent({
   categoryType: categoryTypeProp,
 }: CategoryPageContentProps = {}) {
@@ -45,6 +47,7 @@ export function CategoryPageContent({
   const [isInitialized, setIsInitialized] = useState(false);
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const productsRequestIdRef = useRef(0);
   
   const searchQuery = searchParams.get('search') ?? '';
 
@@ -85,36 +88,95 @@ export function CategoryPageContent({
 
   const [filters, setFilters] = useState<ProductsListParams>(getInitialFilters);
 
+  const fetchWishlist = useCallback(async () => {
+    if (!isAuthenticated()) {
+      return;
+    }
+    
+    try {
+      const response = await wishlistService.getWishlist();
+      setWishlistItems(response.items);
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+    }
+  }, []);
+
   // Initialize on mount and fetch wishlist
   useEffect(() => {
     setIsInitialized(true);
     fetchWishlist();
-  }, []);
+  }, [fetchWishlist]);
 
-  // Fetch all products for filter options (unfiltered, large limit)
+  // Fetch all products for filter options (unfiltered, large limit) — cached per category
   useEffect(() => {
     if (!isInitialized) return;
+    const cacheKey = categoryType || "__all__";
+    const cached = filterOptionsCache.get(cacheKey);
+    if (cached) {
+      setAllCategoryProducts(cached);
+      return;
+    }
+
+    let cancelled = false;
     const fetchAllForFilters = async () => {
       try {
         const params: ProductsListParams = { limit: 500, page: 1 };
         if (categoryType) params.type = categoryType;
         const response: ProductsListResponse =
           await productService.getProductsList(params);
+        if (cancelled) return;
+        filterOptionsCache.set(cacheKey, response.products);
         setAllCategoryProducts(response.products);
       } catch (error) {
-        console.error("Error fetching all products for filters:", error);
+        if (!cancelled) {
+          console.error("Error fetching all products for filters:", error);
+        }
       }
     };
     fetchAllForFilters();
+    return () => {
+      cancelled = true;
+    };
   }, [categoryType, isInitialized]);
+
+  const fetchProducts = useCallback(async () => {
+    const requestId = ++productsRequestIdRef.current;
+    setLoading(true);
+    try {
+      const apiParams: ProductsListParams = { ...filters };
+      if (categoryType) apiParams.type = categoryType;
+      if (searchQuery) apiParams.search = searchQuery;
+      const response: ProductsListResponse =
+        await productService.getProductsList(apiParams);
+
+      if (requestId !== productsRequestIdRef.current) return;
+      
+      // Expand products into variants (each variant becomes a separate card)
+      const allExpandedVariants = response.products.flatMap((product) =>
+        expandProductVariants(product)
+      );
+      
+      setProducts(response.products);
+      setExpandedVariants(allExpandedVariants);
+      setTotalProducts(allExpandedVariants.length);
+      setCurrentPage(response.page);
+    } catch (error) {
+      if (requestId === productsRequestIdRef.current) {
+        console.error("Error fetching products:", error);
+      }
+    } finally {
+      if (requestId === productsRequestIdRef.current) {
+        setLoading(false);
+      }
+    }
+  }, [filters, categoryType, searchQuery]);
 
   // Fetch products when filters, category or search query changes
   useEffect(() => {
     if (isInitialized) {
       fetchProducts();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, categoryType, isInitialized, searchQuery]);
+  }, [fetchProducts, isInitialized]);
 
   // Sync filters to URL query params
   useEffect(() => {
@@ -166,50 +228,7 @@ export function CategoryPageContent({
     }
   }, [filters, isInitialized, router, categorySlugFromUrl, searchQuery]);
 
-  const fetchWishlist = async () => {
-    if (!isAuthenticated()) {
-      return;
-    }
-    
-    try {
-      const response = await wishlistService.getWishlist();
-      setWishlistItems(response.items);
-    } catch (error) {
-      console.error("Error fetching wishlist:", error);
-    }
-  };
-
-  const fetchProducts = async (isUnfilteredFetch = false) => {
-    setLoading(true);
-    try {
-      const apiParams: ProductsListParams = { ...filters };
-      if (categoryType) apiParams.type = categoryType;
-      if (searchQuery) apiParams.search = searchQuery;
-      const response: ProductsListResponse =
-        await productService.getProductsList(apiParams);
-      
-      // Expand products into variants (each variant becomes a separate card)
-      const allExpandedVariants = response.products.flatMap((product) =>
-        expandProductVariants(product)
-      );
-      
-      setProducts(response.products);
-      setExpandedVariants(allExpandedVariants);
-      setTotalProducts(allExpandedVariants.length);
-      setCurrentPage(response.page);
-
-      // On first unfiltered fetch, store the full category products for filter options
-      if (isUnfilteredFetch) {
-        setAllCategoryProducts(response.products);
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const isProductInWishlist = (productId: string, variantId: string, size: string): boolean => {
+  const isProductInWishlist = useCallback((productId: string, variantId: string, size: string): boolean => {
     return wishlistItems.some(
       (item) =>
         item.product != null &&
@@ -217,37 +236,59 @@ export function CategoryPageContent({
         item.variantId === variantId &&
         item.size === size
     );
-  };
+  }, [wishlistItems]);
 
-  const handleFilterChange = (newFilters: ProductsListParams) => {
+  const handleFilterChange = useCallback((newFilters: ProductsListParams) => {
     setFilters(newFilters);
-  };
+  }, []);
 
-  const handlePageChange = (page: number) => {
-    setFilters({ ...filters, page });
-  };
+  const handlePageChange = useCallback((page: number) => {
+    setFilters((prev) => ({ ...prev, page }));
+  }, []);
 
-  // Aggregate colors from full unfiltered category products (stable filter options)
-  const colorCounts = allCategoryProducts.reduce((acc, product) => {
-    (product.allColors || []).forEach((color) => {
-      const trimmed = color.trim();
-      if (trimmed) {
-        acc[trimmed] = (acc[trimmed] || 0) + 1;
-      }
-    });
-    return acc;
-  }, {} as Record<string, number>);
+  const availableColors = useMemo(() => {
+    const colorCounts = allCategoryProducts.reduce((acc, product) => {
+      (product.allColors || []).forEach((color) => {
+        const trimmed = color.trim();
+        if (trimmed) {
+          acc[trimmed] = (acc[trimmed] || 0) + 1;
+        }
+      });
+      return acc;
+    }, {} as Record<string, number>);
 
-  const availableColors = Object.entries(colorCounts).map(([color, count]) => ({
-    color,
-    count,
-  }));
+    return Object.entries(colorCounts).map(([color, count]) => ({
+      color,
+      count,
+    }));
+  }, [allCategoryProducts]);
 
-  // Aggregate sizes from full unfiltered category products (stable filter options)
-  const availableSizes = Array.from(
-    new Set(
-      allCategoryProducts.flatMap((p) => (p.allSizes || []).map((s) => s.trim()).filter(Boolean))
-    )
+  const availableSizes = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          allCategoryProducts.flatMap((p) => (p.allSizes || []).map((s) => s.trim()).filter(Boolean))
+        )
+      ),
+    [allCategoryProducts],
+  );
+
+  const productCards = useMemo(
+    () =>
+      expandedVariants.map((expandedVariant) => {
+        const firstSize = expandedVariant.selectedVariant.sizes[0]?.size || "ONE_SIZE";
+        return {
+          key: `${expandedVariant._id}-${expandedVariant.selectedVariantId}`,
+          product: adaptExpandedVariantToUI(expandedVariant),
+          apiProduct: expandedVariant,
+          isInWishlist: isProductInWishlist(
+            expandedVariant._id,
+            expandedVariant.selectedVariantId,
+            firstSize,
+          ),
+        };
+      }),
+    [expandedVariants, isProductInWishlist],
   );
 
   // Derive page heading
@@ -346,24 +387,15 @@ export function CategoryPageContent({
               <>
                 {/* Products Grid - Variant-wise display */}
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-                  {expandedVariants.map((expandedVariant) => {
-                    const firstSize = expandedVariant.selectedVariant.sizes[0]?.size || "ONE_SIZE";
-                    const isInWishlist = isProductInWishlist(
-                      expandedVariant._id,
-                      expandedVariant.selectedVariantId,
-                      firstSize
-                    );
-                    
-                    return (
-                      <ProductCard
-                        key={`${expandedVariant._id}-${expandedVariant.selectedVariantId}`}
-                        product={adaptExpandedVariantToUI(expandedVariant)}
-                        apiProduct={expandedVariant}
-                        initialWishlistState={isInWishlist}
-                        onWishlistChange={fetchWishlist}
-                      />
-                    );
-                  })}
+                  {productCards.map((card) => (
+                    <ProductCard
+                      key={card.key}
+                      product={card.product}
+                      apiProduct={card.apiProduct}
+                      initialWishlistState={card.isInWishlist}
+                      onWishlistChange={fetchWishlist}
+                    />
+                  ))}
                 </div>
 
                 {/* Pagination */}

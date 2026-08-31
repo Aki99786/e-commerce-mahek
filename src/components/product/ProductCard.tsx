@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Tooltip } from "react-tooltip";
@@ -23,7 +23,7 @@ interface ProductCardProps {
   onWishlistChange?: () => void | Promise<void>;
 }
 
-export const ProductCard = ({ product, className, variant = 'default', apiProduct, initialWishlistState = false, onWishlistChange }: ProductCardProps) => {
+export const ProductCard = memo(function ProductCard({ product, className, variant = 'default', apiProduct, initialWishlistState = false, onWishlistChange }: ProductCardProps) {
   const router = useRouter();
   const productUrl = ROUTES.PRODUCT_DETAIL(product.id);
   void variant;
@@ -35,18 +35,20 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    setIsInWishlist(wishlistedProductIds.has(product.id) || initialWishlistState);
+    const nextWishlisted = wishlistedProductIds.has(product.id) || initialWishlistState;
+    setIsInWishlist((prev) => (prev === nextWishlisted ? prev : nextWishlisted));
   }, [wishlistedProductIds, product.id, initialWishlistState]);
 
   useEffect(() => {
-    setIsInCart(cartedProductIds.has(product.id));
+    const nextInCart = cartedProductIds.has(product.id);
+    setIsInCart((prev) => (prev === nextInCart ? prev : nextInCart));
   }, [cartedProductIds, product.id]);
 
   useEffect(() => {
-    if (isHovering && product.images.length > 1) {
+    if (isHovering && (product.images?.length ?? 0) > 1) {
       intervalRef.current = setInterval(() => {
         setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
       }, 500);
@@ -55,7 +57,7 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      setCurrentImageIndex(0);
+      setCurrentImageIndex((prev) => (prev === 0 ? prev : 0));
     }
 
     return () => {
@@ -63,7 +65,7 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         clearInterval(intervalRef.current);
       }
     };
-  }, [isHovering, product.images.length]);
+  }, [isHovering, product.images?.length]);
 
   const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -166,6 +168,10 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
     }
   };
 
+  const visibleImages = isHovering && (product.images?.length ?? 0) > 1
+    ? product.images
+    : (product.images ?? []).slice(0, 1);
+
   return (
     <div className={cn("group w-full bg-white overflow-hidden transition-shadow rounded-lg sm:rounded-none", className)}>
       <div 
@@ -176,14 +182,19 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
         <Link href={productUrl}>
           <div className="relative aspect-[3/4] w-full bg-gray-100">
             {product.images && product.images.length > 0 ? (
-              <Image
-                src={product.images[currentImageIndex].url}
-                alt={product.images[currentImageIndex].alt}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                className="object-cover transition-opacity duration-300"
-                priority={currentImageIndex === 0}
-              />
+              visibleImages.map((image, index) => (
+                <Image
+                  key={image.url}
+                  src={image.url}
+                  alt={image.alt}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className={cn(
+                    "object-cover transition-opacity duration-300",
+                    index === currentImageIndex || visibleImages.length === 1 ? "opacity-100" : "opacity-0",
+                  )}
+                />
+              ))
             ) : (
               <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                 <span className="text-gray-400 text-xs sm:text-sm">No Image</span>
@@ -214,22 +225,6 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
           </div>
         )}
 
-        <style>{`
-          @keyframes heart-like {
-            0%   { transform: scale(1); }
-            30%  { transform: scale(1.45); }
-            60%  { transform: scale(0.9); }
-            80%  { transform: scale(1.2); }
-            100% { transform: scale(1); }
-          }
-          @keyframes heart-unlike {
-            0%   { transform: scale(1); }
-            40%  { transform: scale(0.7); }
-            100% { transform: scale(1); }
-          }
-          .heart-anim-like  { animation: heart-like  0.4s ease forwards; }
-          .heart-anim-unlike { animation: heart-unlike 0.35s ease forwards; }
-        `}</style>
         <button
           onClick={handleWishlistToggle}
           disabled={isAddingToWishlist}
@@ -372,4 +367,4 @@ export const ProductCard = ({ product, className, variant = 'default', apiProduc
       </div>
     </div>
   );
-};
+});

@@ -141,3 +141,25 @@ img {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+@keyframes heart-like {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.45); }
+  60%  { transform: scale(0.9); }
+  80%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes heart-unlike {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.7); }
+  100% { transform: scale(1); }
+}
+
+.heart-anim-like {
+  animation: heart-like 0.4s ease forwards;
+}
+
+.heart-anim-unlike {
+  animation: heart-unlike 0.35s ease forwards;
+}

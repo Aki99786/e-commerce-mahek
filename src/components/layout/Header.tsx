@@ -8,7 +8,7 @@ import { ROUTES } from "@/constants/routes";
 import { CategoryEnum } from "@/constants/categories";
 import { TypingPlaceholder } from "@/components/ui/TypingPlaceholder";
 import { ProfileDropdown } from "@/components/layout/ProfileDropdown";
-import { isAuthenticated, clearAuth } from "@/lib/auth-utils";
+import { isAuthenticated, clearAuth, AUTH_CHANGE_EVENT } from "@/lib/auth-utils";
 import { useCartWishlist } from "@/contexts/CartWishlistContext";
 
 const SEARCH_PLACEHOLDERS = [
@@ -26,35 +26,22 @@ export const Header = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAuth, setIsAuth] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const { cartCount, wishlistCount } = useCartWishlist();
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsAuth(isAuthenticated());
-
-    const handleStorageChange = () => {
+    const syncAuth = () => {
       setIsAuth(isAuthenticated());
     };
 
-    window.addEventListener("storage", handleStorageChange);
-    
-    const interval = setInterval(() => {
-      setIsAuth(isAuthenticated());
-    }, 1000);
+    syncAuth();
+    window.addEventListener("storage", syncAuth);
+    window.addEventListener(AUTH_CHANGE_EVENT, syncAuth);
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      clearInterval(interval);
+      window.removeEventListener("storage", syncAuth);
+      window.removeEventListener(AUTH_CHANGE_EVENT, syncAuth);
     };
-  }, [mounted]);
+  }, []);
 
   return (
     <header className="bg-white border-b border-border-light relative z-49">
@@ -419,7 +406,7 @@ export const Header = () => {
                   autoFocus={isSearchOpen}
                   className="w-full pl-11 sm:pl-12 pr-4 py-3 sm:py-3.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 text-sm sm:text-base bg-gray-50 focus:bg-white transition-all placeholder-transparent"
                 />
-                {searchQuery === "" && (
+                {isSearchOpen && searchQuery === "" && (
                   <div className="absolute left-11 sm:left-12 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">
                     <TypingPlaceholder texts={SEARCH_PLACEHOLDERS} interval={3000} typingSpeed={50} />
                   </div>

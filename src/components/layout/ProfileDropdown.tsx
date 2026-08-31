@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getUserData, clearAuth } from "@/lib/auth-utils";
+import { getUserData, clearAuth, AUTH_CHANGE_EVENT } from "@/lib/auth-utils";
 import { Gift, Phone, CreditCard, MapPin, Edit, LogOut, ShoppingBag } from "lucide-react";
 
 interface UserData {
@@ -19,22 +19,17 @@ export function ProfileDropdown() {
   const router = useRouter();
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUserData(getUserData() as UserData | null);
-
-    const handleStorageChange = () => {
-      setUserData(getUserData());
+    const syncUser = () => {
+      setUserData(getUserData() as UserData | null);
     };
 
-    window.addEventListener("storage", handleStorageChange);
-    
-    const interval = setInterval(() => {
-      setUserData(getUserData());
-    }, 1000);
+    syncUser();
+    window.addEventListener("storage", syncUser);
+    window.addEventListener(AUTH_CHANGE_EVENT, syncUser);
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      clearInterval(interval);
+      window.removeEventListener("storage", syncUser);
+      window.removeEventListener(AUTH_CHANGE_EVENT, syncUser);
     };
   }, []);
 
