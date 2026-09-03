@@ -21,11 +21,20 @@ export interface RemoveFromCartRequest {
   size: string;
 }
 
+export interface CartItemProductVariant {
+  variantId: string;
+  color?: string;
+  images?: string[];
+  sellingPrice?: number;
+  mrp?: number;
+}
+
 export interface CartItemProduct {
   _id: string;
   name: string;
   slug: string;
-  allImages: string[];
+  allImages?: string[];
+  variants?: CartItemProductVariant[];
 }
 
 export interface CartItem {

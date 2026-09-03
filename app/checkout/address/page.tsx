@@ -46,7 +46,7 @@ export default function CheckoutAddressPage() {
           if (savedState && savedState.items.length > 0) return savedState;
 
           const cartRes = await cartService.getCartList();
-          const enriched = await enrichCartItemsWithImages(cartRes.items || []);
+          const enriched = enrichCartItemsWithImages(cartRes.items || []);
 
           if (enriched.length === 0) {
             router.push(ROUTES.CART);

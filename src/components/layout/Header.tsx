@@ -274,7 +274,7 @@ export const Header = () => {
                 { href: `/products?category=${CategoryEnum.BRIDAL_LEHENGA}`, label: "Bridal Lehenga", emoji: "💍" },
               ].map(({ href, label, emoji }) => (
                 <Link
-                  key={href}
+                  key={label}
                   href={href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-700 transition-all group"
@@ -307,7 +307,7 @@ export const Header = () => {
                 { href: ROUTES.TRACK_ORDER, label: "Track Order", emoji: "📦" },
               ].map(({ href, label, emoji }) => (
                 <Link
-                  key={href}
+                  key={label}
                   href={href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-rose-50 hover:text-rose-700 transition-all group"

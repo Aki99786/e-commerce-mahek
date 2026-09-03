@@ -25,17 +25,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet" />
       </head>
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col" suppressHydrationWarning>
         <CartWishlistProvider>
           <Toaster position="top-right" richColors closeButton />
-          <TopBar />
-          <Suspense fallback={null}><Header /></Suspense>
+          <div className="sticky top-0 z-40 bg-white shadow-xs">
+            <TopBar />
+            <Suspense fallback={null}><Header /></Suspense>
+          </div>
           <main className="flex-1 flex flex-col">{children}</main>
           <Footer />
         </CartWishlistProvider>

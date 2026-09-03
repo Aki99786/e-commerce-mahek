@@ -25,9 +25,9 @@ export default function CartPage() {
       const authenticated = isAuthenticated();
       setIsAuth(authenticated);
       setIsChecking(false);
-      
+
       if (authenticated) {
-        fetchCartItems();
+        fetchCartItems(true);
       } else {
         setLoading(false);
       }
@@ -36,24 +36,41 @@ export default function CartPage() {
     checkAuth();
   }, []);
 
-  const fetchCartItems = async () => {
-    setLoading(true);
+  const fetchCartItems = async (isInitialLoad = false) => {
+    if (isInitialLoad) {
+      setLoading(true);
+    }
     try {
       const response = await cartService.getCartList();
-      const enrichedItems = await enrichCartItemsWithImages(response.items || []);
+      const enrichedItems = enrichCartItemsWithImages(response.items || []);
       setCartItems(enrichedItems);
     } catch (error) {
       console.error("Error fetching cart:", error);
-      toast.error("Failed to load cart items");
-      setCartItems([]);
+      if (isInitialLoad) {
+        toast.error("Failed to load cart items");
+        setCartItems([]);
+      }
     } finally {
-      setLoading(false);
+      if (isInitialLoad) {
+        setLoading(false);
+      }
     }
   };
 
   const handleUpdateQuantity = async (variantId: string, size: string, quantity: number) => {
+    const previousItems = [...cartItems];
+    
+    // ⚡ Optimistic UI Update
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.variantId === variantId && item.size === size
+          ? { ...item, quantity }
+          : item
+      )
+    );
+
     try {
-      const item = cartItems.find(i => i.variantId === variantId && i.size === size);
+      const item = previousItems.find((i) => i.variantId === variantId && i.size === size);
       if (!item) return;
 
       await cartService.updateCart({
@@ -62,19 +79,26 @@ export default function CartPage() {
         size,
         quantity,
       });
-      
+
       toast.success("Cart updated successfully");
-      await fetchCartItems();
-      await refreshCounts();
+      refreshCounts();
     } catch (error) {
+      setCartItems(previousItems);
       console.error("Error updating cart:", error);
       toast.error("Failed to update cart");
     }
   };
 
   const handleRemoveItem = async (variantId: string, size: string) => {
+    const previousItems = [...cartItems];
+    
+    // ⚡ Optimistic UI Removal
+    setCartItems((prev) =>
+      prev.filter((item) => !(item.variantId === variantId && item.size === size))
+    );
+
     try {
-      const item = cartItems.find(i => i.variantId === variantId && i.size === size);
+      const item = previousItems.find((i) => i.variantId === variantId && i.size === size);
       if (!item) return;
 
       await cartService.removeFromCart({
@@ -82,11 +106,11 @@ export default function CartPage() {
         variantId,
         size,
       });
-      
+
       toast.success("Item removed from cart");
-      await fetchCartItems();
-      await refreshCounts();
+      refreshCounts();
     } catch (error) {
+      setCartItems(previousItems);
       console.error("Error removing item:", error);
       toast.error("Failed to remove item");
     }
@@ -94,13 +118,16 @@ export default function CartPage() {
 
   const handleClearCart = async () => {
     if (!confirm("Are you sure you want to clear your cart?")) return;
-    
+
+    const previousItems = [...cartItems];
+    setCartItems([]);
+
     try {
       await cartService.clearCart();
       toast.success("Cart cleared successfully");
-      await fetchCartItems();
-      await refreshCounts();
+      refreshCounts();
     } catch (error) {
+      setCartItems(previousItems);
       console.error("Error clearing cart:", error);
       toast.error("Failed to clear cart");
     }
@@ -115,8 +142,30 @@ export default function CartPage() {
 
   if (isChecking || loading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
+      <div className="flex-1 bg-gray-50 py-5 sm:py-8">
+        <div className="container-fluid max-w-5xl mx-auto space-y-6 animate-pulse">
+          <div className="h-8 bg-gray-200 rounded-lg w-48 mb-2"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-3">
+              {[1, 2].map((n) => (
+                <div key={n} className="bg-white p-4 rounded-xl border border-gray-100 flex gap-4 h-32">
+                  <div className="w-24 h-24 bg-gray-200 rounded-lg"></div>
+                  <div className="flex-1 space-y-3">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                    <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="bg-white p-5 rounded-2xl border border-gray-100 h-64 space-y-4">
+              <div className="h-5 bg-gray-200 rounded w-1/3"></div>
+              <div className="h-4 bg-gray-200 rounded w-full"></div>
+              <div className="h-4 bg-gray-200 rounded w-full"></div>
+              <div className="h-10 bg-gray-200 rounded-xl w-full"></div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
