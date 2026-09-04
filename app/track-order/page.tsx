@@ -44,12 +44,15 @@ function formatCurrency(amount: number): string {
 }
 
 function getProductImage(order: Order): string {
-  const firstItem = order.items[0];
-  if (!firstItem) return "";
-  const variant = firstItem.product.variants?.find(
-    (v) => v.variantId === firstItem.variantId
+  const itemWithProduct =
+    order.items?.find((item) => item?.product != null) ?? order.items?.[0];
+  if (!itemWithProduct?.product) return "";
+  const variant = itemWithProduct.product.variants?.find(
+    (v) => v.variantId === itemWithProduct.variantId
   );
-  return variant?.images?.[0] ?? firstItem.product.allImages?.[0] ?? "";
+  return (
+    variant?.images?.[0] ?? itemWithProduct.product.allImages?.[0] ?? ""
+  );
 }
 
 function PaymentBadge({ status }: { status: PaymentStatus }) {
@@ -166,7 +169,7 @@ function OrderCard({ order }: { order: Order }) {
             <div className="relative w-16 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
               <Image
                 src={productImage}
-                alt={order.items[0]?.product.name ?? "Product"}
+                alt={order.items[0]?.product?.name ?? "Product"}
                 fill
                 className="object-cover"
                 sizes="64px"
@@ -175,7 +178,7 @@ function OrderCard({ order }: { order: Order }) {
           )}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug">
-              {order.items[0]?.product.name}
+              {order.items[0]?.product?.name ?? "Item"}
               {order.items.length > 1 && (
                 <span className="text-gray-400 font-normal">
                   {" "}
@@ -196,15 +199,15 @@ function OrderCard({ order }: { order: Order }) {
                   {order.items[0]?.quantity}
                 </span>
               </span>
-              {order.items[0]?.product.variants?.find(
+              {order.items[0]?.product?.variants?.find(
                 (v) => v.variantId === order.items[0]?.variantId
               )?.color && (
                 <span className="text-xs text-gray-500">
                   Color:{" "}
                   <span className="text-gray-700">
                     {
-                      order.items[0].product.variants.find(
-                        (v) => v.variantId === order.items[0].variantId
+                      order.items[0]?.product?.variants?.find(
+                        (v) => v.variantId === order.items[0]?.variantId
                       )?.color
                     }
                   </span>
@@ -248,9 +251,10 @@ function OrderCard({ order }: { order: Order }) {
             </p>
             <div className="space-y-2">
               {order.items.map((item) => {
-                const variantImg = item.product.variants?.find(
-                  (v) => v.variantId === item.variantId
-                )?.images?.[0];
+                const variantImg =
+                  item.product?.variants?.find(
+                    (v) => v.variantId === item.variantId
+                  )?.images?.[0] ?? item.product?.allImages?.[0];
                 return (
                   <div
                     key={item._id}
@@ -260,7 +264,7 @@ function OrderCard({ order }: { order: Order }) {
                       <div className="relative w-10 h-12 rounded-md overflow-hidden flex-shrink-0 bg-gray-50">
                         <Image
                           src={variantImg}
-                          alt={item.product.name}
+                          alt={item.product?.name ?? "Product"}
                           fill
                           className="object-cover"
                           sizes="40px"
@@ -269,7 +273,7 @@ function OrderCard({ order }: { order: Order }) {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-gray-800 line-clamp-1">
-                        {item.product.name}
+                        {item.product?.name ?? "Product Unavailable"}
                       </p>
                       <p className="text-[11px] text-gray-500">
                         {item.size} · Qty {item.quantity}
@@ -284,28 +288,30 @@ function OrderCard({ order }: { order: Order }) {
             </div>
           </div>
 
-          <div>
-            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
-              Shipping Address
-            </p>
-            <div className="bg-white rounded-lg p-3 border border-gray-100 text-xs text-gray-700 leading-relaxed">
-              <p className="font-medium text-gray-800">
-                {order.shippingAddress.fullName}
+          {order.shippingAddress && (
+            <div>
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+                Shipping Address
               </p>
-              <p>{order.shippingAddress.addressLine1}</p>
-              {order.shippingAddress.addressLine2 && (
-                <p>{order.shippingAddress.addressLine2}</p>
-              )}
-              <p>
-                {order.shippingAddress.city},{" "}
-                {order.shippingAddress.state} –{" "}
-                {order.shippingAddress.pincode}
-              </p>
-              <p className="mt-0.5 text-gray-500">
-                📞 {order.shippingAddress.phone}
-              </p>
+              <div className="bg-white rounded-lg p-3 border border-gray-100 text-xs text-gray-700 leading-relaxed">
+                <p className="font-medium text-gray-800">
+                  {order.shippingAddress.fullName}
+                </p>
+                <p>{order.shippingAddress.addressLine1}</p>
+                {order.shippingAddress.addressLine2 && (
+                  <p>{order.shippingAddress.addressLine2}</p>
+                )}
+                <p>
+                  {order.shippingAddress.city},{" "}
+                  {order.shippingAddress.state} –{" "}
+                  {order.shippingAddress.pincode}
+                </p>
+                <p className="mt-0.5 text-gray-500">
+                  📞 {order.shippingAddress.phone}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="bg-white rounded-lg p-3 border border-gray-100">
             <div className="flex justify-between items-center text-xs text-gray-500 mb-1.5">
