@@ -9,6 +9,7 @@ import { wishlistService } from "@/features/wishlist/services/wishlist.service";
 import { expandProductVariants } from "../utils/variant-expander";
 import { adaptExpandedVariantToUI } from "../utils/variant-product-adapter";
 import { ProductCard } from "@/components/product/ProductCard";
+import { ProductGridSkeleton } from "@/components/product/ProductCardSkeleton";
 import { isAuthenticated } from "@/lib/auth-utils";
 import type {
   Product,
@@ -320,9 +321,7 @@ export function CategoryPageContent({
           {/* Products Grid */}
           <main className="flex-1 min-w-0">
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
-              </div>
+              <ProductGridSkeleton count={8} />
             ) : products.length === 0 ? (
               <div className="text-center py-20">
                 <p className="text-lg sm:text-xl text-text-secondary">

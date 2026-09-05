@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Search, X } from "lucide-react";
 import { productService } from "../services/product.service";
+import { ProductFiltersSkeleton } from "@/components/product/ProductCardSkeleton";
 import type {
   ProductsListParams,
   FilterOptionsData,
@@ -21,6 +22,7 @@ interface ProductFiltersProps {
   availableColors?: ColorOption[];
   availableSizes?: string[];
   initialFilters?: ProductsListParams;
+  loading?: boolean;
 }
 
 interface NormalizedItem {
@@ -125,6 +127,7 @@ export function ProductFilters({
   onFilterChange,
   filterOptions: externalFilterOptions,
   initialFilters,
+  loading = false,
 }: ProductFiltersProps) {
   const [internalOptions, setInternalOptions] = useState<FilterOptionsData | null>(null);
   const [filters, setFilters] = useState<ProductsListParams>(
@@ -324,6 +327,15 @@ export function ProductFilters({
   const safeRange = maxLimit > minLimit ? maxLimit - minLimit : 1;
   const minPercent = Math.min(100, Math.max(0, ((sliderMin - minLimit) / safeRange) * 100));
   const maxPercent = Math.min(100, Math.max(0, ((sliderMax - minLimit) / safeRange) * 100));
+
+  const isLoadingOptions =
+    loading ||
+    externalFilterOptions === null ||
+    (externalFilterOptions === undefined && internalOptions === null);
+
+  if (isLoadingOptions) {
+    return <ProductFiltersSkeleton />;
+  }
 
   return (
     <div className="w-full text-text-primary">

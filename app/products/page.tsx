@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { CategoryPageContent } from "@/features/products/components/CategoryPageContent";
+import { ProductGridSkeleton } from "@/components/product/ProductCardSkeleton";
 
 export function generateStaticParams() {
   return [];
@@ -7,13 +8,7 @@ export function generateStaticParams() {
 
 export default function ProductsPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex-1 flex items-center justify-center bg-background-light">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
-      }
-    >
+    <Suspense fallback={<ProductGridSkeleton count={8} />}>
       <CategoryPageContent />
     </Suspense>
   );

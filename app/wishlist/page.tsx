@@ -16,37 +16,32 @@ export default function WishlistPage() {
   const router = useRouter();
   const { incrementCartCount, decrementWishlistCount, cartedProductIds, removeFromWishlistedIds } = useCartWishlist();
   const [isAuth, setIsAuth] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [wishlistItems, setWishlistItems] = useState<UIWishlistItem[]>([]);
-  const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuthAndFetch = async () => {
       const loggedIn = checkIsAuthenticated();
       setIsAuth(loggedIn);
-      setIsLoading(false);
 
       if (loggedIn) {
-        fetchWishlist();
+        try {
+          const response = await wishlistService.getWishlist();
+          const adaptedItems = adaptWishlistResponseToUI(response?.list ?? []);
+          setWishlistItems(adaptedItems);
+        } catch (error) {
+          console.error("Error fetching wishlist:", error);
+          setWishlistItems([]);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
       }
     };
 
-    checkAuth();
+    checkAuthAndFetch();
   }, []);
-
-  const fetchWishlist = async () => {
-    setIsFetching(true);
-    try {
-      const response = await wishlistService.getWishlist();
-      const adaptedItems = adaptWishlistResponseToUI(response?.list ?? []);
-      setWishlistItems(adaptedItems);
-    } catch (error) {
-      console.error("Error fetching wishlist:", error);
-      setWishlistItems([]);
-    } finally {
-      setIsFetching(false);
-    }
-  };
 
   const handleRemove = async (wishlistItemId: string) => {
     try {
@@ -97,22 +92,10 @@ export default function WishlistPage() {
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!isAuth) {
-    return <EmptyWishlist />;
-  }
-
-  return (
-    <div className="flex-1 bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 py-6 sm:py-8">
-        {isFetching ? (
+      <div className="flex-1 bg-gray-50">
+        <div className="max-w-3xl mx-auto px-4 py-6 sm:py-8">
           <div>
             <div className="flex items-center gap-3 mb-6">
               <div className="h-8 w-36 bg-gray-200 animate-pulse rounded-lg" />
@@ -132,7 +115,19 @@ export default function WishlistPage() {
               ))}
             </div>
           </div>
-        ) : !wishlistItems || wishlistItems.length === 0 ? (
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuth) {
+    return <EmptyWishlist />;
+  }
+
+  return (
+    <div className="flex-1 bg-gray-50">
+      <div className="max-w-3xl mx-auto px-4 py-6 sm:py-8">
+        {!wishlistItems || wishlistItems.length === 0 ? (
           <EmptyWishlist isAuthenticated={true} />
         ) : (
           <div>
