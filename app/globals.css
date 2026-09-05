@@ -141,3 +141,54 @@ img {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Dual Range Slider Styles */
+.dual-slider-input {
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+.dual-slider-input::-webkit-slider-thumb {
+  pointer-events: auto;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ff3f6c;
+  border: 2.5px solid #ffffff;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(255, 63, 108, 0.4);
+  transition: transform 0.1s ease;
+}
+
+.dual-slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.dual-slider-input::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+}
+
+.dual-slider-input::-moz-range-thumb {
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ff3f6c;
+  border: 2.5px solid #ffffff;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(255, 63, 108, 0.4);
+  transition: transform 0.1s ease;
+}
+
+.dual-slider-input::-moz-range-thumb:hover {
+  transform: scale(1.15);
+}
+
+.dual-slider-input::-moz-range-thumb:active {
+  transform: scale(1.2);
+}
+

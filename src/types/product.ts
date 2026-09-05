@@ -50,6 +50,7 @@ export interface ProductReview {
 
 export interface Product {
   id: string;
+  brand?: string;
   name: string;
   slug: string;
   description?: string;

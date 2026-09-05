@@ -10,7 +10,7 @@ import type { UIWishlistItem } from "../adapters/wishlist.adapter";
 
 interface WishlistItemProps {
   item: UIWishlistItem;
-  onRemove: (productId: string) => void;
+  onRemove: (wishlistItemId: string) => void;
   onAddToCart: (productId: string) => void;
   isInCart?: boolean;
 }
@@ -21,9 +21,10 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const handleRemove = async () => {
+    if (!item?._id) return;
     setIsRemoving(true);
     try {
-      await onRemove(item.product._id);
+      await onRemove(item._id);
     } catch (error) {
       console.error("Failed to remove item:", error);
     } finally {

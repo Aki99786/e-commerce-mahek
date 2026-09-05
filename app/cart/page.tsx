@@ -42,12 +42,11 @@ export default function CartPage() {
     }
     try {
       const response = await cartService.getCartList();
-      const enrichedItems = enrichCartItemsWithImages(response.items || []);
+      const enrichedItems = enrichCartItemsWithImages(response?.data?.list ?? []);
       setCartItems(enrichedItems);
     } catch (error) {
       console.error("Error fetching cart:", error);
       if (isInitialLoad) {
-        toast.error("Failed to load cart items");
         setCartItems([]);
       }
     } finally {
@@ -57,28 +56,18 @@ export default function CartPage() {
     }
   };
 
-  const handleUpdateQuantity = async (variantId: string, size: string, quantity: number) => {
+  const handleUpdateQuantity = async (cartItemId: string, quantity: number) => {
     const previousItems = [...cartItems];
-    
+
     // ⚡ Optimistic UI Update
     setCartItems((prev) =>
       prev.map((item) =>
-        item.variantId === variantId && item.size === size
-          ? { ...item, quantity }
-          : item
+        item._id === cartItemId ? { ...item, quantity } : item
       )
     );
 
     try {
-      const item = previousItems.find((i) => i.variantId === variantId && i.size === size);
-      if (!item) return;
-
-      await cartService.updateCart({
-        productId: item.product._id,
-        variantId,
-        size,
-        quantity,
-      });
+      await cartService.updateCart(cartItemId, quantity);
 
       toast.success("Cart updated successfully");
       refreshCounts();
@@ -89,22 +78,15 @@ export default function CartPage() {
     }
   };
 
-  const handleRemoveItem = async (variantId: string, size: string) => {
+  const handleRemoveItem = async (cartItemId: string) => {
     const previousItems = [...cartItems];
-    
+
     // ⚡ Optimistic UI Removal
-    setCartItems((prev) =>
-      prev.filter((item) => !(item.variantId === variantId && item.size === size))
-    );
+    setCartItems((prev) => prev.filter((item) => item._id !== cartItemId));
 
     try {
-      const item = previousItems.find((i) => i.variantId === variantId && i.size === size);
-      if (!item) return;
-
       await cartService.removeFromCart({
-        productId: item.product._id,
-        variantId,
-        size,
+        removeids: [cartItemId],
       });
 
       toast.success("Item removed from cart");
@@ -112,7 +94,7 @@ export default function CartPage() {
     } catch (error) {
       setCartItems(previousItems);
       console.error("Error removing item:", error);
-      toast.error("Failed to remove item");
+      toast.error("Failed to remove item from cart");
     }
   };
 
@@ -123,7 +105,11 @@ export default function CartPage() {
     setCartItems([]);
 
     try {
-      await cartService.clearCart();
+      if (previousItems.length > 0) {
+        await cartService.removeFromCart({
+          removeids: previousItems.map((item) => item._id),
+        });
+      }
       toast.success("Cart cleared successfully");
       refreshCounts();
     } catch (error) {
@@ -196,7 +182,7 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-3">
             {cartItems.map((item) => (
               <CartItem
-                key={`${item.variantId}-${item.size}`}
+                key={item._id}
                 item={item}
                 onUpdateQuantity={handleUpdateQuantity}
                 onRemove={handleRemoveItem}

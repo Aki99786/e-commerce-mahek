@@ -46,7 +46,7 @@ export default function CheckoutAddressPage() {
           if (savedState && savedState.items.length > 0) return savedState;
 
           const cartRes = await cartService.getCartList();
-          const enriched = enrichCartItemsWithImages(cartRes.items || []);
+          const enriched = enrichCartItemsWithImages(cartRes?.data?.list ?? []);
 
           if (enriched.length === 0) {
             router.push(ROUTES.CART);
@@ -64,7 +64,7 @@ export default function CheckoutAddressPage() {
               productId: item.product._id,
               productName: item.product.name,
               variantId: item.variantId,
-              color: item.color,
+              color: item.color ?? "",
               size: item.size,
               quantity: item.quantity,
               price: item.price,

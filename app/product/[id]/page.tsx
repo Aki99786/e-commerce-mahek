@@ -18,14 +18,18 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
   
   try {
     const product = await productService.getProductById(id);
+    const images =
+      product.product_variants?.[0]?.images ||
+      product.variant?.images ||
+      [];
     
     return {
-      title: `${product.name} - ${product.brand} | Mahek`,
-      description: product.description || `Shop ${product.name} by ${product.brand}. ${product.fabric} fabric with ${product.pattern} pattern.`,
+      title: `${product.product_name} - ${product.brand} | Mahek`,
+      description: product.description || `Shop ${product.product_name} by ${product.brand}.`,
       openGraph: {
-        title: product.name,
+        title: product.product_name,
         description: product.description,
-        images: product.allImages.slice(0, 4),
+        images: images.slice(0, 4),
       },
     };
   } catch {

@@ -11,6 +11,7 @@ interface ProductImageGalleryProps {
   productName: string;
   productId: string;
   variantId: string;
+  size_id?: string;
   size: string;
   label?: {
     type: ProductLabelType;
@@ -19,13 +20,22 @@ interface ProductImageGalleryProps {
   bestseller?: boolean;
 }
 
-export const ProductImageGallery = ({ images, productName: _productName, productId, variantId, size, label, bestseller }: ProductImageGalleryProps) => {
+export const ProductImageGallery = ({
+  images,
+  productName: _productName,
+  productId,
+  variantId,
+  size_id,
+  size,
+  label,
+  bestseller,
+}: ProductImageGalleryProps) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
-  const { incrementWishlistCount, decrementWishlistCount } = useCartWishlist();
+  const { incrementWishlistCount, decrementWishlistCount, getWishlistItemId, refreshCounts } = useCartWishlist();
 
   if (!images || images.length === 0) {
     return (
@@ -145,13 +155,17 @@ export const ProductImageGallery = ({ images, productName: _productName, product
               try {
                 setIsAddingToWishlist(true);
                 if (isWishlisted) {
-                  await wishlistService.removeFromWishlist({ productId, variantId, size });
+                  const wishlistItemId = getWishlistItemId(productId);
+                  if (wishlistItemId) {
+                    await wishlistService.removeFromWishlist(wishlistItemId);
+                  }
                   setIsWishlisted(false);
                   decrementWishlistCount();
                 } else {
-                  await wishlistService.addToWishlist({ productId, variantId, size });
+                  await wishlistService.addToWishlist({ productId, variantId, size_id, size });
                   setIsWishlisted(true);
                   incrementWishlistCount();
+                  await refreshCounts();
                 }
               } catch (error) {
                 console.error("Failed to update wishlist:", error);

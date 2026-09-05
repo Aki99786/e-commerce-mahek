@@ -18,6 +18,7 @@ interface CartWishlistContextType {
   addToWishlistedIds: (productId: string) => void;
   removeFromWishlistedIds: (productId: string) => void;
   addToCartedIds: (productId: string) => void;
+  getWishlistItemId: (productId: string) => string | undefined;
 }
 
 const CartWishlistContext = createContext<CartWishlistContextType | undefined>(undefined);
@@ -26,14 +27,20 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [wishlistedProductIds, setWishlistedProductIds] = useState<Set<string>>(new Set());
+  const [wishlistItemMap, setWishlistItemMap] = useState<Map<string, string>>(new Map());
   const [cartedProductIds, setCartedProductIds] = useState<Set<string>>(new Set());
   const [mounted, setMounted] = useState(false);
+
+  const getWishlistItemId = (productId: string): string | undefined => {
+    return wishlistItemMap.get(productId);
+  };
 
   const fetchCounts = async () => {
     if (!isAuthenticated()) {
       setCartCount(0);
       setWishlistCount(0);
       setWishlistedProductIds(new Set());
+      setWishlistItemMap(new Map());
       return;
     }
 
@@ -42,10 +49,24 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
         cartService.getCartList(),
         wishlistService.getWishlist(),
       ]);
-      setCartCount(cartList.items.reduce((total, item) => total + item.quantity, 0));
-      setWishlistCount(wishlist.items.length);
-      setWishlistedProductIds(new Set(wishlist.items.filter((item) => item.product != null).map((item) => item.product._id)));
-      setCartedProductIds(new Set(cartList.items.filter((item) => item.product != null).map((item) => item.product._id)));
+      const cartItems = cartList?.data?.list ?? [];
+      setCartCount(cartItems.reduce((total, item) => total + (item?.quantity ?? 0), 0));
+      setWishlistCount(wishlist?.total ?? wishlist?.list?.length ?? 0);
+      
+      const itemMap = new Map<string, string>();
+      const productIds = new Set<string>();
+      (wishlist?.list ?? []).forEach((item) => {
+        if (item?.product_id) {
+          productIds.add(item.product_id);
+          if (item._id) {
+            itemMap.set(item.product_id, item._id);
+          }
+        }
+      });
+      setWishlistedProductIds(productIds);
+      setWishlistItemMap(itemMap);
+
+      setCartedProductIds(new Set(cartItems.map((item) => item?.product_id).filter(Boolean)));
     } catch (error) {
       console.error("Error fetching counts:", error);
     }
@@ -90,12 +111,18 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
   const decrementWishlistCount = () => setWishlistCount((prev) => Math.max(0, prev - 1));
   const addToWishlistedIds = (productId: string) =>
     setWishlistedProductIds((prev) => new Set(prev).add(productId));
-  const removeFromWishlistedIds = (productId: string) =>
+  const removeFromWishlistedIds = (productId: string) => {
     setWishlistedProductIds((prev) => {
       const next = new Set(prev);
       next.delete(productId);
       return next;
     });
+    setWishlistItemMap((prev) => {
+      const next = new Map(prev);
+      next.delete(productId);
+      return next;
+    });
+  };
   const addToCartedIds = (productId: string) =>
     setCartedProductIds((prev) => new Set(prev).add(productId));
 
@@ -114,6 +141,7 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
         addToWishlistedIds,
         removeFromWishlistedIds,
         addToCartedIds,
+        getWishlistItemId,
       }}
     >
       {children}

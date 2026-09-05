@@ -5,7 +5,7 @@ export const API_CONFIG = {
 export const API_ENDPOINTS = {
   CART: {
     ADD: "cart/add",
-    UPDATE: "cart/update",
+    UPDATE: (id: string) => `cart/update/${id}`,
     REMOVE: "cart/remove",
     LIST: "cart/list",
     CLEAR: "cart/clear",
@@ -13,12 +13,13 @@ export const API_ENDPOINTS = {
   WISHLIST: {
     LIST: "wishlist/list",
     ADD: "wishlist/add",
-    REMOVE: "wishlist/remove",
+    REMOVE: (id: string) => `wishlist/remove/${id}`,
     MOVE_TO_CART: "wishlist/move-to-cart",
     BULK_MOVE_TO_CART: "wishlist/bulk-move-to-cart",
   },
   PRODUCTS: {
     LIST: "products/list",
+    FILTER_OPTIONS: "products/get-filter-options",
     BY_ID: (id: string) => `products/${id}`,
     BEST_SELLING: "products/best-selling",
     TRENDING: "products/trending",

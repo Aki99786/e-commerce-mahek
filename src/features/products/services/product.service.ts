@@ -5,6 +5,7 @@ import type {
   ProductsListResponse,
   ProductsListParams,
   TestimonialsResponse,
+  FilterOptionsResponse,
 } from "../types";
 
 class ProductService extends BaseService {
@@ -70,6 +71,20 @@ class ProductService extends BaseService {
 
   async getTestimonials(): Promise<TestimonialsResponse> {
     return this.get<TestimonialsResponse>(API_ENDPOINTS.PRODUCTS.TESTIMONIALS);
+  }
+
+  private filterOptionsPromise: Promise<FilterOptionsResponse> | null = null;
+
+  async getFilterOptions(): Promise<FilterOptionsResponse> {
+    if (!this.filterOptionsPromise) {
+      this.filterOptionsPromise = this.get<FilterOptionsResponse>(
+        API_ENDPOINTS.PRODUCTS.FILTER_OPTIONS
+      ).catch((err) => {
+        this.filterOptionsPromise = null;
+        throw err;
+      });
+    }
+    return this.filterOptionsPromise;
   }
 }
 

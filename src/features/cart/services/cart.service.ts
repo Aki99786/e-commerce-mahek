@@ -5,50 +5,46 @@ export interface AddToCartRequest {
   productId: string;
   variantId: string;
   size: string;
+  size_id?: string;
   quantity: number;
 }
 
 export interface UpdateCartRequest {
-  productId: string;
-  variantId: string;
-  size: string;
+  id: string;
   quantity: number;
 }
 
 export interface RemoveFromCartRequest {
-  productId: string;
-  variantId: string;
-  size: string;
-}
-
-export interface CartItemProductVariant {
-  variantId: string;
-  color?: string;
-  images?: string[];
-  sellingPrice?: number;
-  mrp?: number;
-}
-
-export interface CartItemProduct {
-  _id: string;
-  name: string;
-  slug: string;
-  allImages?: string[];
-  variants?: CartItemProductVariant[];
+  removeids: string[];
 }
 
 export interface CartItem {
-  product: CartItemProduct;
+  _id: string;
+  product_id: string;
   variantId: string;
-  color: string;
+  size_id: string;
+  product_name: string;
+  description: string;
+  brand: string;
+  category: string;
+  images: string[];
   size: string;
   quantity: number;
-  price: number;
-  images?: string[];
+  selling_price: number;
+  mrp: number;
+  color?: string;
+}
+
+export interface CartData {
+  total: number;
+  offset: number;
+  limit: number;
+  list: CartItem[];
 }
 
 export interface CartListResponse {
-  items: CartItem[];
+  success: boolean;
+  data: CartData;
 }
 
 class CartService extends BaseService {
@@ -58,8 +54,10 @@ class CartService extends BaseService {
     return this.post<void>(API_ENDPOINTS.CART.ADD, data);
   }
 
-  async updateCart(data: UpdateCartRequest): Promise<void> {
-    return this.put<void>(API_ENDPOINTS.CART.UPDATE, data);
+  async updateCart(idOrData: string | UpdateCartRequest, quantity?: number): Promise<void> {
+    const id = typeof idOrData === "string" ? idOrData : idOrData.id;
+    const qty = typeof idOrData === "string" ? quantity ?? 1 : idOrData.quantity;
+    return this.put<void>(API_ENDPOINTS.CART.UPDATE(id), { quantity: qty });
   }
 
   async removeFromCart(data: RemoveFromCartRequest): Promise<void> {
@@ -77,7 +75,8 @@ class CartService extends BaseService {
   async getCartCount(): Promise<number> {
     try {
       const response = await this.getCartList();
-      return response.items.reduce((total, item) => total + item.quantity, 0);
+      const list = response?.data?.list ?? [];
+      return list.reduce((total, item) => total + (item?.quantity ?? 0), 0);
     } catch (error) {
       console.error("Error fetching cart count:", error);
       return 0;

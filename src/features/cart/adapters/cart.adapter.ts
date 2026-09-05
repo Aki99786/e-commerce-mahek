@@ -1,32 +1,67 @@
 import type { CartItem } from "../services/cart.service";
 
-export interface UICartItem extends CartItem {
+export interface UICartItem {
+  _id: string;
+  productId: string;
+  productName: string;
+  description: string;
+  brand: string;
+  category: string;
+  variantId: string;
+  color?: string;
+  size: string;
+  size_id: string;
+  price: number;
+  mrp: number;
+  quantity: number;
   images: string[];
+  product: {
+    _id: string;
+    name: string;
+    slug: string;
+    allImages: string[];
+  };
 }
 
 export function enrichCartItemWithImages(item: CartItem): UICartItem {
-  // Find the selected variant matching item.variantId
-  const currentVariant = item.product?.variants?.find(
-    (variant) => variant.variantId === item.variantId
-  );
-
-  // Fallback order for images:
-  // 1. Selected variant images
-  // 2. Any other variant images if selected variant has no images
-  // 3. Product allImages or existing item images
+  const productId = item?.product_id ?? "";
+  const productName = item?.product_name ?? "";
+  const variantId = item?.variantId ?? "";
+  const size = item?.size ?? "";
+  const size_id = item?.size_id ?? "";
+  const price = item?.selling_price ?? 0;
+  const mrp = item?.mrp ?? price;
+  const quantity = item?.quantity ?? 1;
   const images =
-    (currentVariant?.images?.length ? currentVariant.images : null) ||
-    item.product?.variants?.find((v) => v.images && v.images.length > 0)?.images ||
-    item.product?.allImages ||
-    item.images ||
-    [];
+    item?.images && item.images.length > 0
+      ? item.images
+      : ["/placeholder.jpg"];
 
   return {
-    ...item,
+    _id: item?._id ?? "",
+    productId,
+    productName,
+    description: item?.description ?? "",
+    brand: item?.brand ?? "",
+    category: item?.category ?? "",
+    variantId,
+    color: item?.color ?? "",
+    size,
+    size_id,
+    price,
+    mrp,
+    quantity,
     images,
+    product: {
+      _id: productId,
+      name: productName,
+      slug: productId,
+      allImages: images,
+    },
   };
 }
 
 export function enrichCartItemsWithImages(items: CartItem[]): UICartItem[] {
+  if (!Array.isArray(items)) return [];
   return items.map(enrichCartItemWithImages);
 }

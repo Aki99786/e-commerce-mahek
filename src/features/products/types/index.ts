@@ -8,52 +8,46 @@ export type ProductSortOption =
 export type ProductAvailability = "inStock" | "outOfStock" | "preOrder";
 
 export interface ProductVariantSize {
+  _id: string;
   size: string;
-  stock: number;
+  quantity: number;
+  selling_price: number;
+  mrp: number;
 }
 
 export interface ProductVariant {
   _id: string;
-  variantId: string;
+  product_id: string;
   color: string;
-  sellingPrice: number;
-  mrp: number;
   sizes: ProductVariantSize[];
   images: string[];
+  sku: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export interface Product {
   _id: string;
-  name: string;
-  slug: string;
-  brand: string;
   category: string;
-  subCategory: string;
-  pattern: string;
-  sleeveType?: string;
+  brand: string;
+  product_name: string;
   fabric: string;
-  neckType?: string;
   description: string;
-  isActive: boolean;
-  isFeatured: boolean;
-  isPreOrder?: boolean;
-  avgPrice: number;
-  totalStock: number;
-  allImages: string[];
-  allColors: string[];
-  allSizes: string[];
-  variants: ProductVariant[];
-  averageRating: number;
-  totalReviews: number;
-  reviews: unknown[];
+  is_sale: boolean;
+  is_visible: boolean;
+  status: string;
+  is_delete: boolean;
   createdAt: string;
   updatedAt: string;
-  __v?: number;
+  __v: number;
+  variant: ProductVariant;
+  product_variants?: ProductVariant[];
 }
 
 export interface ProductsListResponse {
   total: number;
-  page: number;
+  offset: number;
   limit: number;
   totalPages: number;
   products: Product[];
@@ -61,6 +55,37 @@ export interface ProductsListResponse {
 
 export interface TestimonialsResponse {
   testimonials: unknown[];
+}
+
+export interface FilterPriceRange {
+  min: number;
+  max: number;
+}
+
+export interface FilterItemOption {
+  name: string;
+  count?: number;
+}
+
+export interface ColorFilterItem {
+  name: string;
+  code?: string;
+  hex?: string;
+  count?: number;
+}
+
+export interface FilterOptionsData {
+  brands: (string | FilterItemOption)[];
+  categories: (string | FilterItemOption)[];
+  fabrics: (string | FilterItemOption)[];
+  colors: (string | ColorFilterItem)[];
+  sizes: (string | FilterItemOption)[];
+  price: FilterPriceRange;
+}
+
+export interface FilterOptionsResponse {
+  success: boolean;
+  data: FilterOptionsData;
 }
 
 export interface ProductsListParams {

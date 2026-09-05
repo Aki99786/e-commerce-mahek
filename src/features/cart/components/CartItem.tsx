@@ -5,42 +5,44 @@ import Image from "next/image";
 import Link from "next/link";
 import { Tooltip } from "react-tooltip";
 import { ROUTES } from "@/constants/routes";
-import type { CartItem as CartItemType } from "../services/cart.service";
+import type { UICartItem } from "../adapters/cart.adapter";
 
 interface CartItemProps {
-  item: CartItemType;
-  onUpdateQuantity: (variantId: string, size: string, quantity: number) => void;
-  onRemove: (variantId: string, size: string) => void;
+  item: UICartItem;
+  onUpdateQuantity: (cartItemId: string, quantity: number) => void;
+  onRemove: (cartItemId: string) => void;
 }
 
 export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
 
-  const productUrl = ROUTES.CATEGORY(item.product._id);
-  const productImage = item.images?.[0] || item.product.allImages?.[0] || "/placeholder.jpg";
+  const productUrl = item.productId ? ROUTES.PRODUCT_DETAIL(item.productId) : "#";
+  const productName = item.productName || item.product?.name || "Product";
+  const productImage = item.images?.[0] || "/placeholder.jpg";
 
   const handleQuantityChange = async (newQuantity: number) => {
-    if (newQuantity < 1) return;
+    if (newQuantity < 1 || !item?._id) return;
     setIsUpdating(true);
     try {
-      await onUpdateQuantity(item.variantId, item.size, newQuantity);
+      await onUpdateQuantity(item._id, newQuantity);
     } finally {
       setIsUpdating(false);
     }
   };
 
   const handleRemove = async () => {
+    if (!item?._id) return;
     setIsRemoving(true);
     try {
-      await onRemove(item.variantId, item.size);
+      await onRemove(item._id);
     } finally {
       setIsRemoving(false);
     }
   };
 
   const subtotal = item.price * item.quantity;
-  const colorName = item.color.charAt(0).toUpperCase() + item.color.slice(1);
+  const colorName = item.color ? item.color.charAt(0).toUpperCase() + item.color.slice(1) : "";
 
   return (
     <div className={`bg-white rounded-xl border border-gray-100 shadow-sm transition-opacity ${isRemoving ? "opacity-40 pointer-events-none" : ""}`}>
@@ -51,7 +53,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
           <div className="relative w-20 h-24 sm:w-24 sm:h-28 bg-gray-50 rounded-lg overflow-hidden">
             <Image
               src={productImage}
-              alt={item.product.name}
+              alt={productName}
               fill
               sizes="(max-width: 640px) 80px, 96px"
               className="object-cover object-top"
@@ -62,15 +64,22 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
         {/* Product Details */}
         <div className="flex-1 min-w-0 flex flex-col justify-between">
           <div>
+            {/* Brand */}
+            {item.brand && (
+              <p className="text-xs font-semibold text-rose-600 tracking-wide uppercase mb-0.5">
+                {item.brand}
+              </p>
+            )}
+
             {/* Name + remove button row */}
             <div className="flex items-start justify-between gap-2 mb-1.5">
               <Link href={productUrl} className="flex-1 min-w-0">
                 <h3
                   className="font-semibold text-sm sm:text-base text-gray-900 hover:text-rose-700 transition-colors line-clamp-2 leading-snug"
                   data-tooltip-id={`product-name-${item.variantId}-${item.size}`}
-                  data-tooltip-content={item.product.name}
+                  data-tooltip-content={productName}
                 >
-                  {item.product.name}
+                  {productName}
                 </h3>
               </Link>
               <Tooltip
@@ -92,12 +101,16 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
 
             {/* Color + Size pills */}
             <div className="flex flex-wrap gap-1.5 mb-2">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs text-gray-600">
-                {colorName}
-              </span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs text-gray-600">
-                Size: {item.size}
-              </span>
+              {colorName ? (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs text-gray-600">
+                  {colorName}
+                </span>
+              ) : null}
+              {item.size && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs text-gray-600">
+                  Size: {item.size}
+                </span>
+              )}
             </div>
           </div>
 

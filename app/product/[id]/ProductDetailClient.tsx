@@ -25,19 +25,28 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [showZoom, setShowZoom] = useState(false);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLDivElement>(null);
-  const { incrementCartCount, incrementWishlistCount, decrementWishlistCount, refreshCounts, cartedProductIds, addToCartedIds, wishlistedProductIds, addToWishlistedIds, removeFromWishlistedIds } = useCartWishlist();
+  const { incrementCartCount, incrementWishlistCount, decrementWishlistCount, refreshCounts, cartedProductIds, addToCartedIds, wishlistedProductIds, addToWishlistedIds, removeFromWishlistedIds, getWishlistItemId } = useCartWishlist();
   const [isInCart, setIsInCart] = useState(() => cartedProductIds.has(product._id));
   const [isInWishlist, setIsInWishlist] = useState(() => wishlistedProductIds.has(product._id));
 
-  const selectedVariant = product.variants[selectedVariantIndex];
-  const validSizes = selectedVariant.sizes.filter(s => s !== null && s !== undefined);
+  const variants =
+    product.product_variants && product.product_variants.length > 0
+      ? product.product_variants
+      : product.variant
+        ? [product.variant]
+        : [];
+  const selectedVariant = variants[selectedVariantIndex] || variants[0];
+  const validSizes = selectedVariant?.sizes?.filter((s) => s !== null && s !== undefined) || [];
   const selectedSize = validSizes[selectedSizeIndex] || validSizes[0];
-  const images = selectedVariant.images.length > 0 ? selectedVariant.images : product.allImages;
+  const images = selectedVariant?.images || [];
   const hasValidSizes = validSizes.length > 0;
 
-  const discount = selectedVariant.mrp > 0 
-    ? Math.round(((selectedVariant.mrp - selectedVariant.sellingPrice) / selectedVariant.mrp) * 100)
-    : 0;
+  const sellingPrice = selectedSize ? selectedSize.selling_price : 0;
+  const mrp = selectedSize ? selectedSize.mrp : 0;
+  const discount =
+    mrp > sellingPrice
+      ? Math.round(((mrp - sellingPrice) / mrp) * 100)
+      : 0;
 
   const handleAddToCart = async () => {
     if (!isAuthenticated()) {
@@ -54,8 +63,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     try {
       await cartService.addToCart({
         productId: product._id,
-        variantId: selectedVariant.variantId,
+        variantId: selectedVariant._id,
         size: hasValidSizes ? (selectedSize?.size || "ONE_SIZE") : "ONE_SIZE",
+        size_id: selectedSize?._id,
         quantity: 1,
       });
       setIsInCart(true);
@@ -78,18 +88,18 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     setIsAddingToWishlist(true);
     try {
       if (isInWishlist) {
-        await wishlistService.removeFromWishlist({
-          productId: product._id,
-          variantId: selectedVariant.variantId,
-          size: hasValidSizes ? (selectedSize?.size || "ONE_SIZE") : "ONE_SIZE",
-        });
+        const wishlistItemId = getWishlistItemId(product._id);
+        if (wishlistItemId) {
+          await wishlistService.removeFromWishlist(wishlistItemId);
+        }
         setIsInWishlist(false);
         removeFromWishlistedIds(product._id);
         decrementWishlistCount();
       } else {
         await wishlistService.addToWishlist({
           productId: product._id,
-          variantId: selectedVariant.variantId,
+          variantId: selectedVariant._id,
+          size_id: selectedSize?._id,
           size: hasValidSizes ? (selectedSize?.size || "ONE_SIZE") : "ONE_SIZE",
         });
         setIsInWishlist(true);
@@ -148,7 +158,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               >
                 <Image
                   src={images[selectedImageIndex]}
-                  alt={product.name}
+                  alt={product.product_name}
                   fill
                   className="object-cover"
                   priority
@@ -233,7 +243,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 >
                   <Image
                     src={image}
-                    alt={`${product.name} thumbnail ${index + 1}`}
+                    alt={`${product.product_name} thumbnail ${index + 1}`}
                     fill
                     className="object-cover"
                     sizes="(max-width: 1024px) 80px, 80px"
@@ -255,41 +265,19 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
             {/* Product Name */}
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
-              {product.name}
+              {product.product_name}
             </h1>
-
-            {/* Rating */}
-            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                      i < Math.floor(product.averageRating)
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-300"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="font-semibold text-gray-900 text-sm sm:text-base">
-                {product.averageRating.toFixed(1)}
-              </span>
-              <span className="text-gray-500 text-sm sm:text-base">
-                ({product.totalReviews} ratings)
-              </span>
-            </div>
 
             {/* Pricing */}
             <div className="mb-4 sm:mb-6 pb-4 sm:pb-6 border-b border-gray-200">
               <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mb-2">
                 <span className="text-3xl sm:text-4xl font-bold text-gray-900">
-                  ₹{selectedVariant.sellingPrice.toLocaleString()}
+                  ₹{sellingPrice.toLocaleString()}
                 </span>
-                {selectedVariant.mrp > selectedVariant.sellingPrice && (
+                {mrp > sellingPrice && (
                   <>
                     <span className="text-xl sm:text-2xl text-gray-400 line-through">
-                      ₹{selectedVariant.mrp.toLocaleString()}
+                      ₹{mrp.toLocaleString()}
                     </span>
                     <span className="px-2 sm:px-3 py-1 bg-orange-100 text-orange-600 rounded-md text-xs sm:text-sm font-semibold">
                       {discount}% OFF
@@ -297,9 +285,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   </>
                 )}
               </div>
-              {selectedVariant.mrp > selectedVariant.sellingPrice && (
+              {mrp > sellingPrice && (
                 <p className="text-green-600 text-sm font-medium">
-                  You save ₹{(selectedVariant.mrp - selectedVariant.sellingPrice).toLocaleString()}!
+                  You save ₹{(mrp - sellingPrice).toLocaleString()}!
                 </p>
               )}
               <p className="text-gray-500 text-sm mt-1">
@@ -313,15 +301,19 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 Select Color
               </h3>
               <div className="flex flex-wrap gap-2 sm:gap-3">
-                {product.variants.map((variant, index) => {
+                {variants.map((variant, index) => {
                   const isSelected = selectedVariantIndex === index;
-                  const variantDiscount = variant.mrp > 0 
-                    ? Math.round(((variant.mrp - variant.sellingPrice) / variant.mrp) * 100)
-                    : 0;
-                  
+                  const firstSize = variant.sizes?.[0];
+                  const variantPrice = firstSize?.selling_price || 0;
+                  const variantMrp = firstSize?.mrp || 0;
+                  const variantDiscount =
+                    variantMrp > variantPrice
+                      ? Math.round(((variantMrp - variantPrice) / variantMrp) * 100)
+                      : 0;
+
                   return (
                     <button
-                      key={variant.variantId}
+                      key={variant._id || index}
                       onClick={() => {
                         setSelectedVariantIndex(index);
                         setSelectedSizeIndex(0);
@@ -340,7 +332,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                           {variant.color}
                         </p>
                         <p className="text-xs text-gray-600 mt-0.5">
-                          ₹{variant.sellingPrice.toLocaleString()}
+                          ₹{variantPrice.toLocaleString()}
                           {variantDiscount > 0 && (
                             <span className="text-green-600 ml-1">
                               ({variantDiscount}% OFF)
@@ -362,31 +354,31 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 </h3>
                 <div className="flex flex-wrap gap-2 sm:gap-3">
                   {validSizes.map((sizeOption, index) => {
-                  const isSelected = selectedSizeIndex === index;
-                  const isOutOfStock = sizeOption.stock === 0;
-                  
-                  return (
-                    <button
-                      key={index}
-                      onClick={() => !isOutOfStock && setSelectedSizeIndex(index)}
-                      disabled={isOutOfStock}
-                      className={`relative px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl border-2 transition-all min-w-[64px] sm:min-w-[80px] ${
-                        isOutOfStock
-                          ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
-                          : isSelected
-                          ? "border-pink-600 bg-pink-50 text-pink-700 ring-2 ring-pink-200"
-                          : "border-gray-200 hover:border-gray-300 bg-white text-gray-900"
-                      }`}
-                    >
-                      <span className="font-medium text-sm">
-                        {sizeOption.size}
-                      </span>
-                      {isOutOfStock && (
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          <span className="w-full h-0.5 bg-gray-400 rotate-45"></span>
+                    const isSelected = selectedSizeIndex === index;
+                    const isOutOfStock = sizeOption.quantity === 0;
+
+                    return (
+                      <button
+                        key={sizeOption._id || index}
+                        onClick={() => !isOutOfStock && setSelectedSizeIndex(index)}
+                        disabled={isOutOfStock}
+                        className={`relative px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl border-2 transition-all min-w-[64px] sm:min-w-[80px] ${
+                          isOutOfStock
+                            ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
+                            : isSelected
+                            ? "border-pink-600 bg-pink-50 text-pink-700 ring-2 ring-pink-200"
+                            : "border-gray-200 hover:border-gray-300 bg-white text-gray-900"
+                        }`}
+                      >
+                        <span className="font-medium text-sm">
+                          {sizeOption.size}
                         </span>
-                      )}
-                    </button>
+                        {isOutOfStock && (
+                          <span className="absolute inset-0 flex items-center justify-center">
+                            <span className="w-full h-0.5 bg-gray-400 rotate-45"></span>
+                          </span>
+                        )}
+                      </button>
                     );
                   })}
                 </div>
@@ -396,7 +388,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             {/* Add to Cart / Go to Bag Button */}
             <button
               onClick={handleAddToCart}
-              disabled={!isInCart && (hasValidSizes ? (!selectedSize || selectedSize.stock === 0 || isAddingToCart) : isAddingToCart)}
+              disabled={!isInCart && (hasValidSizes ? (!selectedSize || selectedSize.quantity === 0 || isAddingToCart) : isAddingToCart)}
               className={`w-full font-semibold py-3.5 sm:py-4 px-6 sm:px-8 rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg mb-4 ${
                 isInCart
                   ? "bg-white border-2 border-pink-600 text-pink-600 hover:bg-pink-50 shadow-pink-100 cursor-pointer"
@@ -409,7 +401,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 : isAddingToCart
                 ? "Adding..."
                 : hasValidSizes
-                ? (!selectedSize || selectedSize.stock === 0 ? "Out of Stock" : "Add to Bag")
+                ? (!selectedSize || selectedSize.quantity === 0 ? "Out of Stock" : "Add to Bag")
                 : "Add to Bag"}
             </button>
 
@@ -439,43 +431,31 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     Fabric
                   </p>
                   <p className="text-sm text-gray-900 font-medium">
-                    {product.fabric}
+                    {product.fabric || "N/A"}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-                    Pattern
+                    Category
                   </p>
-                  <p className="text-sm text-gray-900 font-medium">
-                    {product.pattern}
+                  <p className="text-sm text-gray-900 font-medium capitalize">
+                    {product.category || "N/A"}
                   </p>
                 </div>
-                {product.sleeveType && (
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-                      Sleeve Type
-                    </p>
-                    <p className="text-sm text-gray-900 font-medium">
-                      {product.sleeveType}
-                    </p>
-                  </div>
-                )}
-                {product.neckType && (
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-                      Neck Type
-                    </p>
-                    <p className="text-sm text-gray-900 font-medium">
-                      {product.neckType}
-                    </p>
-                  </div>
-                )}
+                <div>
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                    Status
+                  </p>
+                  <p className="text-sm text-gray-900 font-medium capitalize">
+                    {product.status || "Active"}
+                  </p>
+                </div>
                 <div>
                   <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
                     Total Stock
                   </p>
                   <p className="text-sm text-gray-900 font-medium">
-                    {hasValidSizes ? (selectedSize && selectedSize.stock > 0 ? `${selectedSize.stock} units` : "Out of Stock") : "One Size"}
+                    {hasValidSizes ? (selectedSize && selectedSize.quantity > 0 ? `${selectedSize.quantity} units` : "Out of Stock") : "One Size"}
                   </p>
                 </div>
               </div>

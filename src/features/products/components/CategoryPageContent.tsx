@@ -14,6 +14,7 @@ import type {
   Product,
   ProductsListParams,
   ProductsListResponse,
+  FilterOptionsData,
 } from "../types";
 import { CATEGORY_TYPE_MAP } from "../types";
 import { Pagination } from "./Pagination";
@@ -37,7 +38,7 @@ export function CategoryPageContent({
   const categoryDisplayName = CATEGORIES.find((c) => c.slug === categorySlugFromUrl)?.name ?? '';
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [allCategoryProducts, setAllCategoryProducts] = useState<Product[]>([]);
+  const [filterOptions, setFilterOptions] = useState<FilterOptionsData | null>(null);
   const [expandedVariants, setExpandedVariants] = useState<ExpandedVariantProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
@@ -76,6 +77,12 @@ export function CategoryPageContent({
     if (searchParams.get('size')) {
       params.size = searchParams.get('size')!;
     }
+    if (searchParams.get('brand')) {
+      params.brand = searchParams.get('brand')!;
+    }
+    if (searchParams.get('fabric')) {
+      params.fabric = searchParams.get('fabric')!;
+    }
     if (searchParams.get('availability')) {
       params.availability = searchParams.get('availability') as ProductsListParams['availability'];
     }
@@ -91,22 +98,24 @@ export function CategoryPageContent({
     fetchWishlist();
   }, []);
 
-  // Fetch all products for filter options (unfiltered, large limit)
+  // Fetch filter options from API
   useEffect(() => {
-    if (!isInitialized) return;
-    const fetchAllForFilters = async () => {
+    let isMounted = true;
+    const fetchFilters = async () => {
       try {
-        const params: ProductsListParams = { limit: 500, page: 1 };
-        if (categoryType) params.type = categoryType;
-        const response: ProductsListResponse =
-          await productService.getProductsList(params);
-        setAllCategoryProducts(response.products);
+        const response = await productService.getFilterOptions();
+        if (isMounted && response?.data) {
+          setFilterOptions(response.data);
+        }
       } catch (error) {
-        console.error("Error fetching all products for filters:", error);
+        console.error("Error fetching filter options:", error);
       }
     };
-    fetchAllForFilters();
-  }, [categoryType, isInitialized]);
+    fetchFilters();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Fetch products when filters, category or search query changes
   useEffect(() => {
@@ -143,6 +152,12 @@ export function CategoryPageContent({
     if (filters.size) {
       params.set('size', filters.size);
     }
+    if (filters.brand) {
+      params.set('brand', filters.brand);
+    }
+    if (filters.fabric) {
+      params.set('fabric', filters.fabric);
+    }
     if (filters.availability) {
       params.set('availability', filters.availability);
     }
@@ -173,7 +188,7 @@ export function CategoryPageContent({
     
     try {
       const response = await wishlistService.getWishlist();
-      setWishlistItems(response.items);
+      setWishlistItems(response?.list ?? []);
     } catch (error) {
       console.error("Error fetching wishlist:", error);
     }
@@ -196,12 +211,11 @@ export function CategoryPageContent({
       setProducts(response.products);
       setExpandedVariants(allExpandedVariants);
       setTotalProducts(allExpandedVariants.length);
-      setCurrentPage(response.page);
-
-      // On first unfiltered fetch, store the full category products for filter options
-      if (isUnfilteredFetch) {
-        setAllCategoryProducts(response.products);
-      }
+      const pageNum =
+        response.offset !== undefined && response.limit
+          ? Math.floor(response.offset / response.limit) + 1
+          : 1;
+      setCurrentPage(pageNum);
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -212,10 +226,8 @@ export function CategoryPageContent({
   const isProductInWishlist = (productId: string, variantId: string, size: string): boolean => {
     return wishlistItems.some(
       (item) =>
-        item.product != null &&
-        item.product._id === productId &&
-        item.variantId === variantId &&
-        item.size === size
+        item?.product_id === productId &&
+        item?.variant?.variant_id === variantId
     );
   };
 
@@ -226,29 +238,6 @@ export function CategoryPageContent({
   const handlePageChange = (page: number) => {
     setFilters({ ...filters, page });
   };
-
-  // Aggregate colors from full unfiltered category products (stable filter options)
-  const colorCounts = allCategoryProducts.reduce((acc, product) => {
-    (product.allColors || []).forEach((color) => {
-      const trimmed = color.trim();
-      if (trimmed) {
-        acc[trimmed] = (acc[trimmed] || 0) + 1;
-      }
-    });
-    return acc;
-  }, {} as Record<string, number>);
-
-  const availableColors = Object.entries(colorCounts).map(([color, count]) => ({
-    color,
-    count,
-  }));
-
-  // Aggregate sizes from full unfiltered category products (stable filter options)
-  const availableSizes = Array.from(
-    new Set(
-      allCategoryProducts.flatMap((p) => (p.allSizes || []).map((s) => s.trim()).filter(Boolean))
-    )
-  );
 
   // Derive page heading
   const pageHeading = searchQuery
@@ -286,8 +275,7 @@ export function CategoryPageContent({
         <div className="p-4">
           <ProductFilters
             onFilterChange={(f) => { handleFilterChange(f); setMobileFiltersOpen(false); }}
-            availableColors={availableColors}
-            availableSizes={availableSizes}
+            filterOptions={filterOptions}
             initialFilters={filters}
           />
         </div>
@@ -320,11 +308,10 @@ export function CategoryPageContent({
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Filters Sidebar — desktop only */}
           <aside className="hidden lg:block lg:w-64 flex-shrink-0">
-            <div className="bg-white p-6 rounded-lg shadow-sm sticky top-4">
+            <div className="bg-white p-5 rounded-lg shadow-sm sticky top-4 border border-gray-100">
               <ProductFilters
                 onFilterChange={handleFilterChange}
-                availableColors={availableColors}
-                availableSizes={availableSizes}
+                filterOptions={filterOptions}
                 initialFilters={filters}
               />
             </div>

@@ -14,7 +14,7 @@ import { ROUTES } from "@/constants/routes";
 
 export default function WishlistPage() {
   const router = useRouter();
-  const { incrementCartCount, decrementWishlistCount, cartedProductIds } = useCartWishlist();
+  const { incrementCartCount, decrementWishlistCount, cartedProductIds, removeFromWishlistedIds } = useCartWishlist();
   const [isAuth, setIsAuth] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [wishlistItems, setWishlistItems] = useState<UIWishlistItem[]>([]);
@@ -38,7 +38,7 @@ export default function WishlistPage() {
     setIsFetching(true);
     try {
       const response = await wishlistService.getWishlist();
-      const adaptedItems = adaptWishlistResponseToUI(response.items || []);
+      const adaptedItems = adaptWishlistResponseToUI(response?.list ?? []);
       setWishlistItems(adaptedItems);
     } catch (error) {
       console.error("Error fetching wishlist:", error);
@@ -48,19 +48,18 @@ export default function WishlistPage() {
     }
   };
 
-  const handleRemove = async (productId: string) => {
+  const handleRemove = async (wishlistItemId: string) => {
     try {
-      const item = wishlistItems.find((i) => i.product._id === productId);
-      if (!item) return;
-      await wishlistService.removeFromWishlist({
-        productId: item.product._id,
-        variantId: item.variantId,
-        size: item.size,
-      });
+      const item = wishlistItems.find((i) => i._id === wishlistItemId);
+      if (!item?._id) return;
+      await wishlistService.removeFromWishlist(item._id);
       setWishlistItems((prev) =>
-        prev.filter((i) => i.product._id !== productId)
+        prev.filter((i) => i._id !== item._id)
       );
       decrementWishlistCount();
+      if (item?.product_id) {
+        removeFromWishlistedIds(item.product_id);
+      }
       toast.success("Removed from wishlist");
     } catch (error) {
       console.error("Error removing from wishlist:", error);
@@ -157,7 +156,7 @@ export default function WishlistPage() {
             <div className="flex flex-col gap-3">
               {wishlistItems.map((item) => (
                 <WishlistItem
-                  key={item._id || `${item.product._id}-${item.variantId}`}
+                  key={item._id}
                   item={item}
                   onRemove={handleRemove}
                   onAddToCart={handleAddToCart}

@@ -18,8 +18,8 @@ class WishlistService extends BaseService {
     return this.post<void>(API_ENDPOINTS.WISHLIST.ADD, data);
   }
 
-  async removeFromWishlist(data: RemoveFromWishlistRequest): Promise<void> {
-    return this.delete<void>(API_ENDPOINTS.WISHLIST.REMOVE, data);
+  async removeFromWishlist(id: string): Promise<void> {
+    return this.delete<void>(API_ENDPOINTS.WISHLIST.REMOVE(id));
   }
 
   async moveToCart(data: MoveToCartRequest): Promise<void> {
@@ -38,8 +38,7 @@ class WishlistService extends BaseService {
   async getWishlistCount(): Promise<number> {
     try {
       const response = await this.getWishlist();
-      // API does not return a `total` field; derive it from items.length
-      return response.total ?? response.items.length;
+      return response?.total ?? response?.list?.length ?? 0;
     } catch (error) {
       console.error("Error fetching wishlist count:", error);
       return 0;
