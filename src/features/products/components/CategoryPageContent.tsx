@@ -43,6 +43,7 @@ export function CategoryPageContent({
   const [expandedVariants, setExpandedVariants] = useState<ExpandedVariantProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [isInitialized, setIsInitialized] = useState(false);
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
@@ -53,15 +54,21 @@ export function CategoryPageContent({
   // Initialize filters from URL query params
   const getInitialFilters = (): ProductsListParams => {
     const params: ProductsListParams = {
-      limit: 10,
+      limit: 12,
       page: 1,
     };
 
     if (searchParams.get('page')) {
-      params.page = parseInt(searchParams.get('page')!);
+      const parsedPage = parseInt(searchParams.get('page')!, 10);
+      if (!isNaN(parsedPage) && parsedPage > 0) {
+        params.page = parsedPage;
+      }
     }
     if (searchParams.get('limit')) {
-      params.limit = parseInt(searchParams.get('limit')!);
+      const parsedLimit = parseInt(searchParams.get('limit')!, 10);
+      if (!isNaN(parsedLimit) && parsedLimit > 0) {
+        params.limit = parsedLimit;
+      }
     }
     if (searchParams.get('sort')) {
       params.sort = searchParams.get('sort') as ProductsListParams['sort'];
@@ -135,7 +142,7 @@ export function CategoryPageContent({
     if (filters.page && filters.page !== 1) {
       params.set('page', filters.page.toString());
     }
-    if (filters.limit && filters.limit !== 10) {
+    if (filters.limit && filters.limit !== 12) {
       params.set('limit', filters.limit.toString());
     }
     if (filters.sort) {
@@ -195,6 +202,15 @@ export function CategoryPageContent({
     }
   };
 
+  // Sync page from URL query params if changed via browser navigation
+  useEffect(() => {
+    if (!isInitialized) return;
+    const pageFromUrl = parseInt(searchParams.get('page') || '1', 10) || 1;
+    if (pageFromUrl !== (filters.page || 1)) {
+      setFilters((prev) => ({ ...prev, page: pageFromUrl }));
+    }
+  }, [searchParams, isInitialized, filters.page]);
+
   const fetchProducts = async (isUnfilteredFetch = false) => {
     setLoading(true);
     try {
@@ -205,17 +221,21 @@ export function CategoryPageContent({
         await productService.getProductsList(apiParams);
       
       // Expand products into variants (each variant becomes a separate card)
-      const allExpandedVariants = response.products.flatMap((product) =>
+      const allExpandedVariants = (response.products || []).flatMap((product) =>
         expandProductVariants(product)
       );
       
-      setProducts(response.products);
+      setProducts(response.products || []);
       setExpandedVariants(allExpandedVariants);
-      setTotalProducts(allExpandedVariants.length);
-      const pageNum =
-        response.offset !== undefined && response.limit
-          ? Math.floor(response.offset / response.limit) + 1
-          : 1;
+
+      const total = typeof response.total === 'number' ? response.total : allExpandedVariants.length;
+      setTotalProducts(total);
+
+      const limit = filters.limit || response.limit || 12;
+      const computedTotalPages = response.totalPages || Math.ceil(total / limit) || 1;
+      setTotalPages(computedTotalPages);
+
+      const pageNum = filters.page ?? (response.offset !== undefined ? response.offset + 1 : 1);
       setCurrentPage(pageNum);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -233,11 +253,12 @@ export function CategoryPageContent({
   };
 
   const handleFilterChange = (newFilters: ProductsListParams) => {
-    setFilters(newFilters);
+    setFilters({ ...newFilters, page: newFilters.page ?? 1 });
   };
 
   const handlePageChange = (page: number) => {
-    setFilters({ ...filters, page });
+    setFilters((prev) => ({ ...prev, page }));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Derive page heading
@@ -321,7 +342,7 @@ export function CategoryPageContent({
           {/* Products Grid */}
           <main className="flex-1 min-w-0">
             {loading ? (
-              <ProductGridSkeleton count={8} />
+              <ProductGridSkeleton count={12} />
             ) : products.length === 0 ? (
               <div className="text-center py-20">
                 <p className="text-lg sm:text-xl text-text-secondary">
@@ -353,10 +374,10 @@ export function CategoryPageContent({
                 </div>
 
                 {/* Pagination */}
-                {totalProducts > (filters.limit || 10) && (
+                {totalPages > 1 && (
                   <Pagination
                     currentPage={currentPage}
-                    totalPages={Math.ceil(totalProducts / (filters.limit || 10))}
+                    totalPages={totalPages}
                     onPageChange={handlePageChange}
                   />
                 )}

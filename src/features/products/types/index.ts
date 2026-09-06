@@ -104,6 +104,7 @@ export interface ProductsListParams {
   search?: string;
   sort?: ProductSortOption;
   page?: number;
+  offset?: number;
   limit?: number;
 }
 

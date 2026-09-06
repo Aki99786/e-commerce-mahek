@@ -132,7 +132,7 @@ export function ProductFilters({
   const [internalOptions, setInternalOptions] = useState<FilterOptionsData | null>(null);
   const [filters, setFilters] = useState<ProductsListParams>(
     initialFilters || {
-      limit: 10,
+      limit: 12,
       page: 1,
     }
   );
@@ -280,7 +280,7 @@ export function ProductFilters({
     setShowAllColors(false);
 
     const cleared: ProductsListParams = {
-      limit: filters.limit || 10,
+      limit: filters.limit || 12,
       page: 1,
     };
     setFilters(cleared);

@@ -31,8 +31,15 @@ class ProductService extends BaseService {
       queryParams.append("isFeatured", params.isFeatured.toString());
     if (params.search) queryParams.append("search", params.search);
     if (params.sort) queryParams.append("sort", params.sort);
-    if (params.page !== undefined)
+    if (params.page !== undefined) {
       queryParams.append("page", params.page.toString());
+      // The API uses 0-based offset as page index (offset=0 for page 1, offset=1 for page 2)
+      const offset =
+        params.offset !== undefined ? params.offset : Math.max(0, params.page - 1);
+      queryParams.append("offset", offset.toString());
+    } else if (params.offset !== undefined) {
+      queryParams.append("offset", params.offset.toString());
+    }
     if (params.limit !== undefined)
       queryParams.append("limit", params.limit.toString());
 

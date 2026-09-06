@@ -51,9 +51,11 @@ export const Pagination = ({
   return (
     <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-8 sm:mt-12">
       <button
+        type="button"
         onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 sm:py-2 border border-border rounded text-xs sm:text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        disabled={currentPage <= 1}
+        aria-label="Previous page"
+        className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 sm:py-2 border border-border rounded text-xs sm:text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
       >
         <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         <span className="hidden xs:inline">Previous</span>
@@ -64,8 +66,10 @@ export const Pagination = ({
           <div key={index}>
             {typeof page === "number" ? (
               <button
+                type="button"
                 onClick={() => onPageChange(page)}
-                role="button"
+                aria-current={currentPage === page ? "page" : undefined}
+                aria-label={`Page ${page}`}
                 className={`min-w-[32px] sm:min-w-[40px] h-8 sm:h-10 px-2 sm:px-3 rounded text-xs sm:text-sm transition-colors cursor-pointer ${
                   currentPage === page
                     ? "bg-primary text-white font-semibold"
@@ -82,9 +86,10 @@ export const Pagination = ({
       </div>
 
       <button
+        type="button"
         onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        role="button"
+        disabled={currentPage >= totalPages}
+        aria-label="Next page"
         className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 sm:py-2 border border-border rounded text-xs sm:text-sm cursor-pointer hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
         <span className="hidden xs:inline">Next</span>

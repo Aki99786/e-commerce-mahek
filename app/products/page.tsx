@@ -8,7 +8,7 @@ export function generateStaticParams() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<ProductGridSkeleton count={8} />}>
+    <Suspense fallback={<ProductGridSkeleton count={12} />}>
       <CategoryPageContent />
     </Suspense>
   );
