@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProductCard } from "./ProductCard";
 import { Product } from "@/types/product";
 import type { Product as APIProduct } from "@/features/products/types";
@@ -11,18 +11,27 @@ interface ProductCarouselProps {
   slidesToShow?: number;
 }
 
+function getCardWidthForViewport(width: number) {
+  if (width < 640) return 160;
+  if (width < 768) return 180;
+  if (width < 1024) return 200;
+  return 224;
+}
+
 export const ProductCarousel = ({ products, apiProducts = [], slidesToShow = 5 }: ProductCarouselProps) => {
   const [sliderIndex, setSliderIndex] = useState(0);
+  const [cardWidth, setCardWidth] = useState(224);
 
-  const getCardWidth = () => {
-    if (typeof window !== 'undefined') {
-      if (window.innerWidth < 640) return 160;
-      if (window.innerWidth < 768) return 180;
-      if (window.innerWidth < 1024) return 200;
-      return 224;
-    }
-    return 224;
-  };
+  useEffect(() => {
+    const updateCardWidth = () => {
+      const next = getCardWidthForViewport(window.innerWidth);
+      setCardWidth((prev) => (prev === next ? prev : next));
+    };
+
+    updateCardWidth();
+    window.addEventListener("resize", updateCardWidth);
+    return () => window.removeEventListener("resize", updateCardWidth);
+  }, []);
 
   const slideLeft = () => {
     if (sliderIndex > 0) {
@@ -61,7 +70,7 @@ export const ProductCarousel = ({ products, apiProducts = [], slidesToShow = 5 }
       <div className="overflow-x-auto lg:overflow-hidden scrollbar-hide">
         <div
           className="flex gap-3 md:gap-4 lg:gap-6 transition-all duration-500 lg:px-10"
-          style={{ transform: `translateX(-${sliderIndex * getCardWidth()}px)` }}
+          style={{ transform: `translateX(-${sliderIndex * cardWidth}px)` }}
         >
           {products.map((product) => {
             const rawProduct = apiProducts.find((p) => p._id === product.id);

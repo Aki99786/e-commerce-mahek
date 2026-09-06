@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   allowedDevOrigins: ["local-origin.dev", "*.local-origin.dev"],
   images: {
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "https",

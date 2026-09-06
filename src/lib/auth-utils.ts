@@ -1,3 +1,10 @@
+export const AUTH_CHANGE_EVENT = "mahek-auth-change";
+
+export const notifyAuthChange = (): void => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
+};
+
 export const isAuthenticated = (): boolean => {
   if (typeof window === "undefined") return false;
   
@@ -24,6 +31,7 @@ export const clearAuth = (): void => {
   
   localStorage.removeItem("authToken");
   localStorage.removeItem("userData");
+  notifyAuthChange();
 };
 
 export const buildLoginUrl = (referrer?: string): string => {

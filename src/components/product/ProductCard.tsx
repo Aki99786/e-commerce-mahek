@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product, ProductLabelType, StockStatus } from "@/types/product";
@@ -23,14 +23,14 @@ interface ProductCardProps {
   onWishlistChange?: () => void | Promise<void>;
 }
 
-export const ProductCard = ({
+export const ProductCard = memo(function ProductCard({
   product,
   className,
   variant = "default",
   apiProduct,
   initialWishlistState = false,
   onWishlistChange,
-}: ProductCardProps) => {
+}: ProductCardProps) {
   const router = useRouter();
   const productUrl = ROUTES.PRODUCT_DETAIL(product.id);
   void variant;
@@ -61,14 +61,16 @@ export const ProductCard = ({
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    setIsInWishlist(wishlistedProductIds.has(product.id) || initialWishlistState);
+    const nextWishlisted = wishlistedProductIds.has(product.id) || initialWishlistState;
+    setIsInWishlist((prev) => (prev === nextWishlisted ? prev : nextWishlisted));
   }, [wishlistedProductIds, product.id, initialWishlistState]);
 
   useEffect(() => {
-    setIsInCart(cartedProductIds.has(product.id));
+    const nextInCart = cartedProductIds.has(product.id);
+    setIsInCart((prev) => (prev === nextInCart ? prev : nextInCart));
   }, [cartedProductIds, product.id]);
 
   // Resolve Images
@@ -91,7 +93,7 @@ export const ProductCard = ({
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      setCurrentImageIndex(0);
+      setCurrentImageIndex((prev) => (prev === 0 ? prev : 0));
     }
 
     return () => {
@@ -531,4 +533,4 @@ export const ProductCard = ({
       </div>
     </div>
   );
-};
+});

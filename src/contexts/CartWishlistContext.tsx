@@ -1,9 +1,9 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, ReactNode } from "react";
 import { cartService } from "@/features/cart/services/cart.service";
 import { wishlistService } from "@/features/wishlist/services/wishlist.service";
-import { isAuthenticated } from "@/lib/auth-utils";
+import { AUTH_CHANGE_EVENT, isAuthenticated } from "@/lib/auth-utils";
 
 interface CartWishlistContextType {
   cartCount: number;
@@ -23,39 +23,52 @@ interface CartWishlistContextType {
 
 const CartWishlistContext = createContext<CartWishlistContextType | undefined>(undefined);
 
+function setsEqual(a: Set<string>, b: Set<string>): boolean {
+  if (a.size !== b.size) return false;
+  for (const value of a) {
+    if (!b.has(value)) return false;
+  }
+  return true;
+}
+
 export function CartWishlistProvider({ children }: { children: ReactNode }) {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [wishlistedProductIds, setWishlistedProductIds] = useState<Set<string>>(new Set());
   const [wishlistItemMap, setWishlistItemMap] = useState<Map<string, string>>(new Map());
   const [cartedProductIds, setCartedProductIds] = useState<Set<string>>(new Set());
-  const [mounted, setMounted] = useState(false);
+  const inFlightRef = useRef(false);
 
-  const getWishlistItemId = (productId: string): string | undefined => {
+  const getWishlistItemId = useCallback((productId: string): string | undefined => {
     return wishlistItemMap.get(productId);
-  };
+  }, [wishlistItemMap]);
 
-  const fetchCounts = async () => {
+  const fetchCounts = useCallback(async () => {
+    if (inFlightRef.current) return;
+
     if (!isAuthenticated()) {
       setCartCount(0);
       setWishlistCount(0);
       setWishlistedProductIds(new Set());
       setWishlistItemMap(new Map());
+      setCartedProductIds(new Set());
       return;
     }
 
+    inFlightRef.current = true;
     try {
       const [cartList, wishlist] = await Promise.all([
         cartService.getCartList(),
         wishlistService.getWishlist(),
       ]);
+
       const cartItems = cartList?.data?.list ?? [];
-      setCartCount(cartItems.reduce((total, item) => total + (item?.quantity ?? 0), 0));
-      setWishlistCount(wishlist?.total ?? wishlist?.list?.length ?? 0);
-      
+      const nextCartCount = cartItems.reduce((total: number, item) => total + (item?.quantity ?? 0), 0);
+      const nextWishlistCount = wishlist?.total ?? wishlist?.list?.length ?? 0;
+
       const itemMap = new Map<string, string>();
       const productIds = new Set<string>();
-      (wishlist?.list ?? []).forEach((item) => {
+      (wishlist?.list ?? []).forEach((item: any) => {
         if (item?.product_id) {
           productIds.add(item.product_id);
           if (item._id) {
@@ -63,87 +76,122 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
           }
         }
       });
-      setWishlistedProductIds(productIds);
-      setWishlistItemMap(itemMap);
 
-      setCartedProductIds(new Set(cartItems.map((item) => item?.product_id).filter(Boolean)));
+      const nextCartedIds = new Set(cartItems.map((item: any) => item?.product_id).filter(Boolean) as string[]);
+
+      setCartCount((prev) => (prev === nextCartCount ? prev : nextCartCount));
+      setWishlistCount((prev) => (prev === nextWishlistCount ? prev : nextWishlistCount));
+      setWishlistedProductIds((prev) => (setsEqual(prev, productIds) ? prev : productIds));
+      setWishlistItemMap(itemMap);
+      setCartedProductIds((prev) => (setsEqual(prev, nextCartedIds) ? prev : nextCartedIds));
     } catch (error) {
       console.error("Error fetching counts:", error);
+    } finally {
+      inFlightRef.current = false;
     }
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCounts();
 
-    const handleStorageChange = () => {
+    const handleAuthOrStorageChange = () => {
       fetchCounts();
     };
 
-    window.addEventListener("storage", handleStorageChange);
-
-    const interval = setInterval(() => {
-      if (isAuthenticated()) {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && isAuthenticated()) {
         fetchCounts();
       }
-    }, 30000);
+    };
+
+    window.addEventListener("storage", handleAuthOrStorageChange);
+    window.addEventListener(AUTH_CHANGE_EVENT, handleAuthOrStorageChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      clearInterval(interval);
+      window.removeEventListener("storage", handleAuthOrStorageChange);
+      window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthOrStorageChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [mounted]);
+  }, [fetchCounts]);
 
-  const refreshCounts = async () => {
+  const refreshCounts = useCallback(async () => {
     await fetchCounts();
-  };
+  }, [fetchCounts]);
 
-  const incrementCartCount = () => setCartCount((prev) => prev + 1);
-  const decrementCartCount = () => setCartCount((prev) => Math.max(0, prev - 1));
-  const incrementWishlistCount = () => setWishlistCount((prev) => prev + 1);
-  const decrementWishlistCount = () => setWishlistCount((prev) => Math.max(0, prev - 1));
-  const addToWishlistedIds = (productId: string) =>
-    setWishlistedProductIds((prev) => new Set(prev).add(productId));
-  const removeFromWishlistedIds = (productId: string) => {
+  const incrementCartCount = useCallback(() => setCartCount((prev) => prev + 1), []);
+  const decrementCartCount = useCallback(() => setCartCount((prev) => Math.max(0, prev - 1)), []);
+  const incrementWishlistCount = useCallback(() => setWishlistCount((prev) => prev + 1), []);
+  const decrementWishlistCount = useCallback(() => setWishlistCount((prev) => Math.max(0, prev - 1)), []);
+
+  const addToWishlistedIds = useCallback((productId: string) => {
     setWishlistedProductIds((prev) => {
+      if (prev.has(productId)) return prev;
+      const next = new Set(prev);
+      next.add(productId);
+      return next;
+    });
+  }, []);
+
+  const removeFromWishlistedIds = useCallback((productId: string) => {
+    setWishlistedProductIds((prev) => {
+      if (!prev.has(productId)) return prev;
       const next = new Set(prev);
       next.delete(productId);
       return next;
     });
     setWishlistItemMap((prev) => {
+      if (!prev.has(productId)) return prev;
       const next = new Map(prev);
       next.delete(productId);
       return next;
     });
-  };
-  const addToCartedIds = (productId: string) =>
-    setCartedProductIds((prev) => new Set(prev).add(productId));
+  }, []);
+
+  const addToCartedIds = useCallback((productId: string) => {
+    setCartedProductIds((prev) => {
+      if (prev.has(productId)) return prev;
+      const next = new Set(prev);
+      next.add(productId);
+      return next;
+    });
+  }, []);
+
+  const value = useMemo<CartWishlistContextType>(
+    () => ({
+      cartCount,
+      wishlistCount,
+      wishlistedProductIds,
+      cartedProductIds,
+      refreshCounts,
+      incrementCartCount,
+      decrementCartCount,
+      incrementWishlistCount,
+      decrementWishlistCount,
+      addToWishlistedIds,
+      removeFromWishlistedIds,
+      addToCartedIds,
+      getWishlistItemId,
+    }),
+    [
+      cartCount,
+      wishlistCount,
+      wishlistedProductIds,
+      cartedProductIds,
+      refreshCounts,
+      incrementCartCount,
+      decrementCartCount,
+      incrementWishlistCount,
+      decrementWishlistCount,
+      addToWishlistedIds,
+      removeFromWishlistedIds,
+      addToCartedIds,
+      getWishlistItemId,
+    ],
+  );
 
   return (
-    <CartWishlistContext.Provider
-      value={{
-        cartCount,
-        wishlistCount,
-        wishlistedProductIds,
-        cartedProductIds,
-        refreshCounts,
-        incrementCartCount,
-        decrementCartCount,
-        incrementWishlistCount,
-        decrementWishlistCount,
-        addToWishlistedIds,
-        removeFromWishlistedIds,
-        addToCartedIds,
-        getWishlistItemId,
-      }}
-    >
+    <CartWishlistContext.Provider value={value}>
       {children}
     </CartWishlistContext.Provider>
   );

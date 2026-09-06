@@ -48,8 +48,6 @@ export interface CartListResponse {
 }
 
 class CartService extends BaseService {
-  private readonly CART_STORAGE_KEY = "mahek_cart";
-
   async addToCart(data: AddToCartRequest): Promise<void> {
     return this.post<void>(API_ENDPOINTS.CART.ADD, data);
   }

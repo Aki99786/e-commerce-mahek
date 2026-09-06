@@ -23,8 +23,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
   const [showZoom, setShowZoom] = useState(false);
-  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLDivElement>(null);
+  const lensRef = useRef<HTMLDivElement>(null);
+  const zoomPreviewRef = useRef<HTMLDivElement>(null);
   const { incrementCartCount, incrementWishlistCount, decrementWishlistCount, refreshCounts, cartedProductIds, addToCartedIds, wishlistedProductIds, addToWishlistedIds, removeFromWishlistedIds, getWishlistItemId } = useCartWishlist();
   const [isInCart, setIsInCart] = useState(() => cartedProductIds.has(product._id));
   const [isInWishlist, setIsInWishlist] = useState(() => wishlistedProductIds.has(product._id));
@@ -128,8 +129,14 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     const rect = imageRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    
-    setZoomPosition({ x, y });
+
+    if (lensRef.current) {
+      lensRef.current.style.left = `${x}%`;
+      lensRef.current.style.top = `${y}%`;
+    }
+    if (zoomPreviewRef.current) {
+      zoomPreviewRef.current.style.backgroundPosition = `${x}% ${y}%`;
+    }
   };
 
   const handleMouseEnter = () => {
@@ -168,10 +175,11 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 {/* Zoom Lens Overlay */}
                 {showZoom && (
                   <div 
+                    ref={lensRef}
                     className="absolute w-32 h-32 border-2 border-white shadow-lg pointer-events-none bg-white/20 z-99"
                     style={{
-                      left: `${zoomPosition.x}%`,
-                      top: `${zoomPosition.y}%`,
+                      left: "50%",
+                      top: "50%",
                       transform: 'translate(-50%, -50%)'
                     }}
                   />
@@ -217,11 +225,12 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               {showZoom && (
                 <div className="absolute left-full ml-4 top-0 w-96 h-96 rounded-2xl overflow-hidden bg-white shadow-2xl border-2 border-gray-200 hidden lg:block z-50">
                   <div 
+                    ref={zoomPreviewRef}
                     className="w-full h-full"
                     style={{
                       backgroundImage: `url(${images[selectedImageIndex]})`,
                       backgroundSize: '250%',
-                      backgroundPosition: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                      backgroundPosition: "50% 50%",
                       backgroundRepeat: 'no-repeat'
                     }}
                   />
