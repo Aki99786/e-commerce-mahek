@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
 import { ProductFilters } from "./ProductFilters";
 import { productService } from "../services/product.service";
@@ -30,7 +30,6 @@ interface CategoryPageContentProps {
 export function CategoryPageContent({
   categoryType: categoryTypeProp,
 }: CategoryPageContentProps = {}) {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   // Resolve categoryType: prop overrides URL (backward compat), else read ?category=
@@ -238,18 +237,24 @@ export function CategoryPageContent({
 
     const currentUrl = `${window.location.pathname}${window.location.search}`;
     if (newUrl !== currentUrl) {
-      router.replace(newUrl, { scroll: false });
+      window.history.pushState(null, '', newUrl);
     }
-  }, [filters, isInitialized, router, categorySlugFromUrl, searchQuery]);
+  }, [filters, isInitialized, categorySlugFromUrl, searchQuery]);
 
-  // Sync page from URL query params if changed via browser navigation
+  // Sync state on browser Back / Forward buttons without fighting React state
   useEffect(() => {
-    if (!isInitialized) return;
-    const pageFromUrl = parseInt(searchParams.get('page') || '1', 10) || 1;
-    if (pageFromUrl !== (filters.page || 1)) {
-      setFilters((prev) => ({ ...prev, page: pageFromUrl }));
-    }
-  }, [searchParams, isInitialized, filters.page]);
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const pageFromUrl = parseInt(params.get('page') || '1', 10) || 1;
+      setFilters((prev) => {
+        if ((prev.page || 1) === pageFromUrl) return prev;
+        return { ...prev, page: pageFromUrl };
+      });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const isProductInWishlist = useCallback((productId: string, variantId: string, size?: string): boolean => {
     void size;
