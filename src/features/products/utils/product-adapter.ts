@@ -49,7 +49,7 @@ export function adaptAPIProductToUI(apiProduct: APIProduct): UIProduct {
     category: apiProduct.category,
     categorySlug: apiProduct.category.toLowerCase().replace(/_/g, "-"),
     stockStatus,
-    featured: apiProduct.is_sale || false,
+    featured: Boolean(apiProduct.is_sale),
     bestseller: false,
     trending: false,
     colors: variant?.color
@@ -68,10 +68,13 @@ export function adaptAPIProductToUI(apiProduct: APIProduct): UIProduct {
     features: [],
     fabric: apiProduct.fabric || "",
     sku: variant?.sku || apiProduct._id.substring(0, 8).toUpperCase(),
-    label: hasDiscount
+    is_sale: Boolean(apiProduct.is_sale),
+    is_wishlist: Boolean(sizes.some((s) => s.is_wishlist)),
+    is_cart_active: Boolean(sizes.some((s) => s.is_cart_active)),
+    label: apiProduct.is_sale
       ? {
           type: ProductLabelType.SALE,
-          text: `${discount}% OFF`,
+          text: hasDiscount ? `${discount}% OFF` : "SALE",
         }
       : stockStatus === StockStatus.OUT_OF_STOCK
         ? {

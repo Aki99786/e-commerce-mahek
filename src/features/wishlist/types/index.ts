@@ -70,12 +70,26 @@ export interface WishlistResponse {
   list: WishlistItem[];
 }
 
-export interface AddToWishlistRequest {
+export interface GetWishlistParams {
+  limit?: number;
+  offset?: number;
+}
+
+export interface WishlistItemPayload {
   productId: string;
   variantId: string;
   size_id?: string;
   size: string;
 }
+
+export interface AddToWishlistRequest {
+  wishlistItems: WishlistItemPayload[];
+}
+
+export type AddToWishlistInput =
+  | AddToWishlistRequest
+  | WishlistItemPayload
+  | WishlistItemPayload[];
 
 export interface RemoveFromWishlistRequest {
   id?: string;
@@ -92,13 +106,16 @@ export interface MoveToCartRequest {
 }
 
 export interface BulkMoveToCartItem {
+  _id: string;
   productId: string;
   variantId: string;
+  quantity?: number;
+  size_id?: string;
   size: string;
 }
 
 export interface BulkMoveToCartRequest {
-  items: BulkMoveToCartItem[];
+  cartItems: BulkMoveToCartItem[];
 }
 
 export interface BulkMoveToCartResponse {

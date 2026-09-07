@@ -13,6 +13,8 @@ export interface ProductVariantSize {
   quantity: number;
   selling_price: number;
   mrp: number;
+  is_cart_active?: boolean;
+  is_wishlist?: boolean;
 }
 
 export interface ProductVariant {

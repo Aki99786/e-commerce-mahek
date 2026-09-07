@@ -37,6 +37,14 @@ export function adaptExpandedVariantToUI(
 
   const variantImages = variant.images || [];
 
+  const isSale = Boolean(expandedProduct.is_sale);
+  const isWishlist = Boolean(
+    firstSize?.is_wishlist || variant.sizes?.some((s) => s?.is_wishlist)
+  );
+  const isCartActive = Boolean(
+    firstSize?.is_cart_active || variant.sizes?.some((s) => s?.is_cart_active)
+  );
+
   return {
     id: expandedProduct._id,
     brand: expandedProduct.brand || "Brand",
@@ -60,7 +68,7 @@ export function adaptExpandedVariantToUI(
     category: expandedProduct.category,
     categorySlug: expandedProduct.category.toLowerCase().replace(/_/g, "-"),
     stockStatus,
-    featured: expandedProduct.is_sale || false,
+    featured: isSale,
     bestseller: false,
     trending: false,
     colors: [
@@ -77,10 +85,13 @@ export function adaptExpandedVariantToUI(
     features: [],
     fabric: expandedProduct.fabric || "",
     sku: variant.sku || expandedProduct._id.substring(0, 8).toUpperCase(),
-    label: hasDiscount
+    is_sale: isSale,
+    is_wishlist: isWishlist,
+    is_cart_active: isCartActive,
+    label: isSale
       ? {
           type: ProductLabelType.SALE,
-          text: `${discount}% OFF`,
+          text: hasDiscount ? `${discount}% OFF` : "SALE",
         }
       : stockStatus === StockStatus.OUT_OF_STOCK
         ? {

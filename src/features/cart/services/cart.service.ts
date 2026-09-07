@@ -1,13 +1,22 @@
 import { BaseService } from "@/lib/base-service";
 import { API_ENDPOINTS } from "@/lib/api-config";
 
-export interface AddToCartRequest {
+export interface CartItemPayload {
   productId: string;
   variantId: string;
   size: string;
   size_id?: string;
   quantity: number;
 }
+
+export interface AddToCartRequest {
+  cartItems: CartItemPayload[];
+}
+
+export type AddToCartInput =
+  | AddToCartRequest
+  | CartItemPayload
+  | CartItemPayload[];
 
 export interface UpdateCartRequest {
   id: string;
@@ -48,8 +57,28 @@ export interface CartListResponse {
 }
 
 class CartService extends BaseService {
-  async addToCart(data: AddToCartRequest): Promise<void> {
-    return this.post<void>(API_ENDPOINTS.CART.ADD, data);
+  async addToCart(data: AddToCartInput): Promise<void> {
+    let payload: AddToCartRequest;
+
+    if ("cartItems" in data) {
+      payload = data;
+    } else if (Array.isArray(data)) {
+      payload = { cartItems: data };
+    } else {
+      payload = {
+        cartItems: [
+          {
+            productId: data.productId,
+            variantId: data.variantId,
+            size: data.size,
+            size_id: data.size_id,
+            quantity: data.quantity ?? 1,
+          },
+        ],
+      };
+    }
+
+    return this.post<void>(API_ENDPOINTS.CART.ADD, payload);
   }
 
   async updateCart(idOrData: string | UpdateCartRequest, quantity?: number): Promise<void> {

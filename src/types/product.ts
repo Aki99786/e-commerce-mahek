@@ -84,6 +84,9 @@ export interface Product {
     peopleViewing?: number;
   };
   reviews?: ProductReview[];
+  is_sale?: boolean;
+  is_wishlist?: boolean;
+  is_cart_active?: boolean;
 }
 
 export interface ProductCardProps {

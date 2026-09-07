@@ -48,12 +48,47 @@ export const ProductCard = memo(function ProductCard({
     refreshCounts,
   } = useCartWishlist();
 
-  const [isInWishlist, setIsInWishlist] = useState(
-    () => wishlistedProductIds.has(product.id) || initialWishlistState
+  const currentVariant =
+    (apiProduct as unknown as { selectedVariant?: import("@/features/products/types").ProductVariant })?.selectedVariant ||
+    apiProduct?.variant;
+
+  // Check is_wishlist from API (apiProduct variant sizes or product)
+  const apiWishlist = Boolean(
+    currentVariant?.sizes?.[0]?.is_wishlist ??
+    currentVariant?.sizes?.some((s) => s?.is_wishlist) ??
+    (apiProduct as unknown as { is_wishlist?: boolean })?.is_wishlist ??
+    product.is_wishlist ??
+    initialWishlistState
   );
-  const [isInCart, setIsInCart] = useState(() =>
-    cartedProductIds.has(product.id)
+
+  const [userWishlistState, setUserWishlistState] = useState<boolean | null>(null);
+
+  const isInWishlist = userWishlistState !== null
+    ? userWishlistState
+    : (wishlistedProductIds.has(product.id) || apiWishlist);
+
+  useEffect(() => {
+    setUserWishlistState(null);
+  }, [apiWishlist, initialWishlistState]);
+
+  // Check is_cart_active from API (apiProduct variant sizes or product)
+  const apiCartActive = Boolean(
+    currentVariant?.sizes?.[0]?.is_cart_active ??
+    currentVariant?.sizes?.some((s) => s?.is_cart_active) ??
+    (apiProduct as unknown as { is_cart_active?: boolean })?.is_cart_active ??
+    product.is_cart_active
   );
+
+  const [userCartState, setUserCartState] = useState<boolean | null>(null);
+
+  const isInCart = userCartState !== null
+    ? userCartState
+    : (cartedProductIds.has(product.id) || apiCartActive);
+
+  useEffect(() => {
+    setUserCartState(null);
+  }, [apiCartActive]);
+
   const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
   const [heartAnimation, setHeartAnimation] = useState<"like" | "unlike" | null>(
     null
@@ -62,16 +97,6 @@ export const ProductCard = memo(function ProductCard({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    const nextWishlisted = wishlistedProductIds.has(product.id) || initialWishlistState;
-    setIsInWishlist((prev) => (prev === nextWishlisted ? prev : nextWishlisted));
-  }, [wishlistedProductIds, product.id, initialWishlistState]);
-
-  useEffect(() => {
-    const nextInCart = cartedProductIds.has(product.id);
-    setIsInCart((prev) => (prev === nextInCart ? prev : nextInCart));
-  }, [cartedProductIds, product.id]);
 
   // Resolve Images
   const displayImages =
@@ -139,17 +164,21 @@ export const ProductCard = memo(function ProductCard({
         if (wishlistItemId) {
           await wishlistService.removeFromWishlist(wishlistItemId);
         }
-        setIsInWishlist(false);
+        setUserWishlistState(false);
         decrementWishlistCount();
         removeFromWishlistedIds(product.id);
       } else {
         await wishlistService.addToWishlist({
-          productId: product.id,
-          variantId: currentVariant._id,
-          size_id: firstSizeId,
-          size: firstSize,
+          wishlistItems: [
+            {
+              productId: product.id,
+              variantId: currentVariant._id,
+              size_id: firstSizeId,
+              size: firstSize,
+            },
+          ],
         });
-        setIsInWishlist(true);
+        setUserWishlistState(true);
         incrementWishlistCount();
         addToWishlistedIds(product.id);
         await refreshCounts();
@@ -175,10 +204,6 @@ export const ProductCard = memo(function ProductCard({
       return;
     }
 
-    const currentVariant =
-      (apiProduct as unknown as { selectedVariant?: import("@/features/products/types").ProductVariant })?.selectedVariant ||
-      apiProduct?.variant;
-
     if (!currentVariant) {
       router.push(productUrl);
       return;
@@ -194,13 +219,17 @@ export const ProductCard = memo(function ProductCard({
       const firstSizeId = validSizes.length > 0 ? validSizes[0]._id : undefined;
 
       await cartService.addToCart({
-        productId: product.id,
-        variantId: currentVariant._id,
-        size: firstSize,
-        size_id: firstSizeId,
-        quantity: 1,
+        cartItems: [
+          {
+            productId: product.id,
+            variantId: currentVariant._id,
+            size: firstSize,
+            size_id: firstSizeId,
+            quantity: 1,
+          },
+        ],
       });
-      setIsInCart(true);
+      setUserCartState(true);
       incrementCartCount();
       addToCartedIds(product.id);
     } catch (error) {
@@ -238,10 +267,10 @@ export const ProductCard = memo(function ProductCard({
       product.sizes.length > 0 &&
       product.sizes.every((s) => !s.available));
 
-  const hasDiscount = Boolean(
-    (originalPrice && currentPrice && originalPrice > currentPrice) ||
-      product.label?.type === ProductLabelType.SALE ||
-      (apiProduct as unknown as { is_sale?: boolean })?.is_sale
+  const isSale = Boolean(
+    (apiProduct as unknown as { is_sale?: boolean })?.is_sale ??
+      (product as unknown as { is_sale?: boolean })?.is_sale ??
+      product.label?.type === ProductLabelType.SALE
   );
 
   const isNew = product.label?.type === ProductLabelType.NEW;
@@ -319,8 +348,11 @@ export const ProductCard = memo(function ProductCard({
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 className={cn(
-                  "object-cover object-center transition-opacity duration-700 ease-in-out",
-                  idx === currentImageIndex ? "opacity-100 z-[1]" : "opacity-0 z-0"
+                  "object-cover object-center transition-all duration-700 ease-in-out",
+                  idx === currentImageIndex ? "opacity-100 z-[1]" : "opacity-0 z-0",
+                  isSoldOut
+                    ? "blur-[5px] opacity-85 scale-[1.05]"
+                    : "group-hover:scale-105"
                 )}
                 priority={idx === 0}
               />
@@ -332,8 +364,13 @@ export const ProductCard = memo(function ProductCard({
           )}
         </Link>
 
+        {/* Frosted Milky Overlay when Sold Out */}
+        {isSoldOut && (
+          <div className="absolute inset-0 bg-white/30 backdrop-blur-[1.5px] pointer-events-none z-[2]" />
+        )}
+
         {/* Multiple Image Indicator Dots (on Hover) */}
-        {displayImages.length > 1 && isHovering && (
+        {displayImages.length > 1 && isHovering && !isSoldOut && (
           <div className="absolute bottom-14 left-1/2 -translate-x-1/2 flex gap-1 z-20 pointer-events-none transition-opacity duration-200">
             {displayImages.map((_, index) => (
               <div
@@ -351,29 +388,31 @@ export const ProductCard = memo(function ProductCard({
 
         {/* Top-Left Badges: Rating and Sale / New */}
         <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 flex flex-col gap-1.5 items-start z-10 pointer-events-none">
-          {/* Rating Badge */}
-          <div className="bg-white/95 backdrop-blur-sm rounded px-1.5 py-0.5 sm:px-2 sm:py-0.5 shadow-sm flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-gray-900">
-            <span>{ratingAverage.toFixed(1)}</span>
-            <svg
-              className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-900 fill-current"
-              viewBox="0 0 20 20"
-            >
-              <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-            </svg>
-            {ratingCount ? (
-              <span className="text-gray-400 font-normal">| {ratingCount}</span>
-            ) : null}
-          </div>
+          {/* Rating Badge (Hidden when Sold Out) */}
+          {!isSoldOut && (
+            <div className="bg-white/95 backdrop-blur-sm rounded px-1.5 py-0.5 sm:px-2 sm:py-0.5 shadow-sm flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-gray-900">
+              <span>{ratingAverage.toFixed(1)}</span>
+              <svg
+                className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-900 fill-current"
+                viewBox="0 0 20 20"
+              >
+                <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+              </svg>
+              {ratingCount ? (
+                <span className="text-gray-400 font-normal">| {ratingCount}</span>
+              ) : null}
+            </div>
+          )}
 
           {/* Sale Badge */}
-          {hasDiscount && (
+          {isSale && !isSoldOut && (
             <span className="bg-[#C1272D] text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 uppercase tracking-wider rounded-sm shadow-sm">
               SALE
             </span>
           )}
 
           {/* New Badge */}
-          {!hasDiscount && isNew && (
+          {!isSale && isNew && !isSoldOut && (
             <span className="bg-[#111111] text-white text-[10px] sm:text-[11px] font-bold px-2 py-0.5 uppercase tracking-wider rounded-sm shadow-sm">
               NEW
             </span>
@@ -416,7 +455,7 @@ export const ProductCard = memo(function ProductCard({
         {/* Center Sold Out Banner */}
         {isSoldOut && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-            <div className="bg-black/75 backdrop-blur-[2px] text-white text-xs sm:text-sm font-medium tracking-[0.25em] px-6 py-2.5 uppercase shadow-md">
+            <div className="bg-[#333333]/95 text-white text-[11px] sm:text-xs font-semibold tracking-[0.25em] px-5 py-2.5 uppercase shadow-md select-none">
               SOLD OUT
             </div>
           </div>
@@ -449,7 +488,7 @@ export const ProductCard = memo(function ProductCard({
             <button
               type="button"
               onClick={handleBottomAction}
-              className="w-full bg-[#C1272D] hover:bg-[#a81f25] text-white text-xs font-semibold py-2.5 px-3 tracking-wider flex items-center justify-center gap-2 uppercase shadow-md transition-all rounded-md sm:rounded-sm"
+              className="w-full bg-[#C1272D] hover:bg-[#a81f25] text-white text-xs font-semibold py-2.5 px-3 tracking-wider flex items-center justify-center gap-2 uppercase shadow-md transition-all rounded-md sm:rounded-sm cursor-pointer"
             >
               <svg
                 className="w-3.5 h-3.5"
@@ -464,14 +503,14 @@ export const ProductCard = memo(function ProductCard({
                   d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
                 />
               </svg>
-              GO TO BAG
+              GO TO CART
             </button>
           ) : (
             <button
               type="button"
               onClick={handleBottomAction}
               disabled={isAddingToCart}
-              className="w-full bg-black/95 hover:bg-black text-white text-xs font-semibold py-2.5 px-3 tracking-wider flex items-center justify-center gap-2 uppercase shadow-md transition-all rounded-md sm:rounded-sm disabled:opacity-60"
+              className="w-full bg-black/95 hover:bg-black text-white text-xs font-semibold py-2.5 px-3 tracking-wider flex items-center justify-center gap-2 uppercase shadow-md transition-all rounded-md sm:rounded-sm disabled:opacity-60 cursor-pointer"
             >
               <svg
                 className="w-3.5 h-3.5"
@@ -486,7 +525,7 @@ export const ProductCard = memo(function ProductCard({
                   d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
                 />
               </svg>
-              {isAddingToCart ? "ADDING..." : "ADD TO BAG"}
+              {isAddingToCart ? "ADDING..." : "ADD TO CART"}
             </button>
           )}
         </div>

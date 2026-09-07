@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Heart, ShoppingBag, Star, ChevronLeft, ChevronRight } from "lucide-react";
@@ -27,8 +27,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const lensRef = useRef<HTMLDivElement>(null);
   const zoomPreviewRef = useRef<HTMLDivElement>(null);
   const { incrementCartCount, incrementWishlistCount, decrementWishlistCount, refreshCounts, cartedProductIds, addToCartedIds, wishlistedProductIds, addToWishlistedIds, removeFromWishlistedIds, getWishlistItemId } = useCartWishlist();
-  const [isInCart, setIsInCart] = useState(() => cartedProductIds.has(product._id));
-  const [isInWishlist, setIsInWishlist] = useState(() => wishlistedProductIds.has(product._id));
 
   const variants =
     product.product_variants && product.product_variants.length > 0
@@ -42,6 +40,40 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const images = selectedVariant?.images || [];
   const hasValidSizes = validSizes.length > 0;
 
+  // Check is_wishlist from API (size/variant/product)
+  const apiWishlist = Boolean(
+    selectedSize?.is_wishlist ??
+    selectedVariant?.sizes?.some((s) => s?.is_wishlist) ??
+    (product as unknown as { is_wishlist?: boolean })?.is_wishlist
+  );
+
+  const [userWishlistState, setUserWishlistState] = useState<boolean | null>(null);
+
+  const isInWishlist = userWishlistState !== null
+    ? userWishlistState
+    : (wishlistedProductIds.has(product._id) || apiWishlist);
+
+  useEffect(() => {
+    setUserWishlistState(null);
+  }, [selectedSizeIndex, selectedVariantIndex, apiWishlist]);
+
+  // Check is_cart_active from API (size/variant/product)
+  const apiCartActive = Boolean(
+    selectedSize?.is_cart_active ??
+    selectedVariant?.sizes?.some((s) => s?.is_cart_active) ??
+    (product as unknown as { is_cart_active?: boolean })?.is_cart_active
+  );
+
+  const [userCartState, setUserCartState] = useState<boolean | null>(null);
+
+  const isInCart = userCartState !== null
+    ? userCartState
+    : (cartedProductIds.has(product._id) || apiCartActive);
+
+  useEffect(() => {
+    setUserCartState(null);
+  }, [selectedSizeIndex, selectedVariantIndex, apiCartActive]);
+
   const sellingPrice = selectedSize ? selectedSize.selling_price : 0;
   const mrp = selectedSize ? selectedSize.mrp : 0;
   const discount =
@@ -51,7 +83,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
   const handleAddToCart = async () => {
     if (!isAuthenticated()) {
-      router.push(ROUTES.LOGIN);
+      router.push(`/login?referrer=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
 
@@ -63,13 +95,17 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     setIsAddingToCart(true);
     try {
       await cartService.addToCart({
-        productId: product._id,
-        variantId: selectedVariant._id,
-        size: hasValidSizes ? (selectedSize?.size || "ONE_SIZE") : "ONE_SIZE",
-        size_id: selectedSize?._id,
-        quantity: 1,
+        cartItems: [
+          {
+            productId: product._id,
+            variantId: selectedVariant._id,
+            size: hasValidSizes ? (selectedSize?.size || "ONE_SIZE") : "ONE_SIZE",
+            size_id: selectedSize?._id,
+            quantity: 1,
+          },
+        ],
       });
-      setIsInCart(true);
+      setUserCartState(true);
       addToCartedIds(product._id);
       incrementCartCount();
       await refreshCounts();
@@ -82,7 +118,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
   const handleToggleWishlist = async () => {
     if (!isAuthenticated()) {
-      router.push(ROUTES.LOGIN);
+      router.push(`/login?referrer=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
 
@@ -93,17 +129,21 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         if (wishlistItemId) {
           await wishlistService.removeFromWishlist(wishlistItemId);
         }
-        setIsInWishlist(false);
+        setUserWishlistState(false);
         removeFromWishlistedIds(product._id);
         decrementWishlistCount();
       } else {
         await wishlistService.addToWishlist({
-          productId: product._id,
-          variantId: selectedVariant._id,
-          size_id: selectedSize?._id,
-          size: hasValidSizes ? (selectedSize?.size || "ONE_SIZE") : "ONE_SIZE",
+          wishlistItems: [
+            {
+              productId: product._id,
+              variantId: selectedVariant._id,
+              size_id: selectedSize?._id,
+              size: hasValidSizes ? (selectedSize?.size || "ONE_SIZE") : "ONE_SIZE",
+            },
+          ],
         });
-        setIsInWishlist(true);
+        setUserWishlistState(true);
         addToWishlistedIds(product._id);
         incrementWishlistCount();
       }
@@ -171,6 +211,13 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   priority
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
+                
+                {/* Sale Badge */}
+                {product.is_sale && (
+                  <span className="absolute top-4 left-4 bg-[#C1272D] text-white text-xs font-bold px-3 py-1 uppercase tracking-wider rounded-md shadow-md z-10 pointer-events-none">
+                    SALE
+                  </span>
+                )}
                 
                 {/* Zoom Lens Overlay */}
                 {showZoom && (
@@ -265,11 +312,16 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
           {/* Right Side - Product Info */}
           <div className="flex flex-col">
-            {/* Brand */}
-            <div className="mb-3">
+            {/* Brand & Sale Badge */}
+            <div className="mb-3 flex items-center gap-2">
               <span className="inline-block px-4 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-medium">
                 {product.brand}
               </span>
+              {product.is_sale && (
+                <span className="inline-block px-3 py-1 bg-[#C1272D] text-white rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
+                  SALE
+                </span>
+              )}
             </div>
 
             {/* Product Name */}
@@ -394,24 +446,24 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               </div>
             )}
 
-            {/* Add to Cart / Go to Bag Button */}
+            {/* Add to Cart / Go to Cart Button */}
             <button
               onClick={handleAddToCart}
               disabled={!isInCart && (hasValidSizes ? (!selectedSize || selectedSize.quantity === 0 || isAddingToCart) : isAddingToCart)}
-              className={`w-full font-semibold py-3.5 sm:py-4 px-6 sm:px-8 rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg mb-4 ${
+              className={`w-full font-semibold py-3.5 sm:py-4 px-6 sm:px-8 rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg mb-4 cursor-pointer ${
                 isInCart
-                  ? "bg-white border-2 border-pink-600 text-pink-600 hover:bg-pink-50 shadow-pink-100 cursor-pointer"
+                  ? "bg-white border-2 border-pink-600 text-pink-600 hover:bg-pink-50 shadow-pink-100"
                   : "bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white shadow-pink-200 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed"
               }`}
             >
               <ShoppingBag className="w-5 h-5" />
               {isInCart
-                ? "Go to Bag"
+                ? "Go to Cart"
                 : isAddingToCart
                 ? "Adding..."
                 : hasValidSizes
-                ? (!selectedSize || selectedSize.quantity === 0 ? "Out of Stock" : "Add to Bag")
-                : "Add to Bag"}
+                ? (!selectedSize || selectedSize.quantity === 0 ? "Out of Stock" : "Add to Cart")
+                : "Add to Cart"}
             </button>
 
             {/* Product Details */}

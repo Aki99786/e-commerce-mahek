@@ -2,7 +2,9 @@ import { BaseService } from "@/lib/base-service";
 import { API_ENDPOINTS } from "@/lib/api-config";
 import type {
   WishlistResponse,
+  GetWishlistParams,
   AddToWishlistRequest,
+  AddToWishlistInput,
   RemoveFromWishlistRequest,
   MoveToCartRequest,
   BulkMoveToCartRequest,
@@ -10,20 +12,69 @@ import type {
 } from "../types";
 
 class WishlistService extends BaseService {
-  async getWishlist(): Promise<WishlistResponse> {
-    return this.get<WishlistResponse>(API_ENDPOINTS.WISHLIST.LIST);
+  async getWishlist(params?: GetWishlistParams): Promise<WishlistResponse> {
+    const query = new URLSearchParams();
+    if (params) {
+      const limit = params.limit ?? 12;
+      const offset = params.offset ?? 0;
+
+      query.set("offset", offset.toString());
+      query.set("limit", limit.toString());
+    }
+
+    const qs = query.toString();
+    return this.get<WishlistResponse>(
+      qs ? `${API_ENDPOINTS.WISHLIST.LIST}?${qs}` : API_ENDPOINTS.WISHLIST.LIST,
+    );
   }
 
-  async addToWishlist(data: AddToWishlistRequest): Promise<void> {
-    return this.post<void>(API_ENDPOINTS.WISHLIST.ADD, data);
+  async addToWishlist(data: AddToWishlistInput): Promise<void> {
+    let payload: AddToWishlistRequest;
+
+    if ("wishlistItems" in data) {
+      payload = data;
+    } else if (Array.isArray(data)) {
+      payload = { wishlistItems: data };
+    } else {
+      payload = {
+        wishlistItems: [
+          {
+            productId: data.productId,
+            variantId: data.variantId,
+            size_id: data.size_id,
+            size: data.size,
+          },
+        ],
+      };
+    }
+
+    return this.post<void>(API_ENDPOINTS.WISHLIST.ADD, payload);
   }
 
   async removeFromWishlist(id: string): Promise<void> {
     return this.delete<void>(API_ENDPOINTS.WISHLIST.REMOVE(id));
   }
 
-  async moveToCart(data: MoveToCartRequest): Promise<void> {
-    return this.post<void>(API_ENDPOINTS.WISHLIST.MOVE_TO_CART, data);
+  async moveToCart(data: {
+    _id?: string;
+    productId: string;
+    variantId: string;
+    size: string;
+    size_id?: string;
+    quantity?: number;
+  }): Promise<BulkMoveToCartResponse> {
+    return this.bulkMoveToCart({
+      cartItems: [
+        {
+          _id: data._id || "",
+          productId: data.productId,
+          variantId: data.variantId,
+          size_id: data.size_id,
+          size: data.size,
+          quantity: data.quantity ?? 1,
+        },
+      ],
+    });
   }
 
   async bulkMoveToCart(

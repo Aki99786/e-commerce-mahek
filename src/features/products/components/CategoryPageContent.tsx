@@ -278,15 +278,22 @@ export function CategoryPageContent({
     () =>
       expandedVariants.map((expandedVariant) => {
         const firstSize = expandedVariant.selectedVariant.sizes[0]?.size || "ONE_SIZE";
+        const firstSizeObj = expandedVariant.selectedVariant.sizes[0];
+        const isWishlistFromApi = Boolean(
+          firstSizeObj?.is_wishlist ||
+          expandedVariant.selectedVariant.sizes?.some((s) => s?.is_wishlist)
+        );
         return {
           key: `${expandedVariant._id}-${expandedVariant.selectedVariantId}`,
           product: adaptExpandedVariantToUI(expandedVariant),
           apiProduct: expandedVariant,
-          isInWishlist: isProductInWishlist(
-            expandedVariant._id,
-            expandedVariant.selectedVariantId,
-            firstSize,
-          ),
+          isInWishlist:
+            isWishlistFromApi ||
+            isProductInWishlist(
+              expandedVariant._id,
+              expandedVariant.selectedVariantId,
+              firstSize,
+            ),
         };
       }),
     [expandedVariants, isProductInWishlist],
