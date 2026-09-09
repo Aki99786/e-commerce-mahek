@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
 import { ProductFilters } from "./ProductFilters";
 import { productService } from "../services/product.service";
@@ -30,12 +30,11 @@ interface CategoryPageContentProps {
 export function CategoryPageContent({
   categoryType: categoryTypeProp,
 }: CategoryPageContentProps = {}) {
+  const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Resolve categoryType: prop overrides URL (backward compat), else read ?category=
-  const categorySlugFromUrl = searchParams.get('category') ?? '';
-  const categoryType = categoryTypeProp ?? CATEGORY_TYPE_MAP[categorySlugFromUrl] ?? '';
-  const categoryDisplayName = CATEGORIES.find((c) => c.slug === categorySlugFromUrl)?.name ?? '';
+  // Resolve categoryType: prop overrides URL (backward compat)
+  const categoryType = categoryTypeProp ?? '';
 
   const [products, setProducts] = useState<Product[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOptionsData | null>(null);
@@ -48,6 +47,8 @@ export function CategoryPageContent({
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const productsRequestIdRef = useRef(0);
+  const lastFetchedQueryRef = useRef<string>('');
+  const lastUrlCategoryRef = useRef<string | null>(searchParams.get('category'));
   
   const searchQuery = searchParams.get('search') ?? '';
 
@@ -57,6 +58,11 @@ export function CategoryPageContent({
       limit: 12,
       page: 1,
     };
+
+    const cat = searchParams.get('category');
+    if (cat) {
+      params.category = cat;
+    }
 
     if (searchParams.get('page')) {
       const parsedPage = parseInt(searchParams.get('page')!, 10);
@@ -106,6 +112,22 @@ export function CategoryPageContent({
 
   const [filters, setFilters] = useState<ProductsListParams>(getInitialFilters);
 
+  // Sync category from URL searchParams when clicking navbar links
+  useEffect(() => {
+    const cat = searchParams.get('category') || undefined;
+    if (lastUrlCategoryRef.current !== (cat || null)) {
+      lastUrlCategoryRef.current = cat || null;
+      setFilters((prev) => {
+        if (prev.category === cat) return prev;
+        return {
+          ...prev,
+          category: cat,
+          page: 1,
+        };
+      });
+    }
+  }, [searchParams]);
+
   const fetchWishlist = useCallback(async () => {
     if (!isAuthenticated()) {
       return;
@@ -145,12 +167,20 @@ export function CategoryPageContent({
   }, []);
 
   const fetchProducts = useCallback(async () => {
+    const apiParams: ProductsListParams = { ...filters };
+    if (categoryType) apiParams.type = categoryType;
+    if (searchQuery) apiParams.search = searchQuery;
+
+    // Deduplicate: avoid firing duplicate requests for the exact same query parameters
+    const queryKey = JSON.stringify(apiParams);
+    if (lastFetchedQueryRef.current === queryKey) {
+      return;
+    }
+    lastFetchedQueryRef.current = queryKey;
+
     const requestId = ++productsRequestIdRef.current;
     setLoading(true);
     try {
-      const apiParams: ProductsListParams = { ...filters };
-      if (categoryType) apiParams.type = categoryType;
-      if (searchQuery) apiParams.search = searchQuery;
       const response: ProductsListResponse =
         await productService.getProductsList(apiParams);
 
@@ -176,6 +206,7 @@ export function CategoryPageContent({
     } catch (error) {
       if (requestId === productsRequestIdRef.current) {
         console.error("Error fetching products:", error);
+        lastFetchedQueryRef.current = ''; // Reset to allow retry on error
       }
     } finally {
       if (requestId === productsRequestIdRef.current) {
@@ -231,8 +262,8 @@ export function CategoryPageContent({
       params.set('discount', filters.discount.toString());
     }
 
-    if (categorySlugFromUrl) {
-      params.set('category', categorySlugFromUrl);
+    if (filters.category) {
+      params.set('category', filters.category);
     }
 
     if (searchQuery) {
@@ -246,9 +277,11 @@ export function CategoryPageContent({
 
     const currentUrl = `${window.location.pathname}${window.location.search}`;
     if (newUrl !== currentUrl) {
-      window.history.pushState(null, '', newUrl);
+      lastUrlCategoryRef.current = filters.category || null;
+      window.history.replaceState(null, '', newUrl);
+      router.replace(newUrl, { scroll: false });
     }
-  }, [filters, isInitialized, categorySlugFromUrl, searchQuery]);
+  }, [filters, isInitialized, searchQuery, router]);
 
   // Sync state on browser Back / Forward buttons without fighting React state
   useEffect(() => {
@@ -308,7 +341,12 @@ export function CategoryPageContent({
     [expandedVariants, isProductInWishlist],
   );
 
-  // Derive page heading
+  // Derive dynamic category display name and page heading
+  const currentCategory = filters.category;
+  const categoryDisplayName = currentCategory
+    ? (CATEGORIES.find((c) => c.slug === currentCategory)?.name ?? currentCategory.replace(/-/g, ' '))
+    : '';
+
   const pageHeading = searchQuery
     ? `Search results for "${searchQuery}"`
     : categoryDisplayName
