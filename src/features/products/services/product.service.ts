@@ -78,11 +78,11 @@ class ProductService extends BaseService {
   }
 
   async getTrendingProducts(): Promise<ProductsListResponse> {
-    return this.get<ProductsListResponse>(API_ENDPOINTS.PRODUCTS.TRENDING);
+    return this.getProductsList({ is_trending_collection: true, limit: 3, page: 1 });
   }
 
   async getFlashSaleProducts(): Promise<ProductsListResponse> {
-    return this.get<ProductsListResponse>(API_ENDPOINTS.PRODUCTS.FLASH_SALE);
+    return this.getProductsList({ is_sale: true, limit: 3, page: 1 });
   }
 
   async getLehengasProducts(): Promise<ProductsListResponse> {

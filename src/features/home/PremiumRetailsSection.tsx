@@ -18,10 +18,10 @@ export const PremiumRetailsSection = () => {
               Premium Retails Indian Outfit Corner
             </h2>
             <Link
-              href={ROUTES.SALE}
+              href={ROUTES.SHOP}
               className="inline-flex items-center gap-2 w-fit bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white px-6 py-3 rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all"
             >
-              Shop Sale
+              Shop Now
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>

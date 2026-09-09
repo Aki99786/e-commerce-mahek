@@ -7,12 +7,14 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { productService } from "@/features/products/services/product.service";
 import { adaptAPIProductToUI } from "@/features/products/utils/product-adapter";
 import { ROUTES } from "@/constants/routes";
+import { CategorySlugEnum } from "@/constants/categories";
 import type { Product as APIProduct } from "@/features/products/types";
 
 interface TrendingWithBannerSectionProps {
   bannerPosition?: 'left' | 'right';
   title?: string;
   type?: string;
+  viewAllLink?: string;
 }
 
 enum ProductType {
@@ -20,10 +22,23 @@ enum ProductType {
   LEHENGA = 'LEHENGA',
 }
 
-export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'Top Trending Collection', type = '' }: TrendingWithBannerSectionProps) => {
+export const TrendingWithBannerSection = ({
+  bannerPosition = 'right',
+  title = 'Top Trending Collection',
+  type = '',
+  viewAllLink,
+}: TrendingWithBannerSectionProps) => {
   const [trendingProducts, setTrendingProducts] = useState<import('@/types/product').Product[]>([]);
   const [rawAPIProducts, setRawAPIProducts] = useState<APIProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const viewAllHref = viewAllLink
+    ? viewAllLink
+    : type === ProductType.LEHENGA
+    ? ROUTES.CATEGORY(CategorySlugEnum.LEHENGA)
+    : type === ProductType.TRENDING
+    ? ROUTES.TRENDING
+    : ROUTES.SHOP;
 
   useEffect(() => {
     const fetchTrending = async () => {
@@ -42,7 +57,7 @@ export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'T
 
     const fetchLehenga = async () => {
       try {
-        const response = await productService.getProductsList({ type: 'LEHENGA', limit: 3, page: 1 });
+        const response = await productService.getProductsList({ category: CategorySlugEnum.LEHENGA, limit: 3, page: 1 });
         const mappedProducts = response.products.map(adaptAPIProductToUI);
         setTrendingProducts(mappedProducts);
         setRawAPIProducts(response.products);
@@ -83,7 +98,7 @@ export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'T
                 <p className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-rose-600 mb-1.5">New Arrivals</p>
                 <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">{title}</h2>
               </div>
-              <Link href={ROUTES.SHOP} className="flex items-center gap-1 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors whitespace-nowrap">
+              <Link href={viewAllHref} className="flex items-center gap-1 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors whitespace-nowrap">
                 View All
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
