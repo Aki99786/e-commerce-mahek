@@ -48,7 +48,9 @@ export function CategoryPageContent({
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const productsRequestIdRef = useRef(0);
   const lastFetchedQueryRef = useRef<string>('');
-  const lastUrlCategoryRef = useRef<string | null>(searchParams.get('category'));
+  const lastUrlKeyRef = useRef<string>(
+    `${searchParams.get('category') || ''}|${searchParams.get('is_sale') || ''}|${searchParams.get('is_trending_collection') || ''}`
+  );
   
   const searchQuery = searchParams.get('search') ?? '';
 
@@ -62,6 +64,12 @@ export function CategoryPageContent({
     const cat = searchParams.get('category');
     if (cat) {
       params.category = cat;
+    }
+    if (searchParams.get('is_sale') === 'true') {
+      params.is_sale = true;
+    }
+    if (searchParams.get('is_trending_collection') === 'true') {
+      params.is_trending_collection = true;
     }
 
     if (searchParams.get('page')) {
@@ -112,16 +120,28 @@ export function CategoryPageContent({
 
   const [filters, setFilters] = useState<ProductsListParams>(getInitialFilters);
 
-  // Sync category from URL searchParams when clicking navbar links
+  // Sync category, is_sale, is_trending_collection from URL searchParams when clicking navbar links
   useEffect(() => {
     const cat = searchParams.get('category') || undefined;
-    if (lastUrlCategoryRef.current !== (cat || null)) {
-      lastUrlCategoryRef.current = cat || null;
+    const isSale = searchParams.get('is_sale') === 'true' ? true : undefined;
+    const isTrending = searchParams.get('is_trending_collection') === 'true' ? true : undefined;
+    const currentKey = `${cat || ''}|${isSale ? 'true' : ''}|${isTrending ? 'true' : ''}`;
+
+    if (lastUrlKeyRef.current !== currentKey) {
+      lastUrlKeyRef.current = currentKey;
       setFilters((prev) => {
-        if (prev.category === cat) return prev;
+        if (
+          prev.category === cat &&
+          prev.is_sale === isSale &&
+          prev.is_trending_collection === isTrending
+        ) {
+          return prev;
+        }
         return {
           ...prev,
           category: cat,
+          is_sale: isSale,
+          is_trending_collection: isTrending,
           page: 1,
         };
       });
@@ -265,6 +285,12 @@ export function CategoryPageContent({
     if (filters.category) {
       params.set('category', filters.category);
     }
+    if (filters.is_sale) {
+      params.set('is_sale', 'true');
+    }
+    if (filters.is_trending_collection) {
+      params.set('is_trending_collection', 'true');
+    }
 
     if (searchQuery) {
       params.set('search', searchQuery);
@@ -277,7 +303,7 @@ export function CategoryPageContent({
 
     const currentUrl = `${window.location.pathname}${window.location.search}`;
     if (newUrl !== currentUrl) {
-      lastUrlCategoryRef.current = filters.category || null;
+      lastUrlKeyRef.current = `${filters.category || ''}|${filters.is_sale ? 'true' : ''}|${filters.is_trending_collection ? 'true' : ''}`;
       window.history.replaceState(null, '', newUrl);
       router.replace(newUrl, { scroll: false });
     }
@@ -349,6 +375,10 @@ export function CategoryPageContent({
 
   const pageHeading = searchQuery
     ? `Search results for "${searchQuery}"`
+    : filters.is_sale
+    ? 'Sale'
+    : filters.is_trending_collection
+    ? 'Trending Collection'
     : categoryDisplayName
     ? categoryDisplayName
     : 'All Products';

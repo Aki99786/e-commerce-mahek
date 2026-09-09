@@ -28,6 +28,10 @@ class ProductService extends BaseService {
       queryParams.append("maxPrice", params.maxPrice.toString());
     if (params.discount !== undefined)
       queryParams.append("discount", params.discount.toString());
+    if (params.is_sale !== undefined)
+      queryParams.append("is_sale", params.is_sale.toString());
+    if (params.is_trending_collection !== undefined)
+      queryParams.append("is_trending_collection", params.is_trending_collection.toString());
     if (params.availability)
       queryParams.append("availability", params.availability);
     if (params.isFeatured !== undefined)

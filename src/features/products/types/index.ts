@@ -121,6 +121,8 @@ export interface ProductsListParams {
   page?: number;
   offset?: number;
   limit?: number;
+  is_sale?: boolean;
+  is_trending_collection?: boolean;
 }
 
 export type ProductCategory =
