@@ -6,6 +6,7 @@ import { TopBar } from "@/components/layout/TopBar";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartWishlistProvider } from "@/contexts/CartWishlistContext";
+import { SizeModalProvider } from "@/contexts/SizeModalContext";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -33,13 +34,15 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
         <CartWishlistProvider>
-          <Toaster position="top-right" richColors closeButton />
-          <div className="sticky top-0 z-40 bg-white shadow-xs">
-            <TopBar />
-            <Suspense fallback={null}><Header /></Suspense>
-          </div>
-          <main className="flex-1 flex flex-col">{children}</main>
-          <Footer />
+          <SizeModalProvider>
+            <Toaster position="top-right" richColors closeButton />
+            <div className="sticky top-0 z-40 bg-white shadow-xs">
+              <TopBar />
+              <Suspense fallback={null}><Header /></Suspense>
+            </div>
+            <main className="flex-1 flex flex-col">{children}</main>
+            <Footer />
+          </SizeModalProvider>
         </CartWishlistProvider>
       </body>
     </html>

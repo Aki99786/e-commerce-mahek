@@ -13,6 +13,9 @@ import { useRouter } from "next/navigation";
 import { useCartWishlist } from "@/contexts/CartWishlistContext";
 import { toast } from "@/lib/toast";
 import type { ProductVariantSize } from "@/features/products/types";
+import { productService } from "@/features/products/services/product.service";
+import { useSizeModal } from "@/contexts/SizeModalContext";
+import type { SizeOption } from "@/components/product/SizeSelectionModal";
 
 interface ProductCardProps {
   product: Product;
@@ -47,6 +50,7 @@ export const ProductCard = memo(function ProductCard({
     getWishlistItemId,
     refreshCounts,
   } = useCartWishlist();
+  const { openSizeModal } = useSizeModal();
 
   const currentVariant =
     (apiProduct as unknown as { selectedVariant?: import("@/features/products/types").ProductVariant })?.selectedVariant ||
@@ -210,33 +214,100 @@ export const ProductCard = memo(function ProductCard({
     }
 
     setIsAddingToCart(true);
-    try {
-      const validSizes = (currentVariant.sizes || []).filter(
-        (s: ProductVariantSize | null | undefined): s is ProductVariantSize =>
-          s !== null && s !== undefined && !!s.size
-      );
-      const firstSize = validSizes.length > 0 ? validSizes[0].size : "ONE_SIZE";
-      const firstSizeId = validSizes.length > 0 ? validSizes[0]._id : undefined;
+    let modalSizes: SizeOption[] = [];
 
-      await cartService.addToCart({
-        cartItems: [
-          {
-            productId: product.id,
-            variantId: currentVariant._id,
-            size: firstSize,
-            size_id: firstSizeId,
-            quantity: 1,
-          },
-        ],
-      });
-      setUserCartState(true);
-      incrementCartCount();
-      addToCartedIds(product.id);
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-    } finally {
-      setIsAddingToCart(false);
+    // Fetch fresh variant sizes from new API: get-product-variant-info/:variantId
+    if (currentVariant?._id) {
+      try {
+        const variantInfo = await productService.getProductVariantInfo(currentVariant._id);
+        if (variantInfo?.data?.sizes && variantInfo.data.sizes.length > 0) {
+          modalSizes = variantInfo.data.sizes
+            .filter((s) => Boolean(s && s.size))
+            .map((s) => ({
+              _id: s._id,
+              size: s.size,
+              quantity: s.quantity ?? 1,
+              selling_price: s.selling_price ?? currentPrice,
+              mrp: s.mrp ?? originalPrice,
+            }));
+        }
+      } catch (err) {
+        console.warn("Could not fetch variant info from get-product-variant-info API", err);
+      }
     }
+
+    // Fallback to variant sizes from props if API didn't return sizes
+    if (modalSizes.length === 0 && currentVariant?.sizes) {
+      modalSizes = currentVariant.sizes
+        .filter((s): s is ProductVariantSize => Boolean(s && s.size))
+        .map((s) => ({
+          _id: s._id,
+          size: s.size,
+          quantity: s.quantity ?? 1,
+          selling_price: s.selling_price ?? currentPrice,
+          mrp: s.mrp ?? originalPrice,
+        }));
+    }
+
+    if (modalSizes.length === 0 && product.sizes && product.sizes.length > 0) {
+      product.sizes.forEach((s) => {
+        modalSizes.push({
+          size: s.name,
+          quantity: s.available ? 10 : 0,
+          selling_price: currentPrice,
+          mrp: originalPrice,
+        });
+      });
+    }
+
+    // If still empty (e.g. saree or single-size product), provide default "ONE_SIZE"
+    if (modalSizes.length === 0) {
+      modalSizes.push({
+        size: "ONE_SIZE",
+        quantity: 1,
+        selling_price: currentPrice,
+        mrp: originalPrice,
+      });
+    }
+
+    setIsAddingToCart(false);
+
+    openSizeModal({
+      productName: product.name,
+      brand: brandName,
+      seller: (apiProduct as unknown as { seller?: string })?.seller || brandName,
+      image: displayImages[0]?.url,
+      sizes: modalSizes,
+      defaultPrice: currentPrice,
+      defaultMrp: originalPrice,
+      onConfirm: async (selectedSize: SizeOption) => {
+        setIsAddingToCart(true);
+        try {
+          await cartService.addToCart({
+            cartItems: [
+              {
+                productId: product.id,
+                variantId: currentVariant._id,
+                size: selectedSize.size,
+                size_id: selectedSize._id,
+                quantity: 1,
+              },
+            ],
+          });
+          setUserCartState(true);
+          incrementCartCount();
+          addToCartedIds(product.id);
+          await refreshCounts();
+          toast.success("Added to cart successfully");
+        } catch (error) {
+          console.error("Error adding to cart:", error);
+          toast.error("Failed to add to cart");
+          throw error;
+        } finally {
+          setIsAddingToCart(false);
+        }
+      },
+    });
   };
 
   // Resolve Brand, Prices & Discount
@@ -554,16 +625,16 @@ export const ProductCard = memo(function ProductCard({
               <span className="font-bold text-xs sm:text-sm md:text-base text-gray-900">
                 Rs. {currentPrice.toLocaleString("en-IN")}
               </span>
-              {originalPrice && originalPrice > currentPrice && (
+              {originalPrice !== undefined && originalPrice > currentPrice ? (
                 <span className="text-[11px] sm:text-xs text-gray-400 line-through">
                   Rs. {originalPrice.toLocaleString("en-IN")}
                 </span>
-              )}
-              {discount && discount > 0 && originalPrice && originalPrice > currentPrice && (
+              ) : null}
+              {discount !== undefined && discount > 0 && originalPrice !== undefined && originalPrice > currentPrice ? (
                 <span className="text-[11px] sm:text-xs text-[#008060] font-medium">
                   ({discount}% OFF)
                 </span>
-              )}
+              ) : null}
             </>
           ) : (
             <span className="text-xs text-gray-500">Price not available</span>

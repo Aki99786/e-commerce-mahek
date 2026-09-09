@@ -21,6 +21,7 @@ export const API_ENDPOINTS = {
     LIST: "products/list",
     FILTER_OPTIONS: "products/get-filter-options",
     BY_ID: (id: string) => `products/${id}`,
+    VARIANT_INFO: (variantId: string) => `products/get-product-variant-info/${variantId}`,
     BEST_SELLING: "products/best-selling",
     TRENDING: "products/trending",
     FLASH_SALE: "products/flash-sale",

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { Search, X } from "lucide-react";
 import { productService } from "../services/product.service";
 import { ProductFiltersSkeleton } from "@/components/product/ProductCardSkeleton";
+import { getColorInfo } from "@/lib/utils/color";
 import type {
   ProductsListParams,
   FilterOptionsData,
@@ -33,44 +34,11 @@ interface NormalizedItem {
 interface NormalizedColorItem {
   name: string;
   code: string;
+  value: string;
   count?: number;
 }
 
-const getColorCode = (colorValue: string, fallbackHex?: string): string => {
-  if (fallbackHex) return fallbackHex;
-  if (!colorValue) return "#6B7280";
-  const trimmed = colorValue.trim().toLowerCase();
-  if (trimmed.startsWith("#")) return trimmed;
-
-  const colorMap: Record<string, string> = {
-    red: "#EF4444",
-    blue: "#3B82F6",
-    green: "#10B981",
-    yellow: "#FBBF24",
-    pink: "#EC4899",
-    purple: "#A855F7",
-    orange: "#F97316",
-    black: "#2B2F38",
-    white: "#FFFFFF",
-    gray: "#8E8E93",
-    grey: "#8E8E93",
-    brown: "#92400E",
-    beige: "#D4C5B9",
-    gold: "#FFD700",
-    silver: "#C0C0C0",
-    maroon: "#800000",
-    navy: "#000080",
-    teal: "#0D9488",
-    olive: "#808000",
-    lime: "#84CC16",
-    cyan: "#06B6D4",
-    magenta: "#D946EF",
-    indigo: "#6366F1",
-    violet: "#8B5CF6",
-  };
-
-  return colorMap[trimmed] || trimmed;
-};
+const INITIAL_VISIBLE_COUNT = 4;
 
 const formatIndianCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-IN").format(amount);
@@ -115,11 +83,21 @@ const normalizeColors = (items?: (string | ColorFilterItem)[]): NormalizedColorI
   if (!items || !Array.isArray(items)) return [];
   return items.map((item) => {
     if (typeof item === "string") {
-      return { name: item, code: getColorCode(item) };
+      const info = getColorInfo(item);
+      return {
+        name: info.name,
+        code: info.hex,
+        value: item.trim(),
+      };
     }
-    const name = item.name || "";
-    const code = item.code || item.hex || getColorCode(name);
-    return { name, code, count: item.count };
+    const colorStr = item.code || item.hex || item.name || "";
+    const info = getColorInfo(colorStr);
+    return {
+      name: item.name && !item.name.startsWith("#") ? item.name : info.name,
+      code: item.code || item.hex || info.hex,
+      value: colorStr,
+      count: item.count,
+    };
   });
 };
 
@@ -297,7 +275,7 @@ export function ProductFilters({
   }, [normalizedBrands, brandSearchQuery]);
   const visibleBrands = showAllBrands || brandSearchQuery.trim()
     ? filteredBrands
-    : filteredBrands.slice(0, 8);
+    : filteredBrands.slice(0, INITIAL_VISIBLE_COUNT);
 
   // Normalized and filtered Category list
   const normalizedCategories = useMemo(() => normalizeList(options.categories), [options.categories]);
@@ -309,19 +287,28 @@ export function ProductFilters({
   }, [normalizedCategories, categorySearchQuery]);
   const visibleCategories = showAllCategories || categorySearchQuery.trim()
     ? filteredCategories
-    : filteredCategories.slice(0, 7);
+    : filteredCategories.slice(0, INITIAL_VISIBLE_COUNT);
 
   // Normalized and filtered Color list
   const normalizedColors = useMemo(() => normalizeColors(options.colors), [options.colors]);
   const filteredColors = useMemo(() => {
     if (!colorSearchQuery.trim()) return normalizedColors;
+    const q = colorSearchQuery.toLowerCase();
     return normalizedColors.filter((c) =>
-      c.name.toLowerCase().includes(colorSearchQuery.toLowerCase())
+      c.name.toLowerCase().includes(q) || c.value.toLowerCase().includes(q)
     );
   }, [normalizedColors, colorSearchQuery]);
   const visibleColors = showAllColors || colorSearchQuery.trim()
     ? filteredColors
-    : filteredColors.slice(0, 7);
+    : filteredColors.slice(0, INITIAL_VISIBLE_COUNT);
+
+  // Discount options
+  const discountOptions = useMemo(() => {
+    if (options.discount && options.discount.length > 0) {
+      return [...options.discount].sort((a, b) => a - b);
+    }
+    return [10, 20, 30, 40, 50, 60, 70, 80];
+  }, [options.discount]);
 
   // Slider track percentages
   const safeRange = maxLimit > minLimit ? maxLimit - minLimit : 1;
@@ -416,7 +403,7 @@ export function ProductFilters({
                     className="w-4 h-4 rounded-[3px] border-gray-300 text-[#ff3f6c] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#ff3f6c]"
                   />
                   <span className="text-sm text-gray-800 group-hover:text-black transition-colors capitalize">
-                    {cat.name}
+                    {cat.name.replace(/-/g, " ")}
                   </span>
                   {cat.count !== undefined && (
                     <span className="text-xs text-gray-400 font-normal">
@@ -431,13 +418,13 @@ export function ProductFilters({
             )}
           </div>
 
-          {filteredCategories.length > 7 && !categorySearchQuery.trim() && (
+          {filteredCategories.length > INITIAL_VISIBLE_COUNT && !categorySearchQuery.trim() && (
             <button
               type="button"
               onClick={() => setShowAllCategories(!showAllCategories)}
-              className="mt-2 text-xs font-semibold text-[#ff3f6c] hover:text-[#e02d57] transition-colors inline-block"
+              className="mt-2 text-xs font-semibold text-[#ff3f6c] hover:text-[#e02d57] transition-colors inline-block cursor-pointer"
             >
-              {showAllCategories ? "Show less" : `+ ${filteredCategories.length - 7} more`}
+              {showAllCategories ? "Show less" : `+ ${filteredCategories.length - INITIAL_VISIBLE_COUNT} more`}
             </button>
           )}
         </div>
@@ -522,13 +509,13 @@ export function ProductFilters({
             )}
           </div>
 
-          {filteredBrands.length > 8 && !brandSearchQuery.trim() && (
+          {filteredBrands.length > INITIAL_VISIBLE_COUNT && !brandSearchQuery.trim() && (
             <button
               type="button"
               onClick={() => setShowAllBrands(!showAllBrands)}
-              className="mt-2 text-xs font-semibold text-[#ff3f6c] hover:text-[#e02d57] transition-colors inline-block"
+              className="mt-2 text-xs font-semibold text-[#ff3f6c] hover:text-[#e02d57] transition-colors inline-block cursor-pointer"
             >
-              {showAllBrands ? "Show less" : `+ ${filteredBrands.length - 8} more`}
+              {showAllBrands ? "Show less" : `+ ${filteredBrands.length - INITIAL_VISIBLE_COUNT} more`}
             </button>
           )}
         </div>
@@ -587,7 +574,7 @@ export function ProductFilters({
 
       {/* 5. COLOR */}
       {options.colors && options.colors.length > 0 && (
-        <div className="py-4">
+        <div className="py-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-xs font-bold tracking-wider text-gray-900 uppercase">
               COLOR
@@ -635,33 +622,38 @@ export function ProductFilters({
             }`}
           >
             {visibleColors.map((colorItem) => {
-              const isSelected = isItemSelected(filters.color, colorItem.name);
+              const isSelected =
+                isItemSelected(filters.color, colorItem.value) ||
+                isItemSelected(filters.color, colorItem.name);
 
               return (
                 <label
-                  key={colorItem.name}
+                  key={colorItem.value || colorItem.name}
                   className="flex items-center gap-2.5 cursor-pointer group select-none py-0.5"
                 >
                   <input
                     type="checkbox"
                     checked={isSelected}
                     onChange={() =>
-                      updateFilter("color", toggleMultiSelect(filters.color, colorItem.name))
+                      updateFilter(
+                        "color",
+                        toggleMultiSelect(filters.color, colorItem.value)
+                      )
                     }
                     className="w-4 h-4 rounded-[3px] border-gray-300 text-[#ff3f6c] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#ff3f6c]"
                   />
                   <span
-                    className="w-4 h-4 rounded-full border border-gray-200 flex-shrink-0"
+                    className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0 shadow-sm"
                     style={{ backgroundColor: colorItem.code }}
                   />
                   <span className="text-sm text-gray-800 group-hover:text-black transition-colors capitalize">
                     {colorItem.name}
                   </span>
-                  {colorItem.count !== undefined && (
+                  {colorItem.count !== undefined && colorItem.count > 0 ? (
                     <span className="text-xs text-gray-400 font-normal">
                       ({colorItem.count})
                     </span>
-                  )}
+                  ) : null}
                 </label>
               );
             })}
@@ -671,15 +663,60 @@ export function ProductFilters({
           </div>
 
           {/* Show More / Show Less */}
-          {filteredColors.length > 7 && !colorSearchQuery.trim() && (
+          {filteredColors.length > INITIAL_VISIBLE_COUNT && !colorSearchQuery.trim() && (
             <button
               type="button"
               onClick={() => setShowAllColors(!showAllColors)}
-              className="mt-2 text-xs font-semibold text-[#ff3f6c] hover:text-[#e02d57] transition-colors inline-block"
+              className="mt-2 text-xs font-semibold text-[#ff3f6c] hover:text-[#e02d57] transition-colors inline-block cursor-pointer"
             >
-              {showAllColors ? "Show less" : `+ ${filteredColors.length - 7} more`}
+              {showAllColors ? "Show less" : `+ ${filteredColors.length - INITIAL_VISIBLE_COUNT} more`}
             </button>
           )}
+        </div>
+      )}
+
+      {/* 6. DISCOUNT RANGE */}
+      {discountOptions && discountOptions.length > 0 && (
+        <div className="py-4">
+          <h4 className="text-xs font-bold tracking-wider text-gray-900 uppercase mb-3">
+            DISCOUNT RANGE
+          </h4>
+          <div className="space-y-2.5">
+            {discountOptions.map((val) => {
+              const isSelected = filters.discount === val;
+              return (
+                <label
+                  key={val}
+                  onClick={() => {
+                    const nextVal = isSelected ? undefined : val;
+                    updateFilter("discount", nextVal);
+                  }}
+                  className="flex items-center gap-3 cursor-pointer group select-none py-0.5"
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0 ${
+                      isSelected
+                        ? "border-[#ff3f6c] bg-white"
+                        : "border-gray-300 bg-white group-hover:border-gray-400"
+                    }`}
+                  >
+                    {isSelected && (
+                      <div className="w-2 h-2 rounded-full bg-[#ff3f6c]" />
+                    )}
+                  </div>
+                  <span
+                    className={`text-sm transition-colors ${
+                      isSelected
+                        ? "text-gray-900 font-medium"
+                        : "text-gray-700 group-hover:text-black"
+                    }`}
+                  >
+                    {val}% and above
+                  </span>
+                </label>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

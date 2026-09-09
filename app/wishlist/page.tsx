@@ -7,10 +7,12 @@ import { EmptyWishlist } from "@/components/empty-states/EmptyWishlist";
 import { WishlistItem } from "@/features/wishlist/components/WishlistItem";
 import { wishlistService } from "@/features/wishlist/services/wishlist.service";
 import { useCartWishlist } from "@/contexts/CartWishlistContext";
-import type { UIWishlistItem } from "@/features/wishlist/adapters/wishlist.adapter";
-import { adaptWishlistResponseToUI } from "@/features/wishlist/adapters/wishlist.adapter";
+import type { WishlistItem as WishlistItemType } from "@/features/wishlist/types";
 import { toast } from "@/lib/toast";
 import { ROUTES } from "@/constants/routes";
+import { productService } from "@/features/products/services/product.service";
+import { useSizeModal } from "@/contexts/SizeModalContext";
+import type { SizeOption } from "@/components/product/SizeSelectionModal";
 
 export default function WishlistPage() {
   const router = useRouter();
@@ -21,10 +23,11 @@ export default function WishlistPage() {
     removeFromWishlistedIds,
     addToCartedIds,
   } = useCartWishlist();
+  const { openSizeModal } = useSizeModal();
 
   const [isAuth, setIsAuth] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [wishlistItems, setWishlistItems] = useState<UIWishlistItem[]>([]);
+  const [wishlistItems, setWishlistItems] = useState<WishlistItemType[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [currentOffset, setCurrentOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -44,13 +47,13 @@ export default function WishlistPage() {
         offset: 0,
       });
 
-      const adaptedItems = adaptWishlistResponseToUI(response?.list ?? []);
-      setWishlistItems(adaptedItems);
+      const items = response?.list ?? [];
+      setWishlistItems(items);
 
-      const total = response?.total ?? adaptedItems.length;
+      const total = response?.total ?? items.length;
       setTotalItems(total);
       setCurrentOffset(0);
-      setHasMore(adaptedItems.length < total && adaptedItems.length >= PAGE_LIMIT);
+      setHasMore(items.length < total && items.length >= PAGE_LIMIT);
     } catch (error) {
       console.error("Error fetching wishlist:", error);
       setWishlistItems([]);
@@ -86,7 +89,7 @@ export default function WishlistPage() {
         offset: nextOffset,
       });
 
-      const newItems = adaptWishlistResponseToUI(response?.list ?? []);
+      const newItems = response?.list ?? [];
 
       if (!newItems || newItems.length === 0) {
         setHasMore(false);
@@ -152,7 +155,7 @@ export default function WishlistPage() {
       setTotalItems((prev) => Math.max(0, prev - 1));
       decrementWishlistCount();
 
-      if (item?.product_id) {
+      if (item.product_id) {
         removeFromWishlistedIds(item.product_id);
       }
       toast.success("Removed from wishlist");
@@ -164,48 +167,77 @@ export default function WishlistPage() {
   };
 
   // Handle Add to Cart
-  const handleAddToCart = async (productId: string) => {
+  const handleAddToCart = async (item: WishlistItemType) => {
     try {
-      const wishlistItem = wishlistItems.find(
-        (item) => item.product._id === productId
-      );
-      if (!wishlistItem) {
-        toast.error("Item not found in wishlist");
-        return;
+      // Fetch fresh variant sizes from new API: get-product-variant-info/:variantId
+      let modalSizes: SizeOption[] = [];
+      if (item.variant?.variant_id) {
+        try {
+          const variantInfo = await productService.getProductVariantInfo(item.variant.variant_id);
+          if (variantInfo?.data?.sizes && variantInfo.data.sizes.length > 0) {
+            modalSizes = variantInfo.data.sizes
+              .filter((s) => Boolean(s && s.size))
+              .map((s) => ({
+                _id: s._id,
+                size: s.size,
+                quantity: s.quantity ?? 1,
+                selling_price: s.selling_price ?? item.variant.size.selling_price,
+                mrp: s.mrp ?? item.variant.size.mrp,
+              }));
+          }
+        } catch (err) {
+          console.warn("Could not fetch variant info via getProductVariantInfo", err);
+        }
       }
 
-      const sizeId =
-        wishlistItem.sizeId ||
-        wishlistItem.variant?.size_id ||
-        (wishlistItem.variant?.size as unknown as { _id?: string })?._id ||
-        "";
-
-      await wishlistService.bulkMoveToCart({
-        cartItems: [
+      // Exact match from wishlist item variant size
+      if (modalSizes.length === 0 && item.variant?.size) {
+        modalSizes = [
           {
-            _id: wishlistItem._id,
-            productId: wishlistItem.product._id,
-            variantId: wishlistItem.variantId,
-            size_id: sizeId,
-            size: wishlistItem.size,
-            quantity: 1,
+            _id: item.variant.size._id,
+            size: item.variant.size.size,
+            quantity: item.variant.size.quantity,
+            selling_price: item.variant.size.selling_price,
+            mrp: item.variant.size.mrp,
           },
-        ],
-      });
-
-      setWishlistItems((prev) =>
-        prev.filter((item) => item._id !== wishlistItem._id)
-      );
-      setTotalItems((prev) => Math.max(0, prev - 1));
-
-      incrementCartCount();
-      decrementWishlistCount();
-
-      if (wishlistItem.product._id) {
-        removeFromWishlistedIds(wishlistItem.product._id);
-        addToCartedIds(wishlistItem.product._id);
+        ];
       }
-      toast.success("Moved to cart successfully");
+
+      openSizeModal({
+        productName: item.product_name,
+        brand: item.brand,
+        seller: item.brand,
+        image: item.variant.images?.[0],
+        sizes: modalSizes,
+        defaultPrice: item.variant.size.selling_price,
+        defaultMrp: item.variant.size.mrp,
+        onConfirm: async (selectedSize: SizeOption) => {
+          await wishlistService.bulkMoveToCart({
+            cartItems: [
+              {
+                _id: item._id,
+                productId: item.product_id,
+                variantId: item.variant.variant_id,
+                size_id: selectedSize._id || item.variant.size_id,
+                size: selectedSize.size,
+                quantity: 1,
+              },
+            ],
+          });
+
+          setWishlistItems((prev) =>
+            prev.filter((i) => i._id !== item._id)
+          );
+          setTotalItems((prev) => Math.max(0, prev - 1));
+
+          incrementCartCount();
+          decrementWishlistCount();
+
+          removeFromWishlistedIds(item.product_id);
+          addToCartedIds(item.product_id);
+          toast.success("Moved to cart successfully");
+        },
+      });
     } catch (error) {
       console.error("Error moving to cart:", error);
       toast.error("Failed to move to cart");
@@ -294,7 +326,7 @@ export default function WishlistPage() {
                   item={item}
                   onRemove={handleRemove}
                   onAddToCart={handleAddToCart}
-                  isInCart={cartedProductIds.has(item.product._id)}
+                  isInCart={cartedProductIds.has(item.product_id)}
                 />
               ))}
             </div>

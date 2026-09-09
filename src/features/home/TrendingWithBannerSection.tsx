@@ -29,20 +29,20 @@ export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'T
     const fetchTrending = async () => {
       try {
         const response = await productService.getTrendingProducts();
-        const mappedProducts = response.products.slice(0, 4).map(adaptAPIProductToUI);
+        const mappedProducts = response.products.slice(0, 3).map(adaptAPIProductToUI);
         setTrendingProducts(mappedProducts);
-        setRawAPIProducts(response.products.slice(0, 4));
+        setRawAPIProducts(response.products.slice(0, 3));
       } catch (error) {
         console.error("Failed to fetch trending products:", error);
         setTrendingProducts([]);
       } finally {
         setIsLoading(false);
       }
-    };  
+    };
 
     const fetchLehenga = async () => {
       try {
-        const response = await productService.getProductsList({ type: 'LEHENGA', limit: 4, page: 1 });
+        const response = await productService.getProductsList({ type: 'LEHENGA', limit: 3, page: 1 });
         const mappedProducts = response.products.map(adaptAPIProductToUI);
         setTrendingProducts(mappedProducts);
         setRawAPIProducts(response.products);
@@ -69,7 +69,7 @@ export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'T
           <div className={bannerPosition === 'left' ? 'lg:col-span-2 order-first lg:order-last' : 'lg:col-span-2'}>
             <div className="relative h-[280px] md:h-[300px] lg:h-full min-h-[420px] rounded-lg overflow-hidden">
               <Image
-                src={`/images/${bannerPosition === 'left' ? 'rightbgimg.png' : 'top-trandig-right-banner.png' }`}
+                src={`/images/${bannerPosition === 'left' ? 'rightbgimg.png' : 'top-trandig-right-banner.png'}`}
                 alt="Modern Shehzadi"
                 fill
                 className="object-cover"
@@ -91,21 +91,21 @@ export const TrendingWithBannerSection = ({ bannerPosition = 'right', title = 'T
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 md:gap-4">
               {isLoading ? (
                 // Loading Skeletons
-                [1, 2, 3, 4].map((i) => (
+                [1, 2, 3].map((i) => (
                   <div key={i} className="w-full h-[300px] bg-gray-200 animate-pulse rounded-lg" />
                 ))
               ) : (
                 trendingProducts.map((product) => {
                   const rawProduct = rawAPIProducts.find((p) => p._id === product.id);
                   return (
-                    <ProductCard 
-                      key={product.id} 
-                        product={product}
+                    <ProductCard
+                      key={product.id}
+                      product={product}
                       apiProduct={rawProduct}
-                      variant="compact" 
+                      variant="compact"
                     />
                   );
                 })

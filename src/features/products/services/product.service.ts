@@ -6,6 +6,7 @@ import type {
   ProductsListParams,
   TestimonialsResponse,
   FilterOptionsResponse,
+  ProductVariantInfoResponse,
 } from "../types";
 
 class ProductService extends BaseService {
@@ -25,6 +26,8 @@ class ProductService extends BaseService {
       queryParams.append("minPrice", params.minPrice.toString());
     if (params.maxPrice !== undefined)
       queryParams.append("maxPrice", params.maxPrice.toString());
+    if (params.discount !== undefined)
+      queryParams.append("discount", params.discount.toString());
     if (params.availability)
       queryParams.append("availability", params.availability);
     if (params.isFeatured !== undefined)
@@ -58,6 +61,12 @@ class ProductService extends BaseService {
 
   async getProductById(id: string): Promise<Product> {
     return this.get<Product>(API_ENDPOINTS.PRODUCTS.BY_ID(id));
+  }
+
+  async getProductVariantInfo(variantId: string): Promise<ProductVariantInfoResponse> {
+    return this.get<ProductVariantInfoResponse>(
+      API_ENDPOINTS.PRODUCTS.VARIANT_INFO(variantId)
+    );
   }
 
   async getBestSellingProducts(): Promise<ProductsListResponse> {

@@ -4,15 +4,14 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Availability } from "../types";
 import { ROUTES } from "@/constants/routes";
 import { toast } from "@/lib/toast";
-import type { UIWishlistItem } from "../adapters/wishlist.adapter";
+import type { WishlistItem as WishlistItemType } from "../types";
 
 interface WishlistItemProps {
-  item: UIWishlistItem;
+  item: WishlistItemType;
   onRemove: (wishlistItemId: string) => void;
-  onAddToCart: (productId: string) => void;
+  onAddToCart: (item: WishlistItemType) => void;
   isInCart?: boolean;
 }
 
@@ -24,7 +23,7 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
   const handleRemove = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!item?._id) return;
+    if (!item._id) return;
     setIsRemoving(true);
     try {
       await onRemove(item._id);
@@ -40,7 +39,7 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
     e.stopPropagation();
 
     if (isOutOfStock) {
-      toast.info(`We will notify you when ${item.product.name} is back in stock!`);
+      toast.info(`We will notify you when ${item.product_name} is back in stock!`);
       return;
     }
 
@@ -51,7 +50,7 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
 
     setIsAddingToCart(true);
     try {
-      await onAddToCart(item.product._id);
+      await onAddToCart(item);
     } catch (error) {
       console.error("Failed to add to cart:", error);
     } finally {
@@ -59,24 +58,28 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
     }
   };
 
-  const isOutOfStock = item.product.availability === Availability.OUT_OF_STOCK;
+  const isOutOfStock = (item.variant?.size?.quantity ?? 0) <= 0;
 
   // Rating Display matching luxury reference (e.g. 4.2 ★)
   const ratingAverage = (() => {
     let hash = 0;
-    const id = item.product_id || item.product._id || item._id || "";
+    const id = item.product_id || "";
     for (let i = 0; i < id.length; i++) {
       hash = (hash * 31 + id.charCodeAt(i)) % 9;
     }
     return Number((4.1 + hash * 0.1).toFixed(1));
   })();
 
-  const brandName = item.brand || item.product.brand || "DESIGNER";
-  const productName = item.product_name || item.product.name;
-  const currentPrice = item.product.price;
-  const originalPrice = item.product.oldPrice;
-  const discountPercent = item.product.discountPercent;
-  const productUrl = `/product/${item.product._id}`;
+  const brandName = item.brand;
+  const productName = item.product_name;
+  const currentPrice = item.variant?.size?.selling_price ?? 0;
+  const originalPrice = item.variant?.size?.mrp ?? 0;
+  const discountPercent =
+    originalPrice > currentPrice && originalPrice > 0
+      ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+      : 0;
+  const productUrl = `/product/${item.product_id}`;
+  const displayImage = item.variant?.images?.[0];
 
   return (
     <div
@@ -87,15 +90,21 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
       {/* Image Container */}
       <div className="relative aspect-[3/4] w-full bg-gray-100 overflow-hidden">
         <Link href={productUrl} className="block w-full h-full relative">
-          <Image
-            src={item.product.images?.[0] || "/placeholder.jpg"}
-            alt={productName}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className={`object-cover object-center transition-all duration-500 ease-out ${
-              isOutOfStock ? "blur-[5px] opacity-85 scale-[1.05]" : "group-hover:scale-105"
-            }`}
-          />
+          {displayImage ? (
+            <Image
+              src={displayImage}
+              alt={productName}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className={`object-cover object-center transition-all duration-500 ease-out ${
+                isOutOfStock ? "blur-[5px] opacity-85 scale-[1.05]" : "group-hover:scale-105"
+              }`}
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+              <span className="text-gray-400 text-xs">No Image</span>
+            </div>
+          )}
         </Link>
 
         {/* Frosted Milky Overlay when Sold Out */}
@@ -126,7 +135,7 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
           </svg>
         </button>
 
-        {/* Sold Out Banner (Crisp Center Overlay) */}
+        {/* Sold Out Banner */}
         {isOutOfStock && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
             <div className="bg-[#333333]/95 text-white text-[11px] sm:text-xs font-semibold tracking-[0.25em] px-5 py-2.5 uppercase shadow-md select-none">
@@ -196,16 +205,16 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
           <span className="font-bold text-xs sm:text-sm md:text-base text-gray-900">
             ₹{currentPrice.toLocaleString("en-IN")}
           </span>
-          {originalPrice > currentPrice && (
+          {originalPrice > currentPrice && originalPrice > 0 ? (
             <span className="text-[11px] sm:text-xs text-gray-400 line-through">
               ₹{originalPrice.toLocaleString("en-IN")}
             </span>
-          )}
-          {discountPercent > 0 && originalPrice > currentPrice && (
+          ) : null}
+          {discountPercent > 0 && originalPrice > currentPrice && originalPrice > 0 ? (
             <span className="text-[11px] sm:text-xs text-[#008060] font-medium">
               ({discountPercent}% OFF)
             </span>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

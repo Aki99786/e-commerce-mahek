@@ -94,6 +94,12 @@ export function CategoryPageContent({
     if (searchParams.get('availability')) {
       params.availability = searchParams.get('availability') as ProductsListParams['availability'];
     }
+    if (searchParams.get('discount')) {
+      const parsedDiscount = parseInt(searchParams.get('discount')!, 10);
+      if (!isNaN(parsedDiscount)) {
+        params.discount = parsedDiscount;
+      }
+    }
 
     return params;
   };
@@ -220,6 +226,9 @@ export function CategoryPageContent({
     }
     if (filters.availability) {
       params.set('availability', filters.availability);
+    }
+    if (filters.discount !== undefined) {
+      params.set('discount', filters.discount.toString());
     }
 
     if (categorySlugFromUrl) {

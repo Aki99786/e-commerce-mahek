@@ -99,7 +99,7 @@ export function ProductFiltersSkeleton() {
       </div>
 
       {/* Color skeleton */}
-      <div className="py-2 space-y-3">
+      <div className="py-2 border-b border-gray-200 space-y-3">
         <div className="flex items-center justify-between">
           <div className="h-3.5 w-14 bg-gray-200 rounded" />
           <div className="w-5 h-5 bg-gray-100 rounded-full" />
@@ -114,6 +114,21 @@ export function ProductFiltersSkeleton() {
             <div className="w-4 h-4 rounded bg-gray-200 flex-shrink-0" />
             <div className="w-4 h-4 rounded-full bg-gray-200 flex-shrink-0" />
             <div className="h-3.5 w-20 bg-gray-100 rounded" />
+          </div>
+        </div>
+      </div>
+
+      {/* Discount Range skeleton */}
+      <div className="py-2 space-y-3">
+        <div className="h-3.5 w-28 bg-gray-200 rounded" />
+        <div className="space-y-2.5">
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 rounded-full bg-gray-200 flex-shrink-0" />
+            <div className="h-3.5 w-24 bg-gray-100 rounded" />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 rounded-full bg-gray-200 flex-shrink-0" />
+            <div className="h-3.5 w-24 bg-gray-100 rounded" />
           </div>
         </div>
       </div>

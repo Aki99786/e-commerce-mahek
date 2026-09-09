@@ -55,6 +55,17 @@ export interface ProductsListResponse {
   products: Product[];
 }
 
+export interface ProductVariantInfoData {
+  product_id: string;
+  variant_id: string;
+  sizes: ProductVariantSize[];
+}
+
+export interface ProductVariantInfoResponse {
+  success: boolean;
+  data: ProductVariantInfoData;
+}
+
 export interface TestimonialsResponse {
   testimonials: unknown[];
 }
@@ -83,6 +94,7 @@ export interface FilterOptionsData {
   colors: (string | ColorFilterItem)[];
   sizes: (string | FilterItemOption)[];
   price: FilterPriceRange;
+  discount?: number[];
 }
 
 export interface FilterOptionsResponse {
@@ -101,6 +113,7 @@ export interface ProductsListParams {
   pattern?: string;
   minPrice?: number;
   maxPrice?: number;
+  discount?: number;
   availability?: ProductAvailability;
   isFeatured?: boolean;
   search?: string;
