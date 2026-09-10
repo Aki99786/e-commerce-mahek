@@ -43,10 +43,15 @@ export const ProductCard = memo(function ProductCard({
     incrementWishlistCount,
     decrementWishlistCount,
     wishlistedProductIds,
+    wishlistedSizeIds,
     cartedProductIds,
+    cartedSizeIds,
     addToWishlistedIds,
+    addToWishlistedSizeIds,
     removeFromWishlistedIds,
+    removeFromWishlistedSizeIds,
     addToCartedIds,
+    addToCartedSizeIds,
     getWishlistItemId,
     refreshCounts,
   } = useCartWishlist();
@@ -56,10 +61,11 @@ export const ProductCard = memo(function ProductCard({
     (apiProduct as unknown as { selectedVariant?: import("@/features/products/types").ProductVariant })?.selectedVariant ||
     apiProduct?.variant;
 
-  // Check is_wishlist from API (apiProduct variant sizes or product)
+  const currentSize = currentVariant?.sizes?.[0];
+
+  // Check is_wishlist strictly from BE data for this variant size
   const apiWishlist = Boolean(
-    currentVariant?.sizes?.[0]?.is_wishlist ??
-    currentVariant?.sizes?.some((s) => s?.is_wishlist) ??
+    currentSize?.is_wishlist ??
     (apiProduct as unknown as { is_wishlist?: boolean })?.is_wishlist ??
     product.is_wishlist ??
     initialWishlistState
@@ -69,16 +75,15 @@ export const ProductCard = memo(function ProductCard({
 
   const isInWishlist = userWishlistState !== null
     ? userWishlistState
-    : (wishlistedProductIds.has(product.id) || apiWishlist);
+    : (currentSize?._id ? wishlistedSizeIds.has(currentSize._id) : false) || apiWishlist;
 
   useEffect(() => {
     setUserWishlistState(null);
   }, [apiWishlist, initialWishlistState]);
 
-  // Check is_cart_active from API (apiProduct variant sizes or product)
+  // Check is_cart_active strictly from BE data for this variant size
   const apiCartActive = Boolean(
-    currentVariant?.sizes?.[0]?.is_cart_active ??
-    currentVariant?.sizes?.some((s) => s?.is_cart_active) ??
+    currentSize?.is_cart_active ??
     (apiProduct as unknown as { is_cart_active?: boolean })?.is_cart_active ??
     product.is_cart_active
   );
@@ -87,7 +92,7 @@ export const ProductCard = memo(function ProductCard({
 
   const isInCart = userCartState !== null
     ? userCartState
-    : (cartedProductIds.has(product.id) || apiCartActive);
+    : (currentSize?._id ? cartedSizeIds.has(currentSize._id) : false) || apiCartActive;
 
   useEffect(() => {
     setUserCartState(null);
@@ -171,6 +176,10 @@ export const ProductCard = memo(function ProductCard({
         setUserWishlistState(false);
         decrementWishlistCount();
         removeFromWishlistedIds(product.id);
+        if (firstSizeId) {
+          removeFromWishlistedSizeIds(firstSizeId);
+        }
+        await refreshCounts();
       } else {
         await wishlistService.addToWishlist({
           wishlistItems: [
@@ -185,6 +194,9 @@ export const ProductCard = memo(function ProductCard({
         setUserWishlistState(true);
         incrementWishlistCount();
         addToWishlistedIds(product.id);
+        if (firstSizeId) {
+          addToWishlistedSizeIds(firstSizeId);
+        }
         await refreshCounts();
       }
 
@@ -297,6 +309,9 @@ export const ProductCard = memo(function ProductCard({
           setUserCartState(true);
           incrementCartCount();
           addToCartedIds(product.id);
+          if (selectedSize._id) {
+            addToCartedSizeIds(selectedSize._id);
+          }
           await refreshCounts();
           toast.success("Added to cart successfully");
         } catch (error) {

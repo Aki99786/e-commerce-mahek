@@ -21,7 +21,10 @@ export default function WishlistPage() {
     decrementWishlistCount,
     cartedProductIds,
     removeFromWishlistedIds,
+    removeFromWishlistedSizeIds,
     addToCartedIds,
+    addToCartedSizeIds,
+    refreshCounts,
   } = useCartWishlist();
   const { openSizeModal } = useSizeModal();
 
@@ -158,6 +161,10 @@ export default function WishlistPage() {
       if (item.product_id) {
         removeFromWishlistedIds(item.product_id);
       }
+      if (item.variant?.size_id) {
+        removeFromWishlistedSizeIds(item.variant.size_id);
+      }
+      await refreshCounts();
       toast.success("Removed from wishlist");
     } catch (error) {
       console.error("Error removing from wishlist:", error);
@@ -234,7 +241,15 @@ export default function WishlistPage() {
           decrementWishlistCount();
 
           removeFromWishlistedIds(item.product_id);
+          if (item.variant?.size_id) {
+            removeFromWishlistedSizeIds(item.variant.size_id);
+          }
           addToCartedIds(item.product_id);
+          const chosenSizeId = selectedSize._id || item.variant?.size_id;
+          if (chosenSizeId) {
+            addToCartedSizeIds(chosenSizeId);
+          }
+          await refreshCounts();
           toast.success("Moved to cart successfully");
         },
       });

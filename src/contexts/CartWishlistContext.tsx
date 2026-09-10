@@ -9,15 +9,20 @@ interface CartWishlistContextType {
   cartCount: number;
   wishlistCount: number;
   wishlistedProductIds: Set<string>;
+  wishlistedSizeIds: Set<string>;
   cartedProductIds: Set<string>;
+  cartedSizeIds: Set<string>;
   refreshCounts: () => Promise<void>;
   incrementCartCount: () => void;
   decrementCartCount: () => void;
   incrementWishlistCount: () => void;
   decrementWishlistCount: () => void;
   addToWishlistedIds: (productId: string) => void;
+  addToWishlistedSizeIds: (sizeId: string) => void;
   removeFromWishlistedIds: (productId: string) => void;
+  removeFromWishlistedSizeIds: (sizeId: string) => void;
   addToCartedIds: (productId: string) => void;
+  addToCartedSizeIds: (sizeId: string) => void;
   getWishlistItemId: (productId: string) => string | undefined;
 }
 
@@ -35,8 +40,10 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [wishlistedProductIds, setWishlistedProductIds] = useState<Set<string>>(new Set());
+  const [wishlistedSizeIds, setWishlistedSizeIds] = useState<Set<string>>(new Set());
   const [wishlistItemMap, setWishlistItemMap] = useState<Map<string, string>>(new Map());
   const [cartedProductIds, setCartedProductIds] = useState<Set<string>>(new Set());
+  const [cartedSizeIds, setCartedSizeIds] = useState<Set<string>>(new Set());
   const inFlightRef = useRef(false);
 
   const getWishlistItemId = useCallback((productId: string): string | undefined => {
@@ -50,8 +57,10 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
       setCartCount(0);
       setWishlistCount(0);
       setWishlistedProductIds(new Set());
+      setWishlistedSizeIds(new Set());
       setWishlistItemMap(new Map());
       setCartedProductIds(new Set());
+      setCartedSizeIds(new Set());
       return;
     }
 
@@ -78,12 +87,18 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
       });
 
       const nextCartedIds = new Set(cartItems.map((item: any) => item?.product_id).filter(Boolean) as string[]);
+      const nextCartedSizeIds = new Set(cartItems.map((item: any) => item?.size_id).filter(Boolean) as string[]);
+      const nextWishlistedSizeIds = new Set(
+        (wishlist?.list ?? []).map((item: any) => item?.variant?.size_id || item?.size_id).filter(Boolean) as string[]
+      );
 
       setCartCount((prev) => (prev === nextCartCount ? prev : nextCartCount));
       setWishlistCount((prev) => (prev === nextWishlistCount ? prev : nextWishlistCount));
       setWishlistedProductIds((prev) => (setsEqual(prev, productIds) ? prev : productIds));
+      setWishlistedSizeIds((prev) => (setsEqual(prev, nextWishlistedSizeIds) ? prev : nextWishlistedSizeIds));
       setWishlistItemMap(itemMap);
       setCartedProductIds((prev) => (setsEqual(prev, nextCartedIds) ? prev : nextCartedIds));
+      setCartedSizeIds((prev) => (setsEqual(prev, nextCartedSizeIds) ? prev : nextCartedSizeIds));
     } catch (error) {
       console.error("Error fetching counts:", error);
     } finally {
@@ -133,6 +148,15 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const addToWishlistedSizeIds = useCallback((sizeId: string) => {
+    setWishlistedSizeIds((prev) => {
+      if (prev.has(sizeId)) return prev;
+      const next = new Set(prev);
+      next.add(sizeId);
+      return next;
+    });
+  }, []);
+
   const removeFromWishlistedIds = useCallback((productId: string) => {
     setWishlistedProductIds((prev) => {
       if (!prev.has(productId)) return prev;
@@ -148,6 +172,15 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const removeFromWishlistedSizeIds = useCallback((sizeId: string) => {
+    setWishlistedSizeIds((prev) => {
+      if (!prev.has(sizeId)) return prev;
+      const next = new Set(prev);
+      next.delete(sizeId);
+      return next;
+    });
+  }, []);
+
   const addToCartedIds = useCallback((productId: string) => {
     setCartedProductIds((prev) => {
       if (prev.has(productId)) return prev;
@@ -157,35 +190,54 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const addToCartedSizeIds = useCallback((sizeId: string) => {
+    setCartedSizeIds((prev) => {
+      if (prev.has(sizeId)) return prev;
+      const next = new Set(prev);
+      next.add(sizeId);
+      return next;
+    });
+  }, []);
+
   const value = useMemo<CartWishlistContextType>(
     () => ({
       cartCount,
       wishlistCount,
       wishlistedProductIds,
+      wishlistedSizeIds,
       cartedProductIds,
+      cartedSizeIds,
       refreshCounts,
       incrementCartCount,
       decrementCartCount,
       incrementWishlistCount,
       decrementWishlistCount,
       addToWishlistedIds,
+      addToWishlistedSizeIds,
       removeFromWishlistedIds,
+      removeFromWishlistedSizeIds,
       addToCartedIds,
+      addToCartedSizeIds,
       getWishlistItemId,
     }),
     [
       cartCount,
       wishlistCount,
       wishlistedProductIds,
+      wishlistedSizeIds,
       cartedProductIds,
+      cartedSizeIds,
       refreshCounts,
       incrementCartCount,
       decrementCartCount,
       incrementWishlistCount,
       decrementWishlistCount,
       addToWishlistedIds,
+      addToWishlistedSizeIds,
       removeFromWishlistedIds,
+      removeFromWishlistedSizeIds,
       addToCartedIds,
+      addToCartedSizeIds,
       getWishlistItemId,
     ],
   );

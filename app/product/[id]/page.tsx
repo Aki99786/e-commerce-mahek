@@ -3,6 +3,9 @@ import { productService } from "@/features/products/services/product.service";
 import ProductDetailClient from "./ProductDetailClient";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface ProductDetailPageProps {
   params: Promise<{
     id: string;
