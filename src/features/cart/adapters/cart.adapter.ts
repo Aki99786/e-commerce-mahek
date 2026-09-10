@@ -24,12 +24,12 @@ export interface UICartItem {
 }
 
 export function enrichCartItemWithImages(item: CartItem): UICartItem {
-  const productId = item?.product_id ?? "";
-  const productName = item?.product_name ?? "";
-  const variantId = item?.variantId ?? "";
+  const productId = item?.product_id ?? (item as unknown as { productId?: string })?.productId ?? "";
+  const productName = item?.product_name ?? (item as unknown as { productName?: string })?.productName ?? "";
+  const variantId = item?.variantId ?? (item as unknown as { variant_id?: string })?.variant_id ?? "";
   const size = item?.size ?? "";
-  const size_id = item?.size_id ?? "";
-  const price = item?.selling_price ?? 0;
+  const size_id = item?.size_id ?? (item as unknown as { sizeId?: string })?.sizeId ?? "";
+  const price = item?.selling_price ?? (item as unknown as { price?: number })?.price ?? 0;
   const mrp = item?.mrp ?? price;
   const quantity = item?.quantity ?? 1;
   const images =

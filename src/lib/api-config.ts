@@ -9,6 +9,7 @@ export const API_ENDPOINTS = {
     REMOVE: "cart/remove",
     LIST: "cart/list",
     CLEAR: "cart/clear",
+    MOVE_TO_WISHLIST: "cart/move-to-wishlist",
   },
   WISHLIST: {
     LIST: "wishlist/list",

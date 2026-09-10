@@ -6,11 +6,22 @@ import { EmptyCart } from "@/components/empty-states/EmptyCart";
 import { isAuthenticated } from "@/lib/auth-utils";
 import { cartService } from "@/features/cart/services/cart.service";
 import { CartItem } from "@/features/cart/components/CartItem";
+import { CartConfirmationModal } from "@/features/cart/components/CartConfirmationModal";
 import { useCartWishlist } from "@/contexts/CartWishlistContext";
 import type { UICartItem } from "@/features/cart/adapters/cart.adapter";
 import { enrichCartItemsWithImages } from "@/features/cart/adapters/cart.adapter";
+import { saveCheckoutState } from "@/features/checkout/hooks/useCheckoutState";
 import { ROUTES } from "@/constants/routes";
 import { toast } from "@/lib/toast";
+
+type ConfirmActionType = "remove-single" | "remove-selected" | "move-wishlist" | "clear";
+
+interface ConfirmModalState {
+  isOpen: boolean;
+  type: ConfirmActionType;
+  targetId?: string;
+  itemCount?: number;
+}
 
 export default function CartPage() {
   const router = useRouter();
@@ -18,7 +29,16 @@ export default function CartPage() {
   const [isAuth, setIsAuth] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [cartItems, setCartItems] = useState<UICartItem[]>([]);
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+
+  // Confirmation Modal state
+  const [confirmModal, setConfirmModal] = useState<ConfirmModalState>({
+    isOpen: false,
+    type: "move-wishlist",
+    itemCount: 1,
+  });
+  const [isConfirmLoading, setIsConfirmLoading] = useState(false);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -44,16 +64,41 @@ export default function CartPage() {
       const response = await cartService.getCartList();
       const enrichedItems = enrichCartItemsWithImages(response?.data?.list ?? []);
       setCartItems(enrichedItems);
+      // Select all by default
+      setSelectedItemIds(new Set(enrichedItems.map((item) => item._id)));
     } catch (error) {
       console.error("Error fetching cart:", error);
       if (isInitialLoad) {
         setCartItems([]);
+        setSelectedItemIds(new Set());
       }
     } finally {
       if (isInitialLoad) {
         setLoading(false);
       }
     }
+  };
+
+  const isAllSelected = cartItems.length > 0 && selectedItemIds.size === cartItems.length;
+
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedItemIds(new Set());
+    } else {
+      setSelectedItemIds(new Set(cartItems.map((item) => item._id)));
+    }
+  };
+
+  const handleToggleItem = (itemId: string) => {
+    setSelectedItemIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      return next;
+    });
   };
 
   const handleUpdateQuantity = async (cartItemId: string, quantity: number) => {
@@ -68,7 +113,6 @@ export default function CartPage() {
 
     try {
       await cartService.updateCart(cartItemId, quantity);
-
       toast.success("Cart updated successfully");
       refreshCounts();
     } catch (error) {
@@ -78,11 +122,66 @@ export default function CartPage() {
     }
   };
 
-  const handleRemoveItem = async (cartItemId: string) => {
+  // Trigger Confirmation Modal for Single Item Remove
+  const handleRequestRemoveItem = (cartItemId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      type: "remove-single",
+      targetId: cartItemId,
+      itemCount: 1,
+    });
+  };
+
+  // Trigger Confirmation Modal for Bulk Remove
+  const handleRequestRemoveSelected = () => {
+    if (selectedItemIds.size === 0) return;
+    setConfirmModal({
+      isOpen: true,
+      type: "remove-selected",
+      itemCount: selectedItemIds.size,
+    });
+  };
+
+  // Trigger Confirmation Modal for Single Item Move to Wishlist
+  const handleRequestMoveItemToWishlist = (cartItemId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      type: "move-wishlist",
+      targetId: cartItemId,
+      itemCount: 1,
+    });
+  };
+
+  // Trigger Confirmation Modal for Bulk Move to Wishlist
+  const handleRequestMoveToWishlist = () => {
+    if (selectedItemIds.size === 0) return;
+    setConfirmModal({
+      isOpen: true,
+      type: "move-wishlist",
+      itemCount: selectedItemIds.size,
+    });
+  };
+
+  // Trigger Confirmation Modal for Clear Cart
+  const handleRequestClearCart = () => {
+    if (cartItems.length === 0) return;
+    setConfirmModal({
+      isOpen: true,
+      type: "clear",
+      itemCount: cartItems.length,
+    });
+  };
+
+  // Execution: Single Item Remove
+  const executeRemoveSingle = async (cartItemId: string) => {
     const previousItems = [...cartItems];
 
-    // ⚡ Optimistic UI Removal
     setCartItems((prev) => prev.filter((item) => item._id !== cartItemId));
+    setSelectedItemIds((prev) => {
+      const next = new Set(prev);
+      next.delete(cartItemId);
+      return next;
+    });
 
     try {
       await cartService.removeFromCart({
@@ -98,11 +197,107 @@ export default function CartPage() {
     }
   };
 
-  const handleClearCart = async () => {
-    if (!confirm("Are you sure you want to clear your cart?")) return;
+  // Execution: Bulk Remove
+  const executeRemoveSelected = async () => {
+    const selectedIds = Array.from(selectedItemIds);
+    if (selectedIds.length === 0) return;
 
     const previousItems = [...cartItems];
+    const previousSelected = new Set(selectedItemIds);
+
+    setCartItems((prev) => prev.filter((item) => !selectedItemIds.has(item._id)));
+    setSelectedItemIds(new Set());
+
+    try {
+      await cartService.removeFromCart({
+        removeids: selectedIds,
+      });
+
+      toast.success("Selected items removed from cart");
+      refreshCounts();
+    } catch (error) {
+      setCartItems(previousItems);
+      setSelectedItemIds(previousSelected);
+      console.error("Error removing selected items:", error);
+      toast.error("Failed to remove items");
+    }
+  };
+
+  // Execution: Single Item Move to Wishlist
+  const executeMoveSingleToWishlist = async (cartItemId: string) => {
+    const targetItem = cartItems.find((item) => item._id === cartItemId);
+    if (!targetItem) return;
+
+    const previousItems = [...cartItems];
+    const previousSelected = new Set(selectedItemIds);
+
+    setCartItems((prev) => prev.filter((item) => item._id !== cartItemId));
+    setSelectedItemIds((prev) => {
+      const next = new Set(prev);
+      next.delete(cartItemId);
+      return next;
+    });
+
+    try {
+      await cartService.moveToWishlist({
+        wishlistItems: [
+          {
+            _id: targetItem._id,
+            productId: targetItem.productId,
+            variantId: targetItem.variantId,
+            size_id: targetItem.size_id,
+            size: targetItem.size,
+          },
+        ],
+      });
+
+      toast.success("Moved item to wishlist");
+      refreshCounts();
+    } catch (error) {
+      setCartItems(previousItems);
+      setSelectedItemIds(previousSelected);
+      console.error("Error moving item to wishlist:", error);
+      toast.error("Failed to move item to wishlist");
+    }
+  };
+
+  // Execution: Bulk Move to Wishlist
+  const executeMoveSelectedToWishlist = async () => {
+    const selectedItems = cartItems.filter((item) => selectedItemIds.has(item._id));
+    if (selectedItems.length === 0) return;
+
+    const previousItems = [...cartItems];
+    const previousSelected = new Set(selectedItemIds);
+
+    setCartItems((prev) => prev.filter((item) => !selectedItemIds.has(item._id)));
+    setSelectedItemIds(new Set());
+
+    try {
+      await cartService.moveToWishlist({
+        wishlistItems: selectedItems.map((item) => ({
+          _id: item._id,
+          productId: item.productId,
+          variantId: item.variantId,
+          size_id: item.size_id,
+          size: item.size,
+        })),
+      });
+
+      toast.success("Moved selected items to wishlist");
+      refreshCounts();
+    } catch (error) {
+      setCartItems(previousItems);
+      setSelectedItemIds(previousSelected);
+      console.error("Error moving items to wishlist:", error);
+      toast.error("Failed to move items to wishlist");
+    }
+  };
+
+  // Execution: Clear Cart
+  const executeClearCart = async () => {
+    const previousItems = [...cartItems];
     setCartItems([]);
+    setSelectedItemIds(new Set());
 
     try {
       if (previousItems.length > 0) {
@@ -119,12 +314,85 @@ export default function CartPage() {
     }
   };
 
-  const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  // Central Confirmation Handler
+  const handleConfirmAction = async () => {
+    setIsConfirmLoading(true);
+    try {
+      if (confirmModal.type === "remove-single" && confirmModal.targetId) {
+        await executeRemoveSingle(confirmModal.targetId);
+      } else if (confirmModal.type === "remove-selected") {
+        await executeRemoveSelected();
+      } else if (confirmModal.type === "move-wishlist") {
+        if (confirmModal.targetId) {
+          await executeMoveSingleToWishlist(confirmModal.targetId);
+        } else {
+          await executeMoveSelectedToWishlist();
+        }
+      } else if (confirmModal.type === "clear") {
+        await executeClearCart();
+      }
+      setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+    } finally {
+      setIsConfirmLoading(false);
+    }
   };
 
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  const totalAmount = calculateTotal();
+  // Only calculate total for selected items
+  const selectedCartItems = cartItems.filter((item) => selectedItemIds.has(item._id));
+  const selectedTotalItems = selectedCartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const selectedTotalAmount = selectedCartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
+  const handleProceedToCheckout = () => {
+    if (selectedCartItems.length === 0) {
+      toast.error("Please select at least one item to proceed");
+      return;
+    }
+
+    saveCheckoutState({
+      items: selectedCartItems.map((item) => ({
+        productId: item.productId,
+        productName: item.productName,
+        variantId: item.variantId,
+        color: item.color || "",
+        size: item.size || "ONE_SIZE",
+        quantity: item.quantity,
+        price: item.price,
+        image: item.images?.[0] || "",
+      })),
+      subtotal: selectedTotalAmount,
+      shipping: 0,
+      total: selectedTotalAmount,
+      selectedAddress: null,
+      itemCount: selectedTotalItems,
+    });
+
+    router.push(ROUTES.CHECKOUT);
+  };
+
+  // Dynamic Confirmation Modal Texts (Exact match to user screenshot)
+  const confirmCount = confirmModal.itemCount ?? 1;
+  const isSingleItem = confirmCount === 1;
+
+  let modalTitle = "";
+  let modalDescription = "";
+  let modalConfirmText = "";
+
+  if (confirmModal.type === "move-wishlist") {
+    modalTitle = `Move ${confirmCount} ${isSingleItem ? "item" : "items"} to wishlist`;
+    modalDescription = `Are you sure you want to move ${confirmCount} ${isSingleItem ? "item" : "items"} from bag.`;
+    modalConfirmText = "MOVE TO WISHLIST";
+  } else if (confirmModal.type === "remove-single" || confirmModal.type === "remove-selected") {
+    modalTitle = `Remove ${confirmCount} ${isSingleItem ? "item" : "items"} from bag`;
+    modalDescription = `Are you sure you want to remove ${confirmCount} ${isSingleItem ? "item" : "items"} from bag.`;
+    modalConfirmText = "REMOVE";
+  } else if (confirmModal.type === "clear") {
+    modalTitle = "Clear Shopping Cart";
+    modalDescription = "Are you sure you want to clear your cart.";
+    modalConfirmText = "CLEAR CART";
+  }
 
   if (isChecking || loading) {
     return (
@@ -165,14 +433,14 @@ export default function CartPage() {
   }
 
   return (
-    <div className="flex-1 bg-gray-50 py-5 sm:py-8">
-      <div className="container-fluid max-w-5xl mx-auto">
+    <div className="flex-1 bg-gray-50/70 py-5 sm:py-8 min-h-[80vh]">
+      <div className="container-fluid max-w-5xl mx-auto px-4 sm:px-6">
 
         {/* Page Header */}
-        <div className="mb-5 sm:mb-7">
+        <div className="mb-5 sm:mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Shopping Cart</h1>
           <p className="text-sm text-gray-500 mt-1">
-            {totalItems} {totalItems === 1 ? 'item' : 'items'} in your cart
+            {cartItems.length} {cartItems.length === 1 ? "item" : "items"} in your cart
           </p>
         </div>
 
@@ -180,20 +448,60 @@ export default function CartPage() {
 
           {/* Cart Items Column */}
           <div className="lg:col-span-2 space-y-3">
+            {/* Top Selection Bar (as in Screenshot 1) */}
+            <div className="bg-white rounded-xl border border-gray-200/80 px-4 py-3 sm:px-5 flex items-center justify-between shadow-2xs">
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  onChange={handleToggleSelectAll}
+                  className="w-4 h-4 rounded text-[#C1272D] focus:ring-[#C1272D] accent-[#C1272D] cursor-pointer"
+                />
+                <span className="text-xs sm:text-sm font-bold text-gray-900 tracking-wide uppercase">
+                  {selectedItemIds.size}/{cartItems.length} ITEMS SELECTED
+                </span>
+              </label>
+
+              <div className="flex items-center gap-2.5 sm:gap-3.5 text-xs sm:text-sm font-bold tracking-wider uppercase text-gray-700">
+                <button
+                  type="button"
+                  onClick={handleRequestRemoveSelected}
+                  disabled={selectedItemIds.size === 0}
+                  className="hover:text-[#C1272D] transition-colors disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  REMOVE
+                </button>
+                <span className="text-gray-300 font-normal">|</span>
+                <button
+                  type="button"
+                  onClick={handleRequestMoveToWishlist}
+                  disabled={selectedItemIds.size === 0}
+                  className="hover:text-[#C1272D] transition-colors disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  MOVE TO WISHLIST
+                </button>
+              </div>
+            </div>
+
+            {/* List of Cart Items */}
             {cartItems.map((item) => (
               <CartItem
                 key={item._id}
                 item={item}
+                isSelected={selectedItemIds.has(item._id)}
+                onToggleSelect={handleToggleItem}
                 onUpdateQuantity={handleUpdateQuantity}
-                onRemove={handleRemoveItem}
+                onRemove={handleRequestRemoveItem}
+                onMoveToWishlist={handleRequestMoveItemToWishlist}
               />
             ))}
 
-            {/* Clear cart */}
+            {/* Clear cart button */}
             <div className="flex justify-end pt-1">
               <button
-                onClick={handleClearCart}
-                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors"
+                type="button"
+                onClick={handleRequestClearCart}
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -215,8 +523,10 @@ export default function CartPage() {
               {/* Summary body */}
               <div className="px-5 py-4 space-y-3">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-500">Subtotal ({totalItems} {totalItems === 1 ? 'item' : 'items'})</span>
-                  <span className="font-semibold text-gray-900">₹{totalAmount.toLocaleString()}</span>
+                  <span className="text-gray-500">
+                    Subtotal ({selectedTotalItems} {selectedTotalItems === 1 ? "item" : "items"})
+                  </span>
+                  <span className="font-semibold text-gray-900">₹{selectedTotalAmount.toLocaleString("en-IN")}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-500">Shipping</span>
@@ -230,25 +540,28 @@ export default function CartPage() {
 
                 <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
                   <span className="font-bold text-gray-900 text-base">Total</span>
-                  <span className="font-bold text-lg text-gray-900">₹{totalAmount.toLocaleString()}</span>
+                  <span className="font-bold text-lg text-gray-900">₹{selectedTotalAmount.toLocaleString("en-IN")}</span>
                 </div>
               </div>
 
               {/* CTA buttons */}
               <div className="px-5 pb-5 space-y-2.5">
                 <button
-                  onClick={() => router.push(ROUTES.CHECKOUT)}
-                  className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white py-3 rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                  type="button"
+                  onClick={handleProceedToCheckout}
+                  disabled={selectedCartItems.length === 0}
+                  className="w-full bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white py-3 rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
-                  Proceed to Checkout
+                  Proceed to Checkout ({selectedTotalItems})
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => router.push(ROUTES.SHOP)}
-                  className="w-full border border-gray-200 text-gray-600 py-3 rounded-xl font-medium text-sm hover:bg-gray-50 transition-colors"
+                  className="w-full border border-gray-200 text-gray-600 py-3 rounded-xl font-medium text-sm hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   Continue Shopping
                 </button>
@@ -275,6 +588,18 @@ export default function CartPage() {
 
         </div>
       </div>
+
+      {/* Custom Confirmation Modal (Matches User Screenshot) */}
+      <CartConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => !isConfirmLoading && setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={handleConfirmAction}
+        title={modalTitle}
+        description={modalDescription}
+        confirmText={modalConfirmText}
+        confirmTextColor="text-[#ff3e6c]"
+        isLoading={isConfirmLoading}
+      />
     </div>
   );
 }

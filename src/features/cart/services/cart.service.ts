@@ -27,6 +27,18 @@ export interface RemoveFromCartRequest {
   removeids: string[];
 }
 
+export interface MoveToWishlistRequestItem {
+  _id: string;
+  productId: string;
+  variantId: string;
+  size_id?: string;
+  size: string;
+}
+
+export interface MoveToWishlistRequest {
+  wishlistItems: MoveToWishlistRequestItem[];
+}
+
 export interface CartItem {
   _id: string;
   product_id: string;
@@ -89,6 +101,10 @@ class CartService extends BaseService {
 
   async removeFromCart(data: RemoveFromCartRequest): Promise<void> {
     return this.delete<void>(API_ENDPOINTS.CART.REMOVE, data);
+  }
+
+  async moveToWishlist(data: MoveToWishlistRequest): Promise<void> {
+    return this.post<void>(API_ENDPOINTS.CART.MOVE_TO_WISHLIST, data);
   }
 
   async getCartList(): Promise<CartListResponse> {
