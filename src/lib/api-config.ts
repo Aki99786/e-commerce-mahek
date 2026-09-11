@@ -44,6 +44,7 @@ export const API_ENDPOINTS = {
     CHECKOUT: "orders/checkout",
     VERIFY_PAYMENT: "orders/verify-payment",
     MY_ORDERS: "orders/my-orders",
+    TRACK: (id: string) => `orders/${id}/track`,
   },
   REVIEWS: {
     ADD: (productId: string) => `products/${productId}/reviews`,

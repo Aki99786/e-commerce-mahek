@@ -6,6 +6,7 @@ import type {
   VerifyPaymentResponse,
 } from "../types/checkout.types";
 import type { Order } from "../types/order.types";
+import type { TrackOrderResponse } from "../types/tracking.types";
 
 class OrderService extends BaseService {
   async createCheckoutOrder(addressId: string): Promise<CheckoutOrderResponse> {
@@ -29,6 +30,11 @@ class OrderService extends BaseService {
     );
     return Array.isArray(result) ? result : result.orders || [];
   }
+
+  async trackOrder(orderId: string): Promise<TrackOrderResponse> {
+    return this.get<TrackOrderResponse>(API_ENDPOINTS.ORDERS.TRACK(orderId));
+  }
 }
 
 export const orderService = new OrderService();
+
