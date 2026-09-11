@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { isAuthenticated } from "@/lib/auth-utils";
 import { orderService } from "@/features/checkout/services/order.service";
 import type { Order } from "@/features/checkout/types/order.types";
+import type { TrackOrderResponse, TrackingActivity } from "@/features/checkout/types/tracking.types";
 import {
   OrderStatus,
   PaymentStatus,
@@ -140,6 +141,148 @@ function StatusTimeline({ status }: { status: OrderStatus }) {
   );
 }
 
+// ─── Live Tracking Panel ─────────────────────────────────────────────────────
+function LiveTrackingPanel({ orderId }: { orderId: string }) {
+  const [trackData, setTrackData] = useState<TrackOrderResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  const fetchTracking = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await orderService.trackOrder(orderId);
+      setTrackData(data);
+    } catch {
+      setError("Could not fetch tracking info. Please try again.");
+    } finally {
+      setIsLoading(false);
+      setLoaded(true);
+    }
+  }, [orderId]);
+
+  const activities: TrackingActivity[] =
+    trackData?.trackingData?.shipment_track_activities ??
+    trackData?.trackingData?.shipment_track ??
+    [];
+
+  return (
+    <div className="border-t border-gray-100 pt-3">
+      {!loaded && !isLoading && (
+        <button
+          onClick={fetchTracking}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/8 px-3 py-1.5 rounded-full hover:bg-primary/15 transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Track Shipment
+        </button>
+      )}
+
+      {isLoading && (
+        <div className="flex items-center gap-2 text-xs text-gray-400">
+          <div className="animate-spin h-3.5 w-3.5 rounded-full border-2 border-primary border-t-transparent" />
+          Fetching live tracking...
+        </div>
+      )}
+
+      {error && (
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-red-500">{error}</p>
+          <button onClick={fetchTracking} className="text-xs text-primary underline">Retry</button>
+        </div>
+      )}
+
+      {loaded && !isLoading && trackData && (
+        <div className="space-y-3">
+          {/* Shipment summary bar */}
+          <div className="flex flex-wrap items-center gap-3">
+            {trackData.awbCode && (
+              <div className="flex items-center gap-1.5 bg-blue-50 rounded-lg px-3 py-1.5">
+                <span className="text-[10px] font-medium text-blue-500 uppercase tracking-wide">AWB</span>
+                <span className="text-xs font-mono font-semibold text-blue-700">{trackData.awbCode}</span>
+                <button
+                  onClick={() => navigator.clipboard.writeText(trackData.awbCode ?? "")}
+                  className="ml-1 text-blue-400 hover:text-blue-600 transition-colors"
+                  title="Copy AWB"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+            )}
+            {trackData.courierName && (
+              <div className="flex items-center gap-1.5 bg-gray-100 rounded-lg px-3 py-1.5">
+                <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M8 17h8M8 17a4 4 0 01-4-4V7h4m0 10V7m0 0h8m0 0v10m0-10a4 4 0 014 4v2" />
+                </svg>
+                <span className="text-xs font-medium text-gray-600">{trackData.courierName}</span>
+              </div>
+            )}
+            {trackData.trackingData?.etd && (
+              <div className="flex items-center gap-1.5 bg-green-50 rounded-lg px-3 py-1.5">
+                <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="text-[10px] text-green-600 font-medium">ETA: {trackData.trackingData.etd}</span>
+              </div>
+            )}
+          </div>
+
+          {/* No AWB yet */}
+          {!trackData.awbCode && (
+            <p className="text-xs text-gray-400 italic">
+              {trackData.message ?? "Shipment is being prepared. Tracking will be available soon."}
+            </p>
+          )}
+
+          {/* Event timeline */}
+          {activities.length > 0 && (
+            <div className="space-y-0">
+              <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Tracking Events</p>
+              {activities.map((act, idx) => (
+                <div key={idx} className="flex gap-3">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1 ${
+                      idx === 0 ? "bg-primary" : "bg-gray-300"
+                    }`} />
+                    {idx < activities.length - 1 && (
+                      <div className="w-px h-full min-h-4 bg-gray-200 my-0.5" />
+                    )}
+                  </div>
+                  <div className="flex-1 pb-3">
+                    <p className={`text-xs font-medium leading-snug ${
+                      idx === 0 ? "text-gray-900" : "text-gray-600"
+                    }`}>
+                      {act.activity}
+                    </p>
+                    {act.location && (
+                      <p className="text-[10px] text-gray-400 mt-0.5">📍 {act.location}</p>
+                    )}
+                    {act.date && (
+                      <p className="text-[10px] text-gray-400">{act.date}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Order Card ───────────────────────────────────────────────────────────────
 function OrderCard({ order }: { order: Order }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const productImage = getProductImage(order);
@@ -222,29 +365,49 @@ function OrderCard({ order }: { order: Order }) {
 
         <StatusTimeline status={order.orderStatus} />
 
-        <button
-          onClick={() => setIsExpanded((prev) => !prev)}
-          className="mt-4 text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
-        >
-          {isExpanded ? "Hide details" : "View details"}
-          <svg
-            className={`w-3.5 h-3.5 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        {/* AWB quick info */}
+        {order.awbCode && (
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-[10px] font-semibold text-gray-400 uppercase">Courier</span>
+            <span className="text-xs text-gray-600 font-medium">{order.courierName ?? "—"}</span>
+            <span className="text-gray-200">|</span>
+            <span className="text-[10px] font-semibold text-gray-400 uppercase">AWB</span>
+            <span className="text-xs font-mono text-gray-600">{order.awbCode}</span>
+          </div>
+        )}
+
+        {/* Track Shipment / View details toggle */}
+        <div className="flex items-center gap-4 mt-4">
+          <button
+            onClick={() => setIsExpanded((prev) => !prev)}
+            className="text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </button>
+            {isExpanded ? "Hide details" : "View details"}
+            <svg
+              className={`w-3.5 h-3.5 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {isExpanded && (
         <div className="border-t border-gray-100 bg-gray-50 p-4 sm:p-5 space-y-4">
+
+          {/* ── Live Tracking Panel ── */}
+          {order.paymentStatus === "PAID" && (
+            <LiveTrackingPanel orderId={order._id} />
+          )}
+
           <div>
             <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
               All Items
