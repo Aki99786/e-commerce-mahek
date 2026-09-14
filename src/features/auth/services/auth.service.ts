@@ -1,6 +1,6 @@
-import apiClient from "@/lib/api-client";
-import { API_CONFIG, API_ENDPOINTS } from "@/lib/api-config";
-import { notifyAuthChange } from "@/lib/auth-utils";
+import apiClient, { ApiError } from "@/lib/api-client";
+import { API_ENDPOINTS } from "@/lib/api-config";
+import { clearAuth, notifyAuthChange } from "@/lib/auth-utils";
 import type {
   SendOtpRequest,
   SendOtpResponse,
@@ -10,77 +10,74 @@ import type {
 } from "../types";
 
 const STORAGE_KEYS = {
-  AUTH_TOKEN: "authToken",
   USER_DATA: "userData",
 } as const;
 
+/**
+ * Authentication is cookie based: the API sets an httpOnly `session` cookie
+ * on OTP verification and clears it on logout. This service never handles
+ * the token itself; it only keeps the user profile for display.
+ */
 class AuthService {
   async sendOtp(data: SendOtpRequest): Promise<SendOtpResponse> {
-    return apiClient.post<SendOtpResponse>(API_ENDPOINTS.AUTH.SEND_OTP, data);
+    return apiClient.post<SendOtpResponse>(API_ENDPOINTS.AUTH.SEND_OTP, data, {
+      skipAuthRedirect: true,
+    } as RequestInit);
   }
 
   async verifyOtp(data: VerifyOtpRequest): Promise<VerifyOtpResponse> {
-    const response = await fetch(
-      `${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.VERIFY_OTP}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      },
+    const result = await apiClient.post<VerifyOtpResponse>(
+      API_ENDPOINTS.AUTH.VERIFY_OTP,
+      data,
+      { skipAuthRedirect: true } as RequestInit,
     );
 
-    if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ message: "Failed to verify OTP" }));
-      throw new Error(error.message || "Failed to verify OTP");
+    if (result.user) {
+      this.setUserData(result.user);
     }
-
-    const result = await response.json();
-
-    this.handleAuthToken(response, result);
-    this.handleUserData(result);
 
     return result;
   }
 
-  private handleAuthToken(response: Response, result: VerifyOtpResponse): void {
-    const authHeader = response.headers.get("Authorization");
-
-    if (authHeader) {
-      const token = authHeader.startsWith("Bearer ")
-        ? authHeader.substring(7)
-        : authHeader;
-      this.setAuthToken(token);
-    } else if (result.token) {
-      this.setAuthToken(result.token);
+  /**
+   * Confirms the cookie session with the server and refreshes the stored
+   * profile. Returns null (and clears local data) when the session is gone.
+   */
+  async me(): Promise<UserData | null> {
+    try {
+      const result = await apiClient.get<{ user: UserData }>(
+        API_ENDPOINTS.AUTH.ME,
+        { skipAuthRedirect: true } as RequestInit,
+      );
+      if (result?.user) {
+        this.setUserData(result.user);
+        return result.user;
+      }
+      return null;
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        clearAuth();
+      }
+      return null;
     }
   }
 
-  private handleUserData(result: VerifyOtpResponse): void {
-    if (result.user) {
-      this.setUserData(result.user);
+  async logout(): Promise<void> {
+    try {
+      await apiClient.post<{ message: string }>(
+        API_ENDPOINTS.AUTH.LOGOUT,
+        undefined,
+        { skipAuthRedirect: true } as RequestInit,
+      );
+    } catch {
+      // Cookie may already be gone; local state is cleared regardless.
+    } finally {
+      clearAuth();
     }
   }
 
   private isClient(): boolean {
     return typeof window !== "undefined";
-  }
-
-  setAuthToken(token: string): void {
-    if (this.isClient()) {
-      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
-      notifyAuthChange();
-    }
-  }
-
-  getAuthToken(): string | null {
-    if (this.isClient()) {
-      return localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-    }
-    return null;
   }
 
   setUserData(userData: UserData): void {
@@ -93,17 +90,17 @@ class AuthService {
   getUserData(): UserData | null {
     if (this.isClient()) {
       const data = localStorage.getItem(STORAGE_KEYS.USER_DATA);
-      return data ? JSON.parse(data) : null;
+      try {
+        return data ? JSON.parse(data) : null;
+      } catch {
+        return null;
+      }
     }
     return null;
   }
 
   clearAuth(): void {
-    if (this.isClient()) {
-      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.USER_DATA);
-      notifyAuthChange();
-    }
+    clearAuth();
   }
 }
 

@@ -10,7 +10,7 @@ import { OtpInput } from "@/features/auth/components/OtpInput";
 import { validateAuthForm, validateOtp } from "@/features/auth/utils/validation";
 import { authService } from "@/features/auth/services/auth.service";
 import { AUTH_MESSAGES } from "@/features/auth/constants";
-import { getRedirectUrl } from "@/lib/auth-utils";
+import { getRedirectUrl, isAuthenticated } from "@/lib/auth-utils";
 import type { AuthFormData, FormErrors } from "@/features/auth/types";
 
 type AuthStep = "email" | "otp";
@@ -31,10 +31,7 @@ export function LoginForm() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
-    const userData = typeof window !== "undefined" ? localStorage.getItem("userData") : null;
-
-    if (token && userData) {
+    if (isAuthenticated()) {
       const redirectUrl = getRedirectUrl(searchParams);
       router.replace(redirectUrl);
     }

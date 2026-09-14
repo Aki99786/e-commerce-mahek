@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, ReactNode } from "react";
 import { cartService } from "@/features/cart/services/cart.service";
 import { wishlistService } from "@/features/wishlist/services/wishlist.service";
+import { authService } from "@/features/auth/services/auth.service";
 import { AUTH_CHANGE_EVENT, isAuthenticated } from "@/lib/auth-utils";
 
 interface CartWishlistContextType {
@@ -50,19 +51,10 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
     return wishlistItemMap.get(productId);
   }, [wishlistItemMap]);
 
+  // Cart and wishlist are available to guests too (server keys them by a
+  // signed guest cookie), so counts are fetched regardless of login state.
   const fetchCounts = useCallback(async () => {
     if (inFlightRef.current) return;
-
-    if (!isAuthenticated()) {
-      setCartCount(0);
-      setWishlistCount(0);
-      setWishlistedProductIds(new Set());
-      setWishlistedSizeIds(new Set());
-      setWishlistItemMap(new Map());
-      setCartedProductIds(new Set());
-      setCartedSizeIds(new Set());
-      return;
-    }
 
     inFlightRef.current = true;
     try {
@@ -107,6 +99,11 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Confirm the cookie session once per load (clears stale profile on 401),
+    // then load counts. Counts do not wait on the session check.
+    if (isAuthenticated()) {
+      authService.me();
+    }
     fetchCounts();
 
     const handleAuthOrStorageChange = () => {
@@ -114,7 +111,7 @@ export function CartWishlistProvider({ children }: { children: ReactNode }) {
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible" && isAuthenticated()) {
+      if (document.visibilityState === "visible") {
         fetchCounts();
       }
     };

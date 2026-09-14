@@ -8,7 +8,8 @@ import { ROUTES } from "@/constants/routes";
 import { CategoryEnum } from "@/constants/categories";
 import { TypingPlaceholder } from "@/components/ui/TypingPlaceholder";
 import { ProfileDropdown } from "@/components/layout/ProfileDropdown";
-import { isAuthenticated, clearAuth, AUTH_CHANGE_EVENT } from "@/lib/auth-utils";
+import { isAuthenticated, AUTH_CHANGE_EVENT } from "@/lib/auth-utils";
+import { authService } from "@/features/auth/services/auth.service";
 import { useCartWishlist } from "@/contexts/CartWishlistContext";
 
 const SEARCH_PLACEHOLDERS = [
@@ -340,7 +341,7 @@ export const Header = () => {
 
             {isAuth ? (
               <button
-                onClick={() => { clearAuth(); setIsMobileMenuOpen(false); router.push(ROUTES.HOME); }}
+                onClick={async () => { setIsMobileMenuOpen(false); await authService.logout(); router.push(ROUTES.HOME); }}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>

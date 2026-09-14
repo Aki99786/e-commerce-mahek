@@ -10,7 +10,6 @@ import { expandProductVariants } from "../utils/variant-expander";
 import { adaptExpandedVariantToUI } from "../utils/variant-product-adapter";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductGridSkeleton } from "@/components/product/ProductCardSkeleton";
-import { isAuthenticated } from "@/lib/auth-utils";
 import type {
   Product,
   ProductsListParams,
@@ -149,10 +148,6 @@ export function CategoryPageContent({
   }, [searchParams]);
 
   const fetchWishlist = useCallback(async () => {
-    if (!isAuthenticated()) {
-      return;
-    }
-    
     try {
       const response = await wishlistService.getWishlist();
       setWishlistItems(response?.list ?? []);

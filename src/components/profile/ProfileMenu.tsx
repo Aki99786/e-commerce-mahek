@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getUserData, clearAuth } from "@/lib/auth-utils";
+import { getUserData } from "@/lib/auth-utils";
+import { authService } from "@/features/auth/services/auth.service";
 import { User, Heart, ShoppingBag, Gift, Phone, CreditCard, MapPin, Edit, LogOut } from "lucide-react";
 
 interface ProfileMenuProps {
@@ -13,8 +14,8 @@ export function ProfileMenu({ activeTab = "profile" }: ProfileMenuProps) {
   const router = useRouter();
   const userData = getUserData();
 
-  const handleLogout = () => {
-    clearAuth();
+  const handleLogout = async () => {
+    await authService.logout();
     router.push("/");
   };
 

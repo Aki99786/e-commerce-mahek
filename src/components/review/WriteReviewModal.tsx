@@ -5,7 +5,10 @@ import Image from "next/image";
 import { X, Star, Camera, Loader2 } from "lucide-react";
 import { ToastService } from "@/lib/toast";
 
-const MAX_IMAGES = 4;
+// Server limits: up to 3 photos, 2 MB each, JPEG/PNG/WebP. At least one is required.
+const MAX_IMAGES = 3;
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const FIELD_LABEL = "block text-xs font-semibold text-gray-700 mb-1";
 const INPUT_BASE =
   "w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#C1272D] focus:border-[#C1272D] disabled:bg-gray-50 disabled:opacity-60 transition-all";
@@ -71,7 +74,19 @@ export const WriteReviewModal = ({
     const availableSlots = MAX_IMAGES - imagePreviews.length;
     if (availableSlots <= 0) return;
 
-    const filesToAdd = selected.slice(0, availableSlots);
+    const valid = selected.filter((file) => {
+      if (!ACCEPTED_TYPES.includes(file.type)) {
+        ToastService.error(`${file.name}: only JPEG, PNG or WebP images are allowed.`);
+        return false;
+      }
+      if (file.size > MAX_IMAGE_BYTES) {
+        ToastService.error(`${file.name}: images must be under 2 MB.`);
+        return false;
+      }
+      return true;
+    });
+
+    const filesToAdd = valid.slice(0, availableSlots);
     const newUrls = filesToAdd.map((file) => URL.createObjectURL(file));
 
     setImageFiles((prev) => [...prev, ...filesToAdd]);
@@ -94,21 +109,27 @@ export const WriteReviewModal = ({
       return;
     }
 
+    if (imageFiles.length === 0) {
+      ToastService.error("Please add at least one photo of the product.");
+      return;
+    }
+
     setInternalSubmitting(true);
     try {
       await onSubmit({
         rating,
         title: title.trim(),
         comment: comment.trim(),
-        images: imagePreviews.length > 0 ? [...imagePreviews] : undefined,
-        files: imageFiles.length > 0 ? [...imageFiles] : undefined,
+        images: [...imagePreviews],
+        files: [...imageFiles],
       });
 
       ToastService.success("Thank you! Your review has been submitted.");
       resetForm();
       onClose();
-    } catch {
-      ToastService.error("Failed to submit review. Please try again.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      ToastService.error(message || "Failed to submit review. Please try again.");
     } finally {
       setInternalSubmitting(false);
     }
@@ -211,7 +232,7 @@ export const WriteReviewModal = ({
 
           {/* Image Upload Option */}
           <div>
-            <label className={FIELD_LABEL}>Add Photos (Optional)</label>
+            <label className={FIELD_LABEL}>Add Photos (at least 1, up to {MAX_IMAGES})</label>
 
             {imagePreviews.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2.5">
@@ -252,7 +273,7 @@ export const WriteReviewModal = ({
                 </span>
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   multiple
                   disabled={isSubmitting}
                   onChange={handleImageUpload}
