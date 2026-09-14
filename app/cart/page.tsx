@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { EmptyCart } from "@/components/empty-states/EmptyCart";
-import { isAuthenticated } from "@/lib/auth-utils";
+import { isAuthenticated, buildLoginUrl } from "@/lib/auth-utils";
 import { cartService } from "@/features/cart/services/cart.service";
 import { CartItem } from "@/features/cart/components/CartItem";
 import { CartConfirmationModal } from "@/features/cart/components/CartConfirmationModal";
@@ -26,7 +26,6 @@ interface ConfirmModalState {
 export default function CartPage() {
   const router = useRouter();
   const { refreshCounts } = useCartWishlist();
-  const [isAuth, setIsAuth] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [cartItems, setCartItems] = useState<UICartItem[]>([]);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
@@ -41,19 +40,9 @@ export default function CartPage() {
   const [isConfirmLoading, setIsConfirmLoading] = useState(false);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const authenticated = isAuthenticated();
-      setIsAuth(authenticated);
-      setIsChecking(false);
-
-      if (authenticated) {
-        fetchCartItems(true);
-      } else {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
+    // Cart is available to guests (server keys it by a signed cookie).
+    setIsChecking(false);
+    fetchCartItems(true);
   }, []);
 
   const fetchCartItems = async (isInitialLoad = false) => {
@@ -369,6 +358,12 @@ export default function CartPage() {
       itemCount: selectedTotalItems,
     });
 
+    // Checkout requires an account; guests are sent to login and back.
+    if (!isAuthenticated()) {
+      router.push(buildLoginUrl(ROUTES.CHECKOUT));
+      return;
+    }
+
     router.push(ROUTES.CHECKOUT);
   };
 
@@ -422,10 +417,6 @@ export default function CartPage() {
         </div>
       </div>
     );
-  }
-
-  if (!isAuth) {
-    return <EmptyCart isAuthenticated={false} />;
   }
 
   if (cartItems.length === 0) {

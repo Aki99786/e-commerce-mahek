@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getUserData, clearAuth, AUTH_CHANGE_EVENT } from "@/lib/auth-utils";
+import { getUserData, AUTH_CHANGE_EVENT } from "@/lib/auth-utils";
+import { authService } from "@/features/auth/services/auth.service";
 import { Gift, Phone, CreditCard, MapPin, Edit, LogOut, ShoppingBag } from "lucide-react";
 
 interface UserData {
@@ -49,9 +50,9 @@ export function ProfileDropdown() {
     };
   }, [isOpen]);
 
-  const handleLogout = () => {
-    clearAuth();
+  const handleLogout = async () => {
     setIsOpen(false);
+    await authService.logout();
     router.push("/");
   };
 

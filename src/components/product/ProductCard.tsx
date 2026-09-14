@@ -8,7 +8,6 @@ import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils/cn";
 import { wishlistService } from "@/features/wishlist/services/wishlist.service";
 import { cartService } from "@/features/cart/services/cart.service";
-import { isAuthenticated } from "@/lib/auth-utils";
 import { useRouter } from "next/navigation";
 import { useCartWishlist } from "@/contexts/CartWishlistContext";
 import { toast } from "@/lib/toast";
@@ -142,11 +141,6 @@ export const ProductCard = memo(function ProductCard({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!isAuthenticated()) {
-      router.push(`/login?referrer=${encodeURIComponent(window.location.pathname)}`);
-      return;
-    }
-
     const currentVariant =
       (apiProduct as unknown as { selectedVariant?: import("@/features/products/types").ProductVariant })?.selectedVariant ||
       apiProduct?.variant;
@@ -214,11 +208,6 @@ export const ProductCard = memo(function ProductCard({
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
-    if (!isAuthenticated()) {
-      router.push(`/login?referrer=${encodeURIComponent(window.location.pathname)}`);
-      return;
-    }
 
     if (!currentVariant) {
       router.push(productUrl);

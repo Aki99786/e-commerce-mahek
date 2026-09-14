@@ -15,7 +15,6 @@ export const API_ENDPOINTS = {
     LIST: "wishlist/list",
     ADD: "wishlist/add",
     REMOVE: (id: string) => `wishlist/remove/${id}`,
-    MOVE_TO_CART: "wishlist/move-to-cart",
     BULK_MOVE_TO_CART: "wishlist/bulk-move-to-cart",
   },
   PRODUCTS: {
@@ -33,6 +32,11 @@ export const API_ENDPOINTS = {
     SEND_OTP: "auth/send-otp",
     VERIFY_OTP: "auth/verify-otp",
     LOGIN: "auth/login",
+    ME: "auth/me",
+    LOGOUT: "auth/logout",
+  },
+  UPLOADS: {
+    REVIEW_IMAGES: "uploads/review-images",
   },
   ADDRESS: {
     LIST: "auth/addresses",
@@ -47,6 +51,8 @@ export const API_ENDPOINTS = {
     TRACK: (id: string) => `orders/${id}/track`,
   },
   REVIEWS: {
+    CREATE: "reviews/add",
+    LIST: (productId: string) => `reviews/list/${productId}`,
     ADD: (productId: string) => `products/${productId}/reviews`,
     UPDATE: (productId: string, reviewId: string) =>
       `products/${productId}/reviews/${reviewId}`,

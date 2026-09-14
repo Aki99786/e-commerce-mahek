@@ -9,6 +9,7 @@ import type { Product } from "@/features/products/types";
 import { productService } from "@/features/products/services/product.service";
 import { cartService } from "@/features/cart/services/cart.service";
 import { wishlistService } from "@/features/wishlist/services/wishlist.service";
+import { reviewService } from "@/features/reviews/services/review.service";
 import { useCartWishlist } from "@/contexts/CartWishlistContext";
 import { isAuthenticated } from "@/lib/auth-utils";
 import { ROUTES } from "@/constants/routes";
@@ -140,11 +141,11 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
   const fetchedIdRef = useRef<string | null>(null);
 
-  // Client-side authenticated re-fetch: Next.js SSR runs without localStorage token,
-  // so fetching client-side ensures is_cart_active and is_wishlist reflect the logged-in user!
+  // Client-side re-fetch: SSR runs without the session/guest cookies, so a
+  // client fetch ensures is_cart_active and is_wishlist reflect this visitor.
   // fetchedIdRef prevents duplicate calls caused by React StrictMode in development.
   useEffect(() => {
-    if (isAuthenticated() && product._id && fetchedIdRef.current !== product._id) {
+    if (product._id && fetchedIdRef.current !== product._id) {
       fetchedIdRef.current = product._id;
       productService
         .getProductById(product._id)
@@ -221,11 +222,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     mrp > sellingPrice ? Math.round(((mrp - sellingPrice) / mrp) * 100) : 0;
 
   const handleAddToCart = async () => {
-    if (!isAuthenticated()) {
-      router.push(`/login?referrer=${encodeURIComponent(window.location.pathname)}`);
-      return;
-    }
-
     if (isInCart) {
       router.push(ROUTES.CART);
       return;
@@ -260,11 +256,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   };
 
   const handleToggleWishlist = async () => {
-    if (!isAuthenticated()) {
-      router.push(`/login?referrer=${encodeURIComponent(window.location.pathname)}`);
-      return;
-    }
-
     setIsAddingToWishlist(true);
     try {
       if (isInWishlist) {
@@ -338,9 +329,31 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     setShowZoom(false);
   };
 
-  const handleAddNewReview = (reviewData: ReviewSubmissionData) => {
+  const handleAddNewReview = async (reviewData: ReviewSubmissionData) => {
+    if (!isAuthenticated()) {
+      router.push(`/login?referrer=${encodeURIComponent(window.location.pathname)}`);
+      throw new Error("Please sign in to write a review");
+    }
+
+    // 1. Upload photos (required by the API), 2. create the review.
+    let imageUrls: string[] = [];
+    try {
+      imageUrls = await reviewService.uploadReviewImages(reviewData.files ?? []);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Image upload failed";
+      ToastService.error(`Could not upload photos: ${message}`);
+      throw err;
+    }
+
+    const result = await reviewService.createReview({
+      productId: productData._id,
+      title: reviewData.title,
+      description: reviewData.comment,
+      images: imageUrls,
+    });
+
     const created: ReviewItem = {
-      id: Date.now().toString(),
+      id: result?.data?._id ?? Date.now().toString(),
       rating: reviewData.rating,
       title: reviewData.title,
       comment: reviewData.comment,
@@ -349,7 +362,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       avatarBg: "bg-red-100 text-[#C1272D]",
       date: "Today",
       verified: true,
-      images: reviewData.images,
+      images: imageUrls,
     };
 
     setReviews((prev) => [created, ...prev]);

@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { isAuthenticated as checkIsAuthenticated } from "@/lib/auth-utils";
 import { EmptyWishlist } from "@/components/empty-states/EmptyWishlist";
 import { WishlistItem } from "@/features/wishlist/components/WishlistItem";
 import { wishlistService } from "@/features/wishlist/services/wishlist.service";
@@ -15,7 +13,6 @@ import { useSizeModal } from "@/contexts/SizeModalContext";
 import type { SizeOption } from "@/components/product/SizeSelectionModal";
 
 export default function WishlistPage() {
-  const router = useRouter();
   const {
     incrementCartCount,
     decrementWishlistCount,
@@ -28,7 +25,6 @@ export default function WishlistPage() {
   } = useCartWishlist();
   const { openSizeModal } = useSizeModal();
 
-  const [isAuth, setIsAuth] = useState(false);
   const [loading, setLoading] = useState(true);
   const [wishlistItems, setWishlistItems] = useState<WishlistItemType[]>([]);
   const [totalItems, setTotalItems] = useState(0);
@@ -68,14 +64,8 @@ export default function WishlistPage() {
   };
 
   useEffect(() => {
-    const loggedIn = checkIsAuthenticated();
-    setIsAuth(loggedIn);
-
-    if (loggedIn) {
-      fetchInitialWishlist();
-    } else {
-      setLoading(false);
-    }
+    // Wishlist is available to guests (server keys it by a signed cookie).
+    fetchInitialWishlist();
   }, []);
 
   // On-scroll Load More (next offset: 1, 2, 3...)
@@ -289,10 +279,6 @@ export default function WishlistPage() {
         </div>
       </div>
     );
-  }
-
-  if (!isAuth) {
-    return <EmptyWishlist />;
   }
 
   return (

@@ -39,7 +39,6 @@ export default function ForgotPasswordPage() {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Password reset requested for:", formData.email);
       setIsSuccess(true);
     } catch (error) {
       console.error("Password reset error:", error);
