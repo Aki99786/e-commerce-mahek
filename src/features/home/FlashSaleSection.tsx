@@ -13,10 +13,10 @@ interface TimeLeft {
 
 export const FlashSaleSection = () => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
-    days: 14,
-    hours: 9,
-    minutes: 6,
-    seconds: 38,
+    days: 2,
+    hours: 14,
+    minutes: 48,
+    seconds: 25,
   });
 
   useEffect(() => {
@@ -40,66 +40,61 @@ export const FlashSaleSection = () => {
 
   const timerUnits = [
     { label: "DAYS", value: timeLeft.days },
-    { label: "HRS", value: timeLeft.hours },
+    { label: "HOURS", value: timeLeft.hours },
     { label: "MINS", value: timeLeft.minutes },
     { label: "SECS", value: timeLeft.seconds },
   ];
 
   return (
-    <section className="bg-gray-50 py-4 md:py-6">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16">
-        <div className="relative overflow-hidden rounded-2xl bg-[url('/images/flash-sale-bg.png')] bg-cover bg-center">
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
+    <section className="bg-[#F4F3F3] py-3 md:py-5">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-8 lg:px-16">
+        <div className="bg-[#111212] rounded-xl md:rounded-2xl px-5 py-7 md:px-14 md:py-10 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
+          {/* Left text */}
+          <div className="text-center md:text-left">
+            <h2
+              className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-1.5 md:mb-2"
+              style={{ fontFamily: "var(--font-serif)" }}
+            >
+              THE CURATED VAULT
+            </h2>
+            <p className="text-xs md:text-sm text-white/45 tracking-wide">
+              Up to 40% off bespoke bridal silhouettes.
+            </p>
+          </div>
 
-          <div className="relative flex flex-col gap-5 px-6 py-8 md:px-10 md:flex-row md:items-center md:justify-between">
-            {/* Left: Label + heading */}
-            <div className="text-white">
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-rose-600/30 border border-rose-400/40 mb-3">
-                <svg className="w-3.5 h-3.5 text-rose-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
-                </svg>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-rose-300">Limited Time</span>
-              </div>
-              <h2 className="text-2xl font-bold leading-tight md:text-3xl lg:text-4xl tracking-tight">
-                Flash Sale <span className="text-rose-400">Now On!</span>
-              </h2>
-              <p className="mt-1.5 text-sm text-white/70 md:text-base">
-                Score big savings on all your favorites
-              </p>
-            </div>
-
-            {/* Right: Timer + CTA */}
-            <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-              {/* Timer */}
-              <div className="flex items-center gap-2">
-                {timerUnits.map(({ label, value }, i) => (
-                  <div key={label} className="flex items-center gap-2">
-                    <div className="text-center">
-                      <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm flex items-center justify-center">
-                        <span className="text-xl md:text-2xl font-extrabold text-white tabular-nums">
-                          {String(value).padStart(2, "0")}
-                        </span>
-                      </div>
-                      <p className="mt-1.5 text-[9px] md:text-[10px] font-bold tracking-widest text-white/60">{label}</p>
+          {/* Right: Timer + CTA */}
+          <div className="flex flex-col sm:flex-row items-center gap-5 sm:gap-8 flex-wrap justify-center">
+            {/* Countdown */}
+            <div className="flex items-center gap-1.5 md:gap-2">
+              {timerUnits.map(({ label, value }, i) => (
+                <div key={label} className="flex items-center gap-1 md:gap-2">
+                  <div className="text-center">
+                    <div className="w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-[#1E1E1E] border border-white/10 rounded-lg sm:rounded-xl flex items-center justify-center">
+                      <span className="text-xl sm:text-2xl md:text-3xl font-bold text-white tabular-nums" style={{ fontFamily: "var(--font-serif)" }}>
+                        {String(value).padStart(2, "0")}
+                      </span>
                     </div>
-                    {i < timerUnits.length - 1 && (
-                      <span className="text-white/40 font-bold text-lg mb-4">:</span>
-                    )}
+                    <p className="text-[7px] sm:text-[8px] tracking-[0.2em] text-white/30 uppercase mt-1 md:mt-1.5 font-medium">
+                      {label}
+                    </p>
                   </div>
-                ))}
-              </div>
-
-              {/* CTA */}
-              <Link
-                href={ROUTES.SALE}
-                className="inline-flex items-center gap-2 rounded-xl bg-rose-600 hover:bg-rose-700 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:shadow-rose-500/30 transition-all"
-              >
-                Shop Sale
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
+                  {i < timerUnits.length - 1 && (
+                    <span className="text-white/20 font-light text-lg md:text-xl mb-4">:</span>
+                  )}
+                </div>
+              ))}
             </div>
+
+            {/* CTA */}
+            <Link
+              href={ROUTES.SALE}
+              className="inline-flex items-center gap-2.5 bg-white text-[#111212] text-[11px] tracking-[0.2em] font-bold px-6 py-3.5 hover:bg-[#F4F3F3] transition-colors whitespace-nowrap"
+            >
+              ACCESS VAULT
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </Link>
           </div>
         </div>
       </div>
