@@ -1,60 +1,51 @@
+import { Infinity, Truck, Scissors, Headset } from "lucide-react";
+
 const features = [
   {
+    icon: Infinity,
     title: "100% HANDCRAFTED ASSURANCE",
-    sub: "Original artisan signatures",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>
-    ),
+    desc: "Original artisan signatures",
   },
   {
+    icon: Truck,
     title: "INSURED GLOBAL TRANSIT",
-    sub: "Full transit value security",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-      </svg>
-    ),
+    desc: "Full transit value security",
   },
   {
+    icon: Scissors,
     title: "CUSTOM MADE-TO-MEASURE",
-    sub: "Blouse & lehenga alterations",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z" />
-      </svg>
-    ),
+    desc: "Blouse & lehenga alterations",
   },
   {
+    icon: Headset,
     title: "GLOBAL ATELIER SUPPORT",
-    sub: "Direct stylist concierge",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-      </svg>
-    ),
+    desc: "Direct stylist concierge",
   },
 ];
 
 export const FeaturesSection = () => {
   return (
-    <section className="bg-white border-t border-[#E8E6E1]">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16">
-        <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-[#E8E6E1]">
-          {features.map(({ title, sub, icon }) => (
+    <section className="py-8 sm:py-10 md:py-12 bg-[#f8f8f8] border-t border-gray-200/70">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-6">
+          {features.map(({ icon: Icon, title, desc }) => (
             <div
               key={title}
-              className="flex items-center gap-4 py-8 px-6 group hover:bg-[#FAF9F5] transition-colors"
+              className="flex items-center gap-3.5 sm:gap-4 group cursor-default"
             >
-              <div className="text-[#6B6B6B] flex-shrink-0 group-hover:text-[#111212] transition-colors">
-                {icon}
+              {/* Luxury White Rounded Squircle Icon Badge */}
+              <div className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white border border-gray-200/80 shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex items-center justify-center text-gray-900 group-hover:scale-105 group-hover:shadow-md group-hover:border-gray-300 transition-all duration-300">
+                <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-gray-900 stroke-[1.8]" />
               </div>
-              <div>
-                <p className="text-[9px] tracking-[0.15em] font-semibold text-[#111212] uppercase leading-tight">
+
+              {/* Text Info */}
+              <div className="min-w-0">
+                <h3 className="text-xs sm:text-[13px] font-bold text-gray-900 uppercase tracking-[0.05em] leading-snug">
                   {title}
+                </h3>
+                <p className="text-[11px] sm:text-xs text-gray-500 font-normal mt-0.5 leading-snug">
+                  {desc}
                 </p>
-                <p className="text-[10px] text-[#9B9B9B] mt-0.5">{sub}</p>
               </div>
             </div>
           ))}
@@ -63,3 +54,5 @@ export const FeaturesSection = () => {
     </section>
   );
 };
+
+export default FeaturesSection;

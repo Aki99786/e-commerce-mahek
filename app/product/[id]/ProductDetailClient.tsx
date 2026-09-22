@@ -15,6 +15,7 @@ import { isAuthenticated } from "@/lib/auth-utils";
 import { ROUTES } from "@/constants/routes";
 import { ToastService } from "@/lib/toast";
 import { getColorCode, getColorName } from "@/lib/utils/color";
+import { isVideoUrl } from "@/lib/utils/media";
 
 interface ProductDetailClientProps {
   product: Product;
@@ -386,14 +387,26 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 onMouseLeave={handleMouseLeave}
               >
                 {images[selectedImageIndex] ? (
-                  <Image
-                    src={images[selectedImageIndex]}
-                    alt={productData.product_name}
-                    fill
-                    className="object-cover object-top"
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
+                  isVideoUrl(images[selectedImageIndex]) ? (
+                    <video
+                      src={images[selectedImageIndex]}
+                      autoPlay
+                      loop
+                      muted
+                      controls
+                      playsInline
+                      className="w-full h-full object-cover object-top"
+                    />
+                  ) : (
+                    <Image
+                      src={images[selectedImageIndex]}
+                      alt={productData.product_name}
+                      fill
+                      className="object-cover object-top"
+                      priority
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                    />
+                  )
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
                     No Image Available
@@ -506,13 +519,22 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                       : "border-gray-200 hover:border-gray-400 opacity-80 hover:opacity-100"
                       }`}
                   >
-                    <Image
-                      src={image}
-                      alt={`${productData.product_name} thumbnail ${index + 1}`}
-                      fill
-                      className="object-cover object-top"
-                      sizes="(max-width: 1024px) 80px, 80px"
-                    />
+                    {isVideoUrl(image) ? (
+                      <video
+                        src={image}
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover object-top pointer-events-none"
+                      />
+                    ) : (
+                      <Image
+                        src={image}
+                        alt={`${productData.product_name} thumbnail ${index + 1}`}
+                        fill
+                        className="object-cover object-top"
+                        sizes="(max-width: 1024px) 80px, 80px"
+                      />
+                    )}
                   </button>
                 ))}
               </div>

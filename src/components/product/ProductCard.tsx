@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Product, ProductLabelType, StockStatus } from "@/types/product";
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils/cn";
+import { isVideoUrl } from "@/lib/utils/media";
 import { wishlistService } from "@/features/wishlist/services/wishlist.service";
 import { cartService } from "@/features/cart/services/cart.service";
 import { useRouter } from "next/navigation";
@@ -415,23 +416,47 @@ export const ProductCard = memo(function ProductCard({
       <div className="relative aspect-[3/4] w-full bg-gray-100 overflow-hidden">
         <Link href={productUrl} className="block w-full h-full relative">
           {displayImages.length > 0 ? (
-            displayImages.map((img, idx) => (
-              <Image
-                key={img.url + idx}
-                src={img.url}
-                alt={img.alt || product.name}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                className={cn(
-                  "object-cover object-center transition-all duration-700 ease-in-out",
-                  idx === currentImageIndex ? "opacity-100 z-[1]" : "opacity-0 z-0",
-                  isSoldOut
-                    ? "blur-[5px] opacity-85 scale-[1.05]"
-                    : "group-hover:scale-105"
-                )}
-                priority={idx === 0}
-              />
-            ))
+            displayImages.map((img, idx) => {
+              const isVideo = isVideoUrl(img.url);
+
+              if (isVideo) {
+                return (
+                  <video
+                    key={img.url + idx}
+                    src={img.url}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className={cn(
+                      "w-full h-full object-cover object-center transition-all duration-700 ease-in-out absolute inset-0",
+                      idx === currentImageIndex ? "opacity-100 z-[1]" : "opacity-0 z-0",
+                      isSoldOut
+                        ? "blur-[5px] opacity-85 scale-[1.05]"
+                        : "group-hover:scale-105"
+                    )}
+                  />
+                );
+              }
+
+              return (
+                <Image
+                  key={img.url + idx}
+                  src={img.url}
+                  alt={img.alt || product.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className={cn(
+                    "object-cover object-center transition-all duration-700 ease-in-out",
+                    idx === currentImageIndex ? "opacity-100 z-[1]" : "opacity-0 z-0",
+                    isSoldOut
+                      ? "blur-[5px] opacity-85 scale-[1.05]"
+                      : "group-hover:scale-105"
+                  )}
+                  priority={idx === 0}
+                />
+              );
+            })
           ) : (
             <div className="w-full h-full bg-gray-100 flex items-center justify-center">
               <span className="text-gray-400 text-xs">No Image</span>

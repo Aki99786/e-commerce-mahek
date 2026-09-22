@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
+import { isVideoUrl } from "@/lib/utils/media";
 import { toast } from "@/lib/toast";
 import type { WishlistItem as WishlistItemType } from "../types";
 
@@ -91,15 +92,28 @@ export function WishlistItem({ item, onRemove, onAddToCart, isInCart = false }: 
       <div className="relative aspect-[3/4] w-full bg-gray-100 overflow-hidden">
         <Link href={productUrl} className="block w-full h-full relative">
           {displayImage ? (
-            <Image
-              src={displayImage}
-              alt={productName}
-              fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className={`object-cover object-center transition-all duration-500 ease-out ${
-                isOutOfStock ? "blur-[5px] opacity-85 scale-[1.05]" : "group-hover:scale-105"
-              }`}
-            />
+            isVideoUrl(displayImage) ? (
+              <video
+                src={displayImage}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className={`w-full h-full object-cover object-center transition-all duration-500 ease-out ${
+                  isOutOfStock ? "blur-[5px] opacity-85 scale-[1.05]" : "group-hover:scale-105"
+                }`}
+              />
+            ) : (
+              <Image
+                src={displayImage}
+                alt={productName}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className={`object-cover object-center transition-all duration-500 ease-out ${
+                  isOutOfStock ? "blur-[5px] opacity-85 scale-[1.05]" : "group-hover:scale-105"
+                }`}
+              />
+            )
           ) : (
             <div className="w-full h-full bg-gray-100 flex items-center justify-center">
               <span className="text-gray-400 text-xs">No Image</span>

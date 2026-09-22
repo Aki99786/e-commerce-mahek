@@ -5,10 +5,10 @@ import { HeroSection } from "@/features/home/HeroSection";
 import { CollectionReelsSection } from "@/features/home/CollectionReelsSection";
 import { CategorySection } from "@/features/home/CategorySection";
 import { FlashSaleSection } from "@/features/home/FlashSaleSection";
-import { BestSellingSection } from "@/features/home/BestSellingSection";
-import { DiscoverSection } from "@/features/home/DiscoverSection";
+import { GallerySection } from "@/features/home/GallerySection";
 import { ReviewsSection } from "@/features/home/ReviewsSection";
 import { FeaturesSection } from "@/features/home/FeaturesSection";
+import {TrendingWithBannerSection} from "@/features/home/TrendingWithBannerSection"
 
 export const metadata: Metadata = {
   ...generateSEO({
@@ -60,29 +60,19 @@ const homeJsonLd = {
 export default function Home() {
   return (
     <>
-      {/* JSON-LD for ClothingStore */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
-      />
-      <div className="bg-[#F4F3F3]">
-        {/* 1. Hero — split dark card with bridal image + trust strip */}
-        <HeroSection />
-        {/* 2. Social Runway — Collection Reels carousel */}
-        <CollectionReelsSection />
-        {/* 3. Couture Silhouettes — Shop by Category */}
-        <CategorySection />
-        {/* 4. The Curated Vault — countdown sale banner */}
-        <FlashSaleSection />
-        {/* 5. Best Selling — editorial product grid */}
-        <BestSellingSection />
-        {/* 6. Discover — heritage masterpiece split section */}
-        <DiscoverSection />
-        {/* 7. Client Acclaim — trousseau reviews */}
-        <ReviewsSection />
-        {/* 8. 4-Pillar Luxury Trust assurance strip */}
-        <FeaturesSection />
-      </div>
+      <HeroSection />
+      {/* <MarqueeBar /> */}
+      {/* <BestSellingSection /> */}
+      <CollectionReelsSection />
+      <CategorySection />
+      <TrendingWithBannerSection bannerPosition="right" title="Top Trending Collection" type="TRENDING" />
+      {/* <FlashSaleSection /> */}
+      {/* <TrendingWithBannerSection bannerPosition="left" title="Lehenga" type="LEHENGA" /> */}
+      {/* <PremiumRetailsSection /> */}
+      <GallerySection />
+      {/* <ReviewsSection /> */}
+      <FeaturesSection />
+      {/* <InfoNotice /> */}
     </>
   );
 }
