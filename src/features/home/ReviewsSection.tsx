@@ -110,7 +110,7 @@ export const ReviewsSection = () => {
             className="text-3xl md:text-5xl font-semibold text-[#111212] mb-4"
             style={{ fontFamily: "var(--font-serif)" }}
           >
-            Client Acclaim
+            Customer Acclaim
           </h2>
           <p className="text-sm text-[#6B6B6B] max-w-lg mx-auto leading-relaxed">
             Memorable moments from brides worldwide who trusted our atelier with their signature day.

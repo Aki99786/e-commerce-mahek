@@ -9,6 +9,7 @@ import { GallerySection } from "@/features/home/GallerySection";
 import { ReviewsSection } from "@/features/home/ReviewsSection";
 import { FeaturesSection } from "@/features/home/FeaturesSection";
 import {TrendingWithBannerSection} from "@/features/home/TrendingWithBannerSection"
+import NewGallarySection from "@/features/home/NewGallarySection";
 
 export const metadata: Metadata = {
   ...generateSEO({
@@ -69,8 +70,9 @@ export default function Home() {
       {/* <FlashSaleSection /> */}
       {/* <TrendingWithBannerSection bannerPosition="left" title="Lehenga" type="LEHENGA" /> */}
       {/* <PremiumRetailsSection /> */}
-      <GallerySection />
-      {/* <ReviewsSection /> */}
+      <NewGallarySection />
+      {/* <GallerySection /> */}
+      <ReviewsSection />
       <FeaturesSection />
       {/* <InfoNotice /> */}
     </>
