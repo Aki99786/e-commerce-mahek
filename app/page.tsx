@@ -24,7 +24,7 @@ export default function Home() {
       <GallerySection />
       {/* <ReviewsSection /> */}
       <FeaturesSection />
-      <InfoNotice />
+      {/* <InfoNotice /> */}
     </>
   );
 }
