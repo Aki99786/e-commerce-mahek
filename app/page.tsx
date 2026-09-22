@@ -5,6 +5,7 @@ import { TrendingWithBannerSection } from "@/features/home/TrendingWithBannerSec
 import { PremiumRetailsSection } from "@/features/home/PremiumRetailsSection";
 import { FlashSaleSection } from "@/features/home/FlashSaleSection";
 import { GallerySection } from "@/features/home/GallerySection";
+import { CollectionReelsSection } from "@/features/home/CollectionReelsSection";
 import { ReviewsSection } from "@/features/home/ReviewsSection";
 import { FeaturesSection } from "@/features/home/FeaturesSection";
 import { InfoNotice } from "@/features/home/InfoNotice";
@@ -17,6 +18,7 @@ export default function Home() {
       <CategorySection />
       {/* <MarqueeBar /> */}
       {/* <BestSellingSection /> */}
+      <CollectionReelsSection />
       <TrendingWithBannerSection bannerPosition="right" title="Top Trending Collection" type="TRENDING" />
       {/* <FlashSaleSection /> */}
       {/* <TrendingWithBannerSection bannerPosition="left" title="Lehenga" type="LEHENGA" /> */}
