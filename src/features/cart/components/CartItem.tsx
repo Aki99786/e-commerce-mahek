@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { X, Bookmark } from "lucide-react";
 import { ROUTES } from "@/constants/routes";
+import { isVideoUrl } from "@/lib/utils/media";
 import type { UICartItem } from "../adapters/cart.adapter";
 
 interface CartItemProps {
@@ -80,13 +81,22 @@ export function CartItem({
         {/* Product Image */}
         <Link href={productUrl} className="shrink-0">
           <div className="relative w-22 h-28 sm:w-28 sm:h-36 bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
-            <Image
-              src={productImage}
-              alt={productName}
-              fill
-              sizes="(max-width: 640px) 88px, 112px"
-              className="object-cover object-top hover:scale-105 transition-transform duration-300"
-            />
+            {isVideoUrl(productImage) ? (
+              <video
+                src={productImage}
+                muted
+                playsInline
+                className="w-full h-full object-cover object-top"
+              />
+            ) : (
+              <Image
+                src={productImage}
+                alt={productName}
+                fill
+                sizes="(max-width: 640px) 88px, 112px"
+                className="object-cover object-top hover:scale-105 transition-transform duration-300"
+              />
+            )}
           </div>
         </Link>
 

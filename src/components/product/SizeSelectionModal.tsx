@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { X, Loader2 } from "lucide-react";
+import { isVideoUrl } from "@/lib/utils/media";
 
 export interface SizeOption {
   _id?: string;
@@ -173,13 +174,22 @@ export function SizeSelectionModal({
           {/* Thumbnail */}
           <div className="relative w-[64px] h-[80px] sm:w-[70px] sm:h-[88px] shrink-0 bg-gray-100 rounded-sm overflow-hidden border border-gray-100">
             {image ? (
-              <Image
-                src={image}
-                alt={productName}
-                fill
-                sizes="80px"
-                className="object-cover object-center"
-              />
+              isVideoUrl(image) ? (
+                <video
+                  src={image}
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover object-center"
+                />
+              ) : (
+                <Image
+                  src={image}
+                  alt={productName}
+                  fill
+                  sizes="80px"
+                  className="object-cover object-center"
+                />
+              )
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
                 No image

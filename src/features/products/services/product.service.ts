@@ -77,8 +77,8 @@ class ProductService extends BaseService {
     return this.get<ProductsListResponse>(API_ENDPOINTS.PRODUCTS.BEST_SELLING);
   }
 
-  async getTrendingProducts(): Promise<ProductsListResponse> {
-    return this.getProductsList({ is_trending_collection: true, limit: 3, page: 1 });
+  async getTrendingProducts(limit: number = 4): Promise<ProductsListResponse> {
+    return this.getProductsList({ is_trending_collection: true, limit, page: 1 });
   }
 
   async getFlashSaleProducts(): Promise<ProductsListResponse> {

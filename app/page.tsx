@@ -15,14 +15,14 @@ export default function Home() {
     <>
       <HeroSection />
       <CategorySection />
-      <MarqueeBar />
-      <BestSellingSection />
+      {/* <MarqueeBar /> */}
+      {/* <BestSellingSection /> */}
       <TrendingWithBannerSection bannerPosition="right" title="Top Trending Collection" type="TRENDING" />
-      <FlashSaleSection />
-      <TrendingWithBannerSection bannerPosition="left" title="Lehenga" type="LEHENGA" />
-      <PremiumRetailsSection />
+      {/* <FlashSaleSection /> */}
+      {/* <TrendingWithBannerSection bannerPosition="left" title="Lehenga" type="LEHENGA" /> */}
+      {/* <PremiumRetailsSection /> */}
       <GallerySection />
-      <ReviewsSection />
+      {/* <ReviewsSection /> */}
       <FeaturesSection />
       <InfoNotice />
     </>

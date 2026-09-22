@@ -14,35 +14,49 @@ export enum CategoryEnum {
   BRIDAL_LEHENGA = "bridal-lehenga",
 }
 
-export const CATEGORIES = [
+export interface CategoryItem {
+  id: string;
+  name: string;
+  slug: CategoryEnum | string;
+  image: string;
+  video?: string;
+  count?: string;
+}
+
+export const CATEGORIES: readonly CategoryItem[] = [
   {
     id: "banarasi-saree",
     name: "Banarasi Sarees",
     slug: CategoryEnum.BANARASI_SAREES,
     image: "/images/categories1.png",
+    count: "94 SILKS",
   },
   {
     id: "saree",
     name: "Sarees",
     slug: CategoryEnum.SAREES,
     image: "/images/categories2.png",
+    count: "110 WEAVES",
   },
   {
     id: "lehenga",
     name: "Lehenga",
     slug: CategoryEnum.LEHENGA,
     image: "/images/categories3.png",
+    count: "128 ENSEMBLES",
   },
   {
     id: "rajputi-poshak",
     name: "Rajputi Poshak",
     slug: CategoryEnum.RAJPUTI_POSHAK,
     image: "/images/categories4.png",
+    count: "46 EDITIONS",
   },
   {
     id: "bridal-lehenga",
     name: "Bridal Lehenga",
     slug: CategoryEnum.BRIDAL_LEHENGA,
     image: "/images/categories5.png",
+    count: "72 OUTFITS",
   },
 ] as const;
