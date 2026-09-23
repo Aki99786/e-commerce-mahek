@@ -7,6 +7,7 @@ import type {
   TestimonialsResponse,
   FilterOptionsResponse,
   ProductVariantInfoResponse,
+  ReelsProductsResponse,
 } from "../types";
 
 class ProductService extends BaseService {
@@ -91,6 +92,10 @@ class ProductService extends BaseService {
 
   async getTestimonials(): Promise<TestimonialsResponse> {
     return this.get<TestimonialsResponse>(API_ENDPOINTS.PRODUCTS.TESTIMONIALS);
+  }
+
+  async getReelsProducts(): Promise<ReelsProductsResponse> {
+    return this.get<ReelsProductsResponse>(API_ENDPOINTS.PRODUCTS.GET_REELS);
   }
 
   private filterOptionsPromise: Promise<FilterOptionsResponse> | null = null;

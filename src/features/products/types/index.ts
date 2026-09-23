@@ -26,7 +26,7 @@ export interface ProductVariant {
   sku: string;
   createdAt: string;
   updatedAt: string;
-  __v: number;
+  __v?: number;
 }
 
 export interface Product {
@@ -38,12 +38,14 @@ export interface Product {
   description: string;
   is_sale: boolean;
   is_visible: boolean;
+  is_trending_collection?: boolean;
+  is_reel_collection?: boolean;
   status: string;
   is_delete: boolean;
   createdAt: string;
   updatedAt: string;
-  __v: number;
-  variant: ProductVariant;
+  __v?: number;
+  variant?: ProductVariant;
   product_variants?: ProductVariant[];
 }
 
@@ -52,6 +54,10 @@ export interface ProductsListResponse {
   offset: number;
   limit: number;
   totalPages: number;
+  products: Product[];
+}
+
+export interface ReelsProductsResponse {
   products: Product[];
 }
 

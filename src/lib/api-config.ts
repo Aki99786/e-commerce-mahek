@@ -27,6 +27,7 @@ export const API_ENDPOINTS = {
     FLASH_SALE: "products/flash-sale",
     LEHENGAS: "products/lehengas",
     TESTIMONIALS: "products/testimonials",
+    GET_REELS: "products/get-reels-products",
   },
   AUTH: {
     SEND_OTP: "auth/send-otp",
