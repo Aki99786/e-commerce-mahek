@@ -30,7 +30,7 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
     title: "Bridal Lehengas",
     sub: "Heritage Edition 2026",
     category: CategoryEnum.BRIDAL_LEHENGA,
-    image: "/images/new-gallery/01-bridal.jpg",
+    image: "https://storage.googleapis.com/mahek_saree_staging/products/5595eae9-45fd-43d7-a338-7995c1bc442c.png",
     eyebrow: "ATELIER BRIDAL COUTURE",
     featuredTitle: "Imperial Bridal Lehengas",
     description:
@@ -44,8 +44,8 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
     title: "Silk Sarees",
     sub: "Heritage Edition 2026",
     category: CategoryEnum.SAREES,
-    image: "/images/new-gallery/02-silk-green.jpg",
-    thumbImage: "/images/new-gallery/05-navy-silk.jpg",
+    image: " https://storage.googleapis.com/mahek_saree_staging/products/511c494b-5d95-404c-89bf-76172999893e.png",
+    thumbImage: " https://storage.googleapis.com/mahek_saree_staging/products/511c494b-5d95-404c-89bf-76172999893e.png",
     eyebrow: "PURE CRAFT MASTERY",
     featuredTitle: "Banarasi & Kanjeevaram",
     description:
@@ -59,7 +59,7 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
     title: "Rajputi Poshak",
     sub: "Heritage Edition 2026",
     category: CategoryEnum.RAJPUTI_POSHAK,
-    image: "/images/new-gallery/03-rajputi.jpg",
+    image: "https://storage.googleapis.com/mahek_saree_staging/products/f87ac66d-9f7b-4668-88de-c82f7064738b.png",
     eyebrow: "ROYAL RAJASTHANI WEAVES",
     featuredTitle: "Rajputi Poshak Atelier",
     description:
@@ -73,7 +73,7 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
     title: "Festive Lehengas",
     sub: "Heritage Edition 2026",
     category: CategoryEnum.LEHENGA,
-    image: "/images/new-gallery/04-festive.jpg",
+    image: "https://storage.googleapis.com/mahek_saree_staging/products/5595eae9-45fd-43d7-a338-7995c1bc442c.png",
     eyebrow: "FESTIVE COUTURE EDIT",
     featuredTitle: "Festive Lehengas",
     description:
@@ -87,8 +87,8 @@ const GALLERY_ITEMS: readonly GalleryItem[] = [
     title: "Banarasi Sarees",
     sub: "Heritage Edition 2026",
     category: CategoryEnum.BANARASI_SAREES,
-    image: "/images/new-gallery/05-navy-silk.jpg",
-    thumbImage: "/images/new-gallery/02-silk-green.jpg",
+    image: "https://storage.googleapis.com/mahek_saree_staging/products/39302121-d1e1-4376-9ddf-ecee89f1959b.png",
+    thumbImage: "https://storage.googleapis.com/mahek_saree_staging/products/39302121-d1e1-4376-9ddf-ecee89f1959b.png",
     eyebrow: "KATAN SILK HERITAGE",
     featuredTitle: "Royal Silk Drapes",
     description:
