@@ -1,4 +1,5 @@
 import { toast } from "./toast";
+import { clearAuth, isAuthenticated } from "./auth-utils";
 
 type RequestInterceptor = (
   config: RequestConfig,
@@ -8,12 +9,30 @@ type ErrorInterceptor = (error: Error) => void | Promise<void>;
 
 interface RequestConfig extends RequestInit {
   url: string;
+  /**
+   * When true, a 401 does not clear the local session or redirect to /login.
+   * Used for calls that are valid for guests (cart, wishlist, products).
+   */
+  skipAuthRedirect?: boolean;
 }
 
 interface ApiClientConfig {
   baseURL?: string;
   headers?: HeadersInit;
 }
+
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+/** Header that satisfies the API's CSRF guard for cookie-authenticated requests. */
+export const CSRF_HEADERS = { "X-Requested-With": "XMLHttpRequest" } as const;
 
 class ApiClient {
   private baseURL: string;
@@ -72,7 +91,7 @@ class ApiClient {
 
   async request<T = unknown>(
     url: string,
-    config: RequestInit = {},
+    config: RequestConfig | RequestInit = {},
   ): Promise<T> {
     try {
       const fullUrl = url.startsWith("http") ? url : `${this.baseURL}${url}`;
@@ -80,8 +99,11 @@ class ApiClient {
       let requestConfig: RequestConfig = {
         ...config,
         url: fullUrl,
+        // Session lives in an httpOnly cookie; always send it.
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          ...CSRF_HEADERS,
           ...this.defaultHeaders,
           ...config.headers,
         },
@@ -89,7 +111,7 @@ class ApiClient {
 
       requestConfig = await this.applyRequestInterceptors(requestConfig);
 
-      const { url: finalUrl, ...fetchConfig } = requestConfig;
+      const { url: finalUrl, skipAuthRedirect, ...fetchConfig } = requestConfig;
       let response = await fetch(finalUrl, fetchConfig);
 
       response = await this.applyResponseInterceptors(response);
@@ -98,9 +120,24 @@ class ApiClient {
         const error = await response.json().catch(() => ({
           message: `Request failed with status ${response.status}`,
         }));
-        throw new Error(
+        const apiError = new ApiError(
           error.message || `Request failed with status ${response.status}`,
+          response.status,
         );
+
+        // Session expired or revoked: drop local user data and go to login,
+        // but only when the caller was acting as a logged-in user.
+        if (
+          response.status === 401 &&
+          !skipAuthRedirect &&
+          typeof window !== "undefined" &&
+          isAuthenticated()
+        ) {
+          clearAuth();
+          window.location.href = "/login";
+        }
+
+        throw apiError;
       }
 
       return response.json();
@@ -159,37 +196,12 @@ class ApiClient {
 
 const apiClient = new ApiClient();
 
-apiClient.addRequestInterceptor((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${token}`,
-      };
-    }
-  }
-  return config;
-});
-
-apiClient.addResponseInterceptor((response) => {
-  return response;
-});
-
 apiClient.addErrorInterceptor((error) => {
   if (typeof window !== "undefined") {
-    // Handle 401 Unauthorized - redirect to login
-    if (
-      error.message.includes("401") ||
-      error.message.includes("Unauthorized")
-    ) {
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("userData");
-      window.location.href = "/login";
+    // 401 is handled in request(); everything else surfaces as a toast.
+    if (error instanceof ApiError && error.status === 401) {
       return;
     }
-
-    // Show error toast for all other API errors
     toast.handleAPIError(error);
   }
 });

@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { isAuthenticated } from "@/lib/auth-utils";
 import { orderService } from "@/features/checkout/services/order.service";
 import type { Order } from "@/features/checkout/types/order.types";
+import type { TrackOrderResponse, TrackingActivity } from "@/features/checkout/types/tracking.types";
 import {
   OrderStatus,
   PaymentStatus,
@@ -44,12 +45,15 @@ function formatCurrency(amount: number): string {
 }
 
 function getProductImage(order: Order): string {
-  const firstItem = order.items[0];
-  if (!firstItem) return "";
-  const variant = firstItem.product.variants?.find(
-    (v) => v.variantId === firstItem.variantId
+  const itemWithProduct =
+    order.items?.find((item) => item?.product != null) ?? order.items?.[0];
+  if (!itemWithProduct?.product) return "";
+  const variant = itemWithProduct.product.variants?.find(
+    (v) => v.variantId === itemWithProduct.variantId
   );
-  return variant?.images?.[0] ?? firstItem.product.allImages?.[0] ?? "";
+  return (
+    variant?.images?.[0] ?? itemWithProduct.product.allImages?.[0] ?? ""
+  );
 }
 
 function PaymentBadge({ status }: { status: PaymentStatus }) {
@@ -61,7 +65,7 @@ function PaymentBadge({ status }: { status: PaymentStatus }) {
   };
   return (
     <span
-      className={`text-xs font-poppins font-medium px-2.5 py-0.5 rounded-full ${colors[status] ?? "bg-gray-100 text-gray-600"}`}
+      className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${colors[status] ?? "bg-gray-100 text-gray-600"}`}
     >
       {PAYMENT_STATUS_LABELS[status] ?? status}
     </span>
@@ -76,7 +80,7 @@ function StatusTimeline({ status }: { status: OrderStatus }) {
     return (
       <div className="flex items-center gap-2 mt-3">
         <span className="w-2.5 h-2.5 rounded-full bg-red-500 flex-shrink-0" />
-        <span className="text-xs font-poppins text-red-600 font-medium">
+        <span className="text-xs text-red-600 font-medium">
           Order Cancelled
         </span>
       </div>
@@ -120,7 +124,7 @@ function StatusTimeline({ status }: { status: OrderStatus }) {
                 )}
               </div>
               <span
-                className={`text-[10px] font-poppins mt-1 whitespace-nowrap ${isCompleted ? "text-primary font-medium" : "text-gray-400"}`}
+                className={`text-[10px] mt-1 whitespace-nowrap ${isCompleted ? "text-primary font-medium" : "text-gray-400"}`}
               >
                 {ORDER_STATUS_LABELS[step]}
               </span>
@@ -137,6 +141,148 @@ function StatusTimeline({ status }: { status: OrderStatus }) {
   );
 }
 
+// ─── Live Tracking Panel ─────────────────────────────────────────────────────
+function LiveTrackingPanel({ orderId }: { orderId: string }) {
+  const [trackData, setTrackData] = useState<TrackOrderResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  const fetchTracking = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await orderService.trackOrder(orderId);
+      setTrackData(data);
+    } catch {
+      setError("Could not fetch tracking info. Please try again.");
+    } finally {
+      setIsLoading(false);
+      setLoaded(true);
+    }
+  }, [orderId]);
+
+  const activities: TrackingActivity[] =
+    trackData?.trackingData?.shipment_track_activities ??
+    trackData?.trackingData?.shipment_track ??
+    [];
+
+  return (
+    <div className="border-t border-gray-100 pt-3">
+      {!loaded && !isLoading && (
+        <button
+          onClick={fetchTracking}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-primary bg-primary/8 px-3 py-1.5 rounded-full hover:bg-primary/15 transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Track Shipment
+        </button>
+      )}
+
+      {isLoading && (
+        <div className="flex items-center gap-2 text-xs text-gray-400">
+          <div className="animate-spin h-3.5 w-3.5 rounded-full border-2 border-primary border-t-transparent" />
+          Fetching live tracking...
+        </div>
+      )}
+
+      {error && (
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-red-500">{error}</p>
+          <button onClick={fetchTracking} className="text-xs text-primary underline">Retry</button>
+        </div>
+      )}
+
+      {loaded && !isLoading && trackData && (
+        <div className="space-y-3">
+          {/* Shipment summary bar */}
+          <div className="flex flex-wrap items-center gap-3">
+            {trackData.awbCode && (
+              <div className="flex items-center gap-1.5 bg-blue-50 rounded-lg px-3 py-1.5">
+                <span className="text-[10px] font-medium text-blue-500 uppercase tracking-wide">AWB</span>
+                <span className="text-xs font-mono font-semibold text-blue-700">{trackData.awbCode}</span>
+                <button
+                  onClick={() => navigator.clipboard.writeText(trackData.awbCode ?? "")}
+                  className="ml-1 text-blue-400 hover:text-blue-600 transition-colors"
+                  title="Copy AWB"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                      d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </button>
+              </div>
+            )}
+            {trackData.courierName && (
+              <div className="flex items-center gap-1.5 bg-gray-100 rounded-lg px-3 py-1.5">
+                <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M8 17h8M8 17a4 4 0 01-4-4V7h4m0 10V7m0 0h8m0 0v10m0-10a4 4 0 014 4v2" />
+                </svg>
+                <span className="text-xs font-medium text-gray-600">{trackData.courierName}</span>
+              </div>
+            )}
+            {trackData.trackingData?.etd && (
+              <div className="flex items-center gap-1.5 bg-green-50 rounded-lg px-3 py-1.5">
+                <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="text-[10px] text-green-600 font-medium">ETA: {trackData.trackingData.etd}</span>
+              </div>
+            )}
+          </div>
+
+          {/* No AWB yet */}
+          {!trackData.awbCode && (
+            <p className="text-xs text-gray-400 italic">
+              {trackData.message ?? "Shipment is being prepared. Tracking will be available soon."}
+            </p>
+          )}
+
+          {/* Event timeline */}
+          {activities.length > 0 && (
+            <div className="space-y-0">
+              <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Tracking Events</p>
+              {activities.map((act, idx) => (
+                <div key={idx} className="flex gap-3">
+                  <div className="flex flex-col items-center">
+                    <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1 ${
+                      idx === 0 ? "bg-primary" : "bg-gray-300"
+                    }`} />
+                    {idx < activities.length - 1 && (
+                      <div className="w-px h-full min-h-4 bg-gray-200 my-0.5" />
+                    )}
+                  </div>
+                  <div className="flex-1 pb-3">
+                    <p className={`text-xs font-medium leading-snug ${
+                      idx === 0 ? "text-gray-900" : "text-gray-600"
+                    }`}>
+                      {act.activity}
+                    </p>
+                    {act.location && (
+                      <p className="text-[10px] text-gray-400 mt-0.5">📍 {act.location}</p>
+                    )}
+                    {act.date && (
+                      <p className="text-[10px] text-gray-400">{act.date}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Order Card ───────────────────────────────────────────────────────────────
 function OrderCard({ order }: { order: Order }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const productImage = getProductImage(order);
@@ -146,16 +292,16 @@ function OrderCard({ order }: { order: Order }) {
       <div className="p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
-            <p className="text-xs font-poppins text-gray-400 mb-0.5">
+            <p className="text-xs text-gray-400 mb-0.5">
               Order ID
             </p>
-            <p className="text-sm font-poppins font-semibold text-gray-800 break-all">
+            <p className="text-sm font-semibold text-gray-800 break-all">
               #{order._id}
             </p>
           </div>
           <div className="flex flex-col items-end gap-1.5">
             <PaymentBadge status={order.paymentStatus} />
-            <p className="text-xs font-poppins text-gray-400">
+            <p className="text-xs text-gray-400">
               {formatDate(order.createdAt)}
             </p>
           </div>
@@ -166,7 +312,7 @@ function OrderCard({ order }: { order: Order }) {
             <div className="relative w-16 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-50">
               <Image
                 src={productImage}
-                alt={order.items[0]?.product.name ?? "Product"}
+                alt={order.items[0]?.product?.name ?? "Product"}
                 fill
                 className="object-cover"
                 sizes="64px"
@@ -174,8 +320,8 @@ function OrderCard({ order }: { order: Order }) {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-poppins font-medium text-gray-900 line-clamp-2 leading-snug">
-              {order.items[0]?.product.name}
+            <p className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug">
+              {order.items[0]?.product?.name ?? "Item"}
               {order.items.length > 1 && (
                 <span className="text-gray-400 font-normal">
                   {" "}
@@ -184,34 +330,34 @@ function OrderCard({ order }: { order: Order }) {
               )}
             </p>
             <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1.5">
-              <span className="text-xs font-poppins text-gray-500">
+              <span className="text-xs text-gray-500">
                 Size:{" "}
                 <span className="text-gray-700">
                   {order.items[0]?.size}
                 </span>
               </span>
-              <span className="text-xs font-poppins text-gray-500">
+              <span className="text-xs text-gray-500">
                 Qty:{" "}
                 <span className="text-gray-700">
                   {order.items[0]?.quantity}
                 </span>
               </span>
-              {order.items[0]?.product.variants?.find(
+              {order.items[0]?.product?.variants?.find(
                 (v) => v.variantId === order.items[0]?.variantId
               )?.color && (
-                <span className="text-xs font-poppins text-gray-500">
+                <span className="text-xs text-gray-500">
                   Color:{" "}
                   <span className="text-gray-700">
                     {
-                      order.items[0].product.variants.find(
-                        (v) => v.variantId === order.items[0].variantId
+                      order.items[0]?.product?.variants?.find(
+                        (v) => v.variantId === order.items[0]?.variantId
                       )?.color
                     }
                   </span>
                 </span>
               )}
             </div>
-            <p className="text-sm font-poppins font-semibold text-gray-900 mt-1.5">
+            <p className="text-sm font-semibold text-gray-900 mt-1.5">
               {formatCurrency(order.totalAmount)}
             </p>
           </div>
@@ -219,38 +365,59 @@ function OrderCard({ order }: { order: Order }) {
 
         <StatusTimeline status={order.orderStatus} />
 
-        <button
-          onClick={() => setIsExpanded((prev) => !prev)}
-          className="mt-4 text-xs font-poppins text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
-        >
-          {isExpanded ? "Hide details" : "View details"}
-          <svg
-            className={`w-3.5 h-3.5 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        {/* AWB quick info */}
+        {order.awbCode && (
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-[10px] font-semibold text-gray-400 uppercase">Courier</span>
+            <span className="text-xs text-gray-600 font-medium">{order.courierName ?? "—"}</span>
+            <span className="text-gray-200">|</span>
+            <span className="text-[10px] font-semibold text-gray-400 uppercase">AWB</span>
+            <span className="text-xs font-mono text-gray-600">{order.awbCode}</span>
+          </div>
+        )}
+
+        {/* Track Shipment / View details toggle */}
+        <div className="flex items-center gap-4 mt-4">
+          <button
+            onClick={() => setIsExpanded((prev) => !prev)}
+            className="text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </button>
+            {isExpanded ? "Hide details" : "View details"}
+            <svg
+              className={`w-3.5 h-3.5 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {isExpanded && (
         <div className="border-t border-gray-100 bg-gray-50 p-4 sm:p-5 space-y-4">
+
+          {/* ── Live Tracking Panel ── */}
+          {order.paymentStatus === "PAID" && (
+            <LiveTrackingPanel orderId={order._id} />
+          )}
+
           <div>
-            <p className="text-xs font-poppins font-semibold text-gray-600 uppercase tracking-wide mb-2">
+            <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
               All Items
             </p>
             <div className="space-y-2">
               {order.items.map((item) => {
-                const variantImg = item.product.variants?.find(
-                  (v) => v.variantId === item.variantId
-                )?.images?.[0];
+                const variantImg =
+                  item.product?.variants?.find(
+                    (v) => v.variantId === item.variantId
+                  )?.images?.[0] ?? item.product?.allImages?.[0];
                 return (
                   <div
                     key={item._id}
@@ -260,7 +427,7 @@ function OrderCard({ order }: { order: Order }) {
                       <div className="relative w-10 h-12 rounded-md overflow-hidden flex-shrink-0 bg-gray-50">
                         <Image
                           src={variantImg}
-                          alt={item.product.name}
+                          alt={item.product?.name ?? "Product"}
                           fill
                           className="object-cover"
                           sizes="40px"
@@ -268,14 +435,14 @@ function OrderCard({ order }: { order: Order }) {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-poppins font-medium text-gray-800 line-clamp-1">
-                        {item.product.name}
+                      <p className="text-xs font-medium text-gray-800 line-clamp-1">
+                        {item.product?.name ?? "Product Unavailable"}
                       </p>
-                      <p className="text-[11px] font-poppins text-gray-500">
+                      <p className="text-[11px] text-gray-500">
                         {item.size} · Qty {item.quantity}
                       </p>
                     </div>
-                    <p className="text-xs font-poppins font-semibold text-gray-800 flex-shrink-0">
+                    <p className="text-xs font-semibold text-gray-800 flex-shrink-0">
                       {formatCurrency(item.price)}
                     </p>
                   </div>
@@ -284,46 +451,48 @@ function OrderCard({ order }: { order: Order }) {
             </div>
           </div>
 
-          <div>
-            <p className="text-xs font-poppins font-semibold text-gray-600 uppercase tracking-wide mb-2">
-              Shipping Address
-            </p>
-            <div className="bg-white rounded-lg p-3 border border-gray-100 text-xs font-poppins text-gray-700 leading-relaxed">
-              <p className="font-medium text-gray-800">
-                {order.shippingAddress.fullName}
+          {order.shippingAddress && (
+            <div>
+              <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">
+                Shipping Address
               </p>
-              <p>{order.shippingAddress.addressLine1}</p>
-              {order.shippingAddress.addressLine2 && (
-                <p>{order.shippingAddress.addressLine2}</p>
-              )}
-              <p>
-                {order.shippingAddress.city},{" "}
-                {order.shippingAddress.state} –{" "}
-                {order.shippingAddress.pincode}
-              </p>
-              <p className="mt-0.5 text-gray-500">
-                📞 {order.shippingAddress.phone}
-              </p>
+              <div className="bg-white rounded-lg p-3 border border-gray-100 text-xs text-gray-700 leading-relaxed">
+                <p className="font-medium text-gray-800">
+                  {order.shippingAddress.fullName}
+                </p>
+                <p>{order.shippingAddress.addressLine1}</p>
+                {order.shippingAddress.addressLine2 && (
+                  <p>{order.shippingAddress.addressLine2}</p>
+                )}
+                <p>
+                  {order.shippingAddress.city},{" "}
+                  {order.shippingAddress.state} –{" "}
+                  {order.shippingAddress.pincode}
+                </p>
+                <p className="mt-0.5 text-gray-500">
+                  📞 {order.shippingAddress.phone}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="bg-white rounded-lg p-3 border border-gray-100">
-            <div className="flex justify-between items-center text-xs font-poppins text-gray-500 mb-1.5">
+            <div className="flex justify-between items-center text-xs text-gray-500 mb-1.5">
               <span>Subtotal ({order.items.length} items)</span>
               <span>{formatCurrency(order.totalAmount)}</span>
             </div>
-            <div className="flex justify-between items-center text-xs font-poppins text-gray-500 mb-2">
+            <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
               <span>Shipping</span>
               <span className="text-green-600">FREE</span>
             </div>
-            <div className="flex justify-between items-center text-sm font-poppins font-semibold text-gray-900 border-t border-gray-100 pt-2">
+            <div className="flex justify-between items-center text-sm font-semibold text-gray-900 border-t border-gray-100 pt-2">
               <span>Total</span>
               <span>{formatCurrency(order.totalAmount)}</span>
             </div>
           </div>
 
           {order.razorpayOrderId && (
-            <div className="text-[11px] font-poppins text-gray-400">
+            <div className="text-[11px] text-gray-400">
               <p>
                 Razorpay Order:{" "}
                 <span className="text-gray-600">
@@ -429,10 +598,10 @@ export default function TrackOrderPage() {
     <div className="flex-1 bg-background-light py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-playfair font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             My Orders
           </h1>
-          <p className="text-sm font-poppins text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 mt-1">
             Track and manage all your orders
           </p>
         </div>
@@ -441,7 +610,7 @@ export default function TrackOrderPage() {
 
         {!isFetching && fetchError && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center">
-            <p className="text-sm font-poppins text-red-600">{fetchError}</p>
+            <p className="text-sm text-red-600">{fetchError}</p>
             <button
               onClick={() => {
                 setFetchError(null);
@@ -454,7 +623,7 @@ export default function TrackOrderPage() {
                   )
                   .finally(() => setIsFetching(false));
               }}
-              className="mt-3 text-sm font-poppins font-medium text-primary hover:text-primary/80 transition-colors"
+              className="mt-3 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
             >
               Try again
             </button>
@@ -478,15 +647,15 @@ export default function TrackOrderPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-lg font-playfair font-semibold text-gray-800 mb-1">
+            <h2 className="text-lg font-semibold text-gray-800 mb-1">
               No orders yet
             </h2>
-            <p className="text-sm font-poppins text-gray-500 mb-5">
+            <p className="text-sm text-gray-500 mb-5">
               Looks like you haven&apos;t placed any orders. Start shopping!
             </p>
             <Link
               href={ROUTES.SHOP}
-              className="inline-block bg-primary text-white text-sm font-poppins font-medium px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors"
+              className="inline-block bg-primary text-white text-sm font-medium px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors"
             >
               Shop Now
             </Link>
@@ -495,7 +664,7 @@ export default function TrackOrderPage() {
 
         {!isFetching && !fetchError && orders.length > 0 && (
           <div className="space-y-4">
-            <p className="text-xs font-poppins text-gray-400">
+            <p className="text-xs text-gray-400">
               {orders.length} {orders.length === 1 ? "order" : "orders"} found
             </p>
             {orders.map((order) => (

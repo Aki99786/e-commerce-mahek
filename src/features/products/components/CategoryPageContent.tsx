@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
 import { ProductFilters } from "./ProductFilters";
@@ -9,11 +9,12 @@ import { wishlistService } from "@/features/wishlist/services/wishlist.service";
 import { expandProductVariants } from "../utils/variant-expander";
 import { adaptExpandedVariantToUI } from "../utils/variant-product-adapter";
 import { ProductCard } from "@/components/product/ProductCard";
-import { isAuthenticated } from "@/lib/auth-utils";
+import { ProductGridSkeleton } from "@/components/product/ProductCardSkeleton";
 import type {
   Product,
   ProductsListParams,
   ProductsListResponse,
+  FilterOptionsData,
 } from "../types";
 import { CATEGORY_TYPE_MAP } from "../types";
 import { Pagination } from "./Pagination";
@@ -31,35 +32,56 @@ export function CategoryPageContent({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Resolve categoryType: prop overrides URL (backward compat), else read ?category=
-  const categorySlugFromUrl = searchParams.get('category') ?? '';
-  const categoryType = categoryTypeProp ?? CATEGORY_TYPE_MAP[categorySlugFromUrl] ?? '';
-  const categoryDisplayName = CATEGORIES.find((c) => c.slug === categorySlugFromUrl)?.name ?? '';
+  // Resolve categoryType: prop overrides URL (backward compat)
+  const categoryType = categoryTypeProp ?? '';
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [allCategoryProducts, setAllCategoryProducts] = useState<Product[]>([]);
+  const [filterOptions, setFilterOptions] = useState<FilterOptionsData | null>(null);
   const [expandedVariants, setExpandedVariants] = useState<ExpandedVariantProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [isInitialized, setIsInitialized] = useState(false);
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const productsRequestIdRef = useRef(0);
+  const lastFetchedQueryRef = useRef<string>('');
+  const lastUrlKeyRef = useRef<string>(
+    `${searchParams.get('category') || ''}|${searchParams.get('is_sale') || ''}|${searchParams.get('is_trending_collection') || ''}`
+  );
   
   const searchQuery = searchParams.get('search') ?? '';
 
   // Initialize filters from URL query params
   const getInitialFilters = (): ProductsListParams => {
     const params: ProductsListParams = {
-      limit: 10,
+      limit: 12,
       page: 1,
     };
 
+    const cat = searchParams.get('category');
+    if (cat) {
+      params.category = cat;
+    }
+    if (searchParams.get('is_sale') === 'true') {
+      params.is_sale = true;
+    }
+    if (searchParams.get('is_trending_collection') === 'true') {
+      params.is_trending_collection = true;
+    }
+
     if (searchParams.get('page')) {
-      params.page = parseInt(searchParams.get('page')!);
+      const parsedPage = parseInt(searchParams.get('page')!, 10);
+      if (!isNaN(parsedPage) && parsedPage > 0) {
+        params.page = parsedPage;
+      }
     }
     if (searchParams.get('limit')) {
-      params.limit = parseInt(searchParams.get('limit')!);
+      const parsedLimit = parseInt(searchParams.get('limit')!, 10);
+      if (!isNaN(parsedLimit) && parsedLimit > 0) {
+        params.limit = parsedLimit;
+      }
     }
     if (searchParams.get('sort')) {
       params.sort = searchParams.get('sort') as ProductsListParams['sort'];
@@ -76,8 +98,20 @@ export function CategoryPageContent({
     if (searchParams.get('size')) {
       params.size = searchParams.get('size')!;
     }
+    if (searchParams.get('brand')) {
+      params.brand = searchParams.get('brand')!;
+    }
+    if (searchParams.get('fabric')) {
+      params.fabric = searchParams.get('fabric')!;
+    }
     if (searchParams.get('availability')) {
       params.availability = searchParams.get('availability') as ProductsListParams['availability'];
+    }
+    if (searchParams.get('discount')) {
+      const parsedDiscount = parseInt(searchParams.get('discount')!, 10);
+      if (!isNaN(parsedDiscount)) {
+        params.discount = parsedDiscount;
+      }
     }
 
     return params;
@@ -85,36 +119,123 @@ export function CategoryPageContent({
 
   const [filters, setFilters] = useState<ProductsListParams>(getInitialFilters);
 
+  // Sync category, is_sale, is_trending_collection from URL searchParams when clicking navbar links
+  useEffect(() => {
+    const cat = searchParams.get('category') || undefined;
+    const isSale = searchParams.get('is_sale') === 'true' ? true : undefined;
+    const isTrending = searchParams.get('is_trending_collection') === 'true' ? true : undefined;
+    const currentKey = `${cat || ''}|${isSale ? 'true' : ''}|${isTrending ? 'true' : ''}`;
+
+    if (lastUrlKeyRef.current !== currentKey) {
+      lastUrlKeyRef.current = currentKey;
+      setFilters((prev) => {
+        if (
+          prev.category === cat &&
+          prev.is_sale === isSale &&
+          prev.is_trending_collection === isTrending
+        ) {
+          return prev;
+        }
+        return {
+          ...prev,
+          category: cat,
+          is_sale: isSale,
+          is_trending_collection: isTrending,
+          page: 1,
+        };
+      });
+    }
+  }, [searchParams]);
+
+  const fetchWishlist = useCallback(async () => {
+    try {
+      const response = await wishlistService.getWishlist();
+      setWishlistItems(response?.list ?? []);
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+    }
+  }, []);
+
   // Initialize on mount and fetch wishlist
   useEffect(() => {
     setIsInitialized(true);
     fetchWishlist();
-  }, []);
+  }, [fetchWishlist]);
 
-  // Fetch all products for filter options (unfiltered, large limit)
+  // Fetch filter options from API
   useEffect(() => {
-    if (!isInitialized) return;
-    const fetchAllForFilters = async () => {
+    let isMounted = true;
+    const fetchFilters = async () => {
       try {
-        const params: ProductsListParams = { limit: 500, page: 1 };
-        if (categoryType) params.type = categoryType;
-        const response: ProductsListResponse =
-          await productService.getProductsList(params);
-        setAllCategoryProducts(response.products);
+        const response = await productService.getFilterOptions();
+        if (isMounted && response?.data) {
+          setFilterOptions(response.data);
+        }
       } catch (error) {
-        console.error("Error fetching all products for filters:", error);
+        console.error("Error fetching filter options:", error);
       }
     };
-    fetchAllForFilters();
-  }, [categoryType, isInitialized]);
+    fetchFilters();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const fetchProducts = useCallback(async () => {
+    const apiParams: ProductsListParams = { ...filters };
+    if (categoryType) apiParams.type = categoryType;
+    if (searchQuery) apiParams.search = searchQuery;
+
+    // Deduplicate: avoid firing duplicate requests for the exact same query parameters
+    const queryKey = JSON.stringify(apiParams);
+    if (lastFetchedQueryRef.current === queryKey) {
+      return;
+    }
+    lastFetchedQueryRef.current = queryKey;
+
+    const requestId = ++productsRequestIdRef.current;
+    setLoading(true);
+    try {
+      const response: ProductsListResponse =
+        await productService.getProductsList(apiParams);
+
+      if (requestId !== productsRequestIdRef.current) return;
+      
+      // Expand products into variants (each variant becomes a separate card)
+      const allExpandedVariants = (response.products || []).flatMap((product) =>
+        expandProductVariants(product)
+      );
+      
+      setProducts(response.products || []);
+      setExpandedVariants(allExpandedVariants);
+
+      const total = typeof response.total === 'number' ? response.total : allExpandedVariants.length;
+      setTotalProducts(total);
+
+      const limit = filters.limit || response.limit || 12;
+      const computedTotalPages = response.totalPages || Math.ceil(total / limit) || 1;
+      setTotalPages(computedTotalPages);
+
+      const pageNum = filters.page ?? (response.offset !== undefined ? response.offset + 1 : 1);
+      setCurrentPage(pageNum);
+    } catch (error) {
+      if (requestId === productsRequestIdRef.current) {
+        console.error("Error fetching products:", error);
+        lastFetchedQueryRef.current = ''; // Reset to allow retry on error
+      }
+    } finally {
+      if (requestId === productsRequestIdRef.current) {
+        setLoading(false);
+      }
+    }
+  }, [filters, categoryType, searchQuery]);
 
   // Fetch products when filters, category or search query changes
   useEffect(() => {
     if (isInitialized) {
       fetchProducts();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, categoryType, isInitialized, searchQuery]);
+  }, [fetchProducts, isInitialized]);
 
   // Sync filters to URL query params
   useEffect(() => {
@@ -125,7 +246,7 @@ export function CategoryPageContent({
     if (filters.page && filters.page !== 1) {
       params.set('page', filters.page.toString());
     }
-    if (filters.limit && filters.limit !== 10) {
+    if (filters.limit && filters.limit !== 12) {
       params.set('limit', filters.limit.toString());
     }
     if (filters.sort) {
@@ -143,12 +264,27 @@ export function CategoryPageContent({
     if (filters.size) {
       params.set('size', filters.size);
     }
+    if (filters.brand) {
+      params.set('brand', filters.brand);
+    }
+    if (filters.fabric) {
+      params.set('fabric', filters.fabric);
+    }
     if (filters.availability) {
       params.set('availability', filters.availability);
     }
+    if (filters.discount !== undefined) {
+      params.set('discount', filters.discount.toString());
+    }
 
-    if (categorySlugFromUrl) {
-      params.set('category', categorySlugFromUrl);
+    if (filters.category) {
+      params.set('category', filters.category);
+    }
+    if (filters.is_sale) {
+      params.set('is_sale', 'true');
+    }
+    if (filters.is_trending_collection) {
+      params.set('is_trending_collection', 'true');
     }
 
     if (searchQuery) {
@@ -162,97 +298,82 @@ export function CategoryPageContent({
 
     const currentUrl = `${window.location.pathname}${window.location.search}`;
     if (newUrl !== currentUrl) {
+      lastUrlKeyRef.current = `${filters.category || ''}|${filters.is_sale ? 'true' : ''}|${filters.is_trending_collection ? 'true' : ''}`;
+      window.history.replaceState(null, '', newUrl);
       router.replace(newUrl, { scroll: false });
     }
-  }, [filters, isInitialized, router, categorySlugFromUrl, searchQuery]);
+  }, [filters, isInitialized, searchQuery, router]);
 
-  const fetchWishlist = async () => {
-    if (!isAuthenticated()) {
-      return;
-    }
-    
-    try {
-      const response = await wishlistService.getWishlist();
-      setWishlistItems(response.items);
-    } catch (error) {
-      console.error("Error fetching wishlist:", error);
-    }
-  };
+  // Sync state on browser Back / Forward buttons without fighting React state
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const pageFromUrl = parseInt(params.get('page') || '1', 10) || 1;
+      setFilters((prev) => {
+        if ((prev.page || 1) === pageFromUrl) return prev;
+        return { ...prev, page: pageFromUrl };
+      });
+    };
 
-  const fetchProducts = async (isUnfilteredFetch = false) => {
-    setLoading(true);
-    try {
-      const apiParams: ProductsListParams = { ...filters };
-      if (categoryType) apiParams.type = categoryType;
-      if (searchQuery) apiParams.search = searchQuery;
-      const response: ProductsListResponse =
-        await productService.getProductsList(apiParams);
-      
-      // Expand products into variants (each variant becomes a separate card)
-      const allExpandedVariants = response.products.flatMap((product) =>
-        expandProductVariants(product)
-      );
-      
-      setProducts(response.products);
-      setExpandedVariants(allExpandedVariants);
-      setTotalProducts(allExpandedVariants.length);
-      setCurrentPage(response.page);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
-      // On first unfiltered fetch, store the full category products for filter options
-      if (isUnfilteredFetch) {
-        setAllCategoryProducts(response.products);
-      }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const isProductInWishlist = (productId: string, variantId: string, size: string): boolean => {
+  const isProductInWishlist = useCallback((productId: string, variantId: string, size?: string): boolean => {
+    void size;
     return wishlistItems.some(
-      (item) =>
-        item.product != null &&
-        item.product._id === productId &&
-        item.variantId === variantId &&
-        item.size === size
+      (item: any) =>
+        (item?.product_id === productId || item?.product?._id === productId) &&
+        (!variantId || item?.variant?.variant_id === variantId || item?.variant?._id === variantId)
     );
-  };
+  }, [wishlistItems]);
 
-  const handleFilterChange = (newFilters: ProductsListParams) => {
-    setFilters(newFilters);
-  };
+  const handleFilterChange = useCallback((newFilters: ProductsListParams) => {
+    setFilters({ ...newFilters, page: newFilters.page ?? 1 });
+  }, []);
 
-  const handlePageChange = (page: number) => {
-    setFilters({ ...filters, page });
-  };
+  const handlePageChange = useCallback((page: number) => {
+    setFilters((prev) => ({ ...prev, page }));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
-  // Aggregate colors from full unfiltered category products (stable filter options)
-  const colorCounts = allCategoryProducts.reduce((acc, product) => {
-    (product.allColors || []).forEach((color) => {
-      const trimmed = color.trim();
-      if (trimmed) {
-        acc[trimmed] = (acc[trimmed] || 0) + 1;
-      }
-    });
-    return acc;
-  }, {} as Record<string, number>);
-
-  const availableColors = Object.entries(colorCounts).map(([color, count]) => ({
-    color,
-    count,
-  }));
-
-  // Aggregate sizes from full unfiltered category products (stable filter options)
-  const availableSizes = Array.from(
-    new Set(
-      allCategoryProducts.flatMap((p) => (p.allSizes || []).map((s) => s.trim()).filter(Boolean))
-    )
+  const productCards = useMemo(
+    () =>
+      expandedVariants.map((expandedVariant) => {
+        const firstSize = expandedVariant.selectedVariant.sizes[0]?.size || "ONE_SIZE";
+        const firstSizeObj = expandedVariant.selectedVariant.sizes[0];
+        const isWishlistFromApi = Boolean(
+          firstSizeObj?.is_wishlist ||
+          expandedVariant.selectedVariant.sizes?.some((s) => s?.is_wishlist)
+        );
+        return {
+          key: `${expandedVariant._id}-${expandedVariant.selectedVariantId}`,
+          product: adaptExpandedVariantToUI(expandedVariant),
+          apiProduct: expandedVariant,
+          isInWishlist:
+            isWishlistFromApi ||
+            isProductInWishlist(
+              expandedVariant._id,
+              expandedVariant.selectedVariantId,
+              firstSize,
+            ),
+        };
+      }),
+    [expandedVariants, isProductInWishlist],
   );
 
-  // Derive page heading
+  // Derive dynamic category display name and page heading
+  const currentCategory = filters.category;
+  const categoryDisplayName = currentCategory
+    ? (CATEGORIES.find((c) => c.slug === currentCategory)?.name ?? currentCategory.replace(/-/g, ' '))
+    : '';
+
   const pageHeading = searchQuery
     ? `Search results for "${searchQuery}"`
+    : filters.is_sale
+    ? 'Sale'
+    : filters.is_trending_collection
+    ? 'Trending Collection'
     : categoryDisplayName
     ? categoryDisplayName
     : 'All Products';
@@ -274,7 +395,7 @@ export function CategoryPageContent({
         }`}
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-          <h2 className="text-base font-playfair font-bold text-gray-900">Filters</h2>
+          <h2 className="text-base font-bold text-gray-900">Filters</h2>
           <button
             onClick={() => setMobileFiltersOpen(false)}
             className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -286,8 +407,7 @@ export function CategoryPageContent({
         <div className="p-4">
           <ProductFilters
             onFilterChange={(f) => { handleFilterChange(f); setMobileFiltersOpen(false); }}
-            availableColors={availableColors}
-            availableSizes={availableSizes}
+            filterOptions={filterOptions}
             initialFilters={filters}
           />
         </div>
@@ -298,11 +418,11 @@ export function CategoryPageContent({
         {/* Page heading + mobile filter button */}
         <div className="flex items-start justify-between mb-4 sm:mb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-playfair text-text-primary">
+            <h1 className="text-xl sm:text-2xl md:text-3xl text-text-primary">
               {pageHeading}
             </h1>
             {!loading && (
-              <p className="text-xs sm:text-sm font-poppins text-text-secondary mt-1">
+              <p className="text-xs sm:text-sm text-text-secondary mt-1">
                 {totalProducts} {totalProducts === 1 ? 'product' : 'products'} found
               </p>
             )}
@@ -310,7 +430,7 @@ export function CategoryPageContent({
           {/* Mobile/Tablet filter toggle */}
           <button
             onClick={() => setMobileFiltersOpen(true)}
-            className="lg:hidden flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm font-poppins font-medium text-gray-700 hover:border-gray-400 transition-colors flex-shrink-0 mt-1"
+            className="lg:hidden flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:border-gray-400 transition-colors flex-shrink-0 mt-1"
           >
             <SlidersHorizontal className="w-4 h-4" />
             <span>Filters</span>
@@ -320,11 +440,10 @@ export function CategoryPageContent({
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Filters Sidebar — desktop only */}
           <aside className="hidden lg:block lg:w-64 flex-shrink-0">
-            <div className="bg-white p-6 rounded-lg shadow-sm sticky top-4">
+            <div className="bg-white p-5 rounded-lg shadow-sm sticky top-4 border border-gray-100">
               <ProductFilters
                 onFilterChange={handleFilterChange}
-                availableColors={availableColors}
-                availableSizes={availableSizes}
+                filterOptions={filterOptions}
                 initialFilters={filters}
               />
             </div>
@@ -333,12 +452,10 @@ export function CategoryPageContent({
           {/* Products Grid */}
           <main className="flex-1 min-w-0">
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
-              </div>
+              <ProductGridSkeleton count={12} />
             ) : products.length === 0 ? (
               <div className="text-center py-20">
-                <p className="text-lg sm:text-xl font-poppins text-text-secondary">
+                <p className="text-lg sm:text-xl text-text-secondary">
                   No products found matching your filters
                 </p>
               </div>
@@ -346,31 +463,22 @@ export function CategoryPageContent({
               <>
                 {/* Products Grid - Variant-wise display */}
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-                  {expandedVariants.map((expandedVariant) => {
-                    const firstSize = expandedVariant.selectedVariant.sizes[0]?.size || "ONE_SIZE";
-                    const isInWishlist = isProductInWishlist(
-                      expandedVariant._id,
-                      expandedVariant.selectedVariantId,
-                      firstSize
-                    );
-                    
-                    return (
-                      <ProductCard
-                        key={`${expandedVariant._id}-${expandedVariant.selectedVariantId}`}
-                        product={adaptExpandedVariantToUI(expandedVariant)}
-                        apiProduct={expandedVariant}
-                        initialWishlistState={isInWishlist}
-                        onWishlistChange={fetchWishlist}
-                      />
-                    );
-                  })}
+                  {productCards.map((card) => (
+                    <ProductCard
+                      key={card.key}
+                      product={card.product}
+                      apiProduct={card.apiProduct}
+                      initialWishlistState={card.isInWishlist}
+                      onWishlistChange={fetchWishlist}
+                    />
+                  ))}
                 </div>
 
                 {/* Pagination */}
-                {totalProducts > (filters.limit || 10) && (
+                {totalPages > 1 && (
                   <Pagination
                     currentPage={currentPage}
-                    totalPages={Math.ceil(totalProducts / (filters.limit || 10))}
+                    totalPages={totalPages}
                     onPageChange={handlePageChange}
                   />
                 )}

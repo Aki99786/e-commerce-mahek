@@ -33,34 +33,37 @@ export const BestSellingSection = () => {
   }, []);
 
   return (
-    <section className="py-8 md:py-10 lg:py-14 bg-gray-50">
+    <section className="bg-[#F4F3F3] py-10 md:py-14">
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16">
-        <div className="flex items-end justify-between mb-6 md:mb-8 lg:mb-10">
+        {/* Header */}
+        <div className="flex items-end justify-between mb-8 md:mb-10">
           <div>
-            <p className="text-[10px] md:text-xs font-poppins font-semibold uppercase tracking-widest text-rose-600 mb-1.5">Top Picks</p>
-            <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 font-playfair tracking-tight">
+            <h2
+              className="text-3xl md:text-4xl font-semibold text-[#111212] tracking-tight"
+              style={{ fontFamily: "var(--font-serif)" }}
+            >
               Best Selling
             </h2>
           </div>
           <Link
             href={ROUTES.SHOP}
-            className="flex items-center gap-1 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors font-poppins"
+            className="flex items-center gap-1.5 text-[10px] tracking-[0.2em] font-bold text-[#111212] uppercase border-b border-[#111212] hover:opacity-60 transition-opacity pb-px"
           >
-            View All
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            VIEW ALL (450 ITEMS)
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </Link>
         </div>
 
         {isLoading ? (
-          <div className="flex gap-4 overflow-x-auto pb-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="min-w-[200px] h-[300px] bg-gray-200 animate-pulse rounded-lg flex-shrink-0" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-[#E8E6E1] animate-pulse rounded-xl" style={{ aspectRatio: "3/4" }} />
             ))}
           </div>
         ) : (
-          <ProductCarousel products={bestSellingProducts} apiProducts={rawAPIProducts} slidesToShow={5} />
+          <ProductCarousel products={bestSellingProducts} apiProducts={rawAPIProducts} slidesToShow={4} />
         )}
       </div>
     </section>

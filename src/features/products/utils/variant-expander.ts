@@ -3,6 +3,11 @@ import type { Product as APIProduct, ProductVariant } from "../types";
 export interface ExpandedVariantProduct extends APIProduct {
   selectedVariantId: string;
   selectedVariant: ProductVariant;
+  allImages: string[];
+  allColors: string[];
+  allSizes: string[];
+  avgPrice: number;
+  totalStock: number;
 }
 
 /**
@@ -12,33 +17,51 @@ export interface ExpandedVariantProduct extends APIProduct {
 export function expandProductVariants(
   apiProduct: APIProduct,
 ): ExpandedVariantProduct[] {
-  if (!apiProduct.variants || apiProduct.variants.length === 0) {
+  const variants =
+    apiProduct.product_variants && apiProduct.product_variants.length > 0
+      ? apiProduct.product_variants
+      : apiProduct.variant
+        ? [apiProduct.variant]
+        : [];
+
+  if (variants.length === 0) {
     return [];
   }
 
-  return apiProduct.variants.map((variant) => {
+  return variants.map((variant) => {
     // Filter out null/undefined sizes
     const validSizes = (variant.sizes || []).filter(
       (s) => s !== null && s !== undefined && s.size,
     );
 
-    // If no valid sizes, create a default ONE_SIZE entry
     const sizes =
-      validSizes.length > 0 ? validSizes : [{ size: "ONE_SIZE", stock: 0 }];
+      validSizes.length > 0
+        ? validSizes
+        : [
+            {
+              _id: "",
+              size: "ONE_SIZE",
+              quantity: 0,
+              selling_price: 0,
+              mrp: 0,
+            },
+          ];
+
+    const firstSize = sizes[0];
+    const totalStock = sizes.reduce((sum, s) => sum + (s.quantity || 0), 0);
 
     return {
       ...apiProduct,
-      selectedVariantId: variant.variantId,
+      selectedVariantId: variant._id,
       selectedVariant: {
         ...variant,
         sizes: sizes,
       },
-      // Override aggregated data with variant-specific data
       allImages: variant.images || [],
       allColors: [variant.color],
       allSizes: sizes.map((s) => s.size),
-      avgPrice: variant.sellingPrice,
-      totalStock: sizes.reduce((sum, s) => sum + (s.stock || 0), 0),
+      avgPrice: firstSize.selling_price,
+      totalStock,
     };
   });
 }

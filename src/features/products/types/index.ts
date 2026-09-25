@@ -8,59 +8,104 @@ export type ProductSortOption =
 export type ProductAvailability = "inStock" | "outOfStock" | "preOrder";
 
 export interface ProductVariantSize {
+  _id: string;
   size: string;
-  stock: number;
+  quantity: number;
+  selling_price: number;
+  mrp: number;
+  is_cart_active?: boolean;
+  is_wishlist?: boolean;
 }
 
 export interface ProductVariant {
   _id: string;
-  variantId: string;
+  product_id: string;
   color: string;
-  sellingPrice: number;
-  mrp: number;
   sizes: ProductVariantSize[];
   images: string[];
-}
-
-export interface Product {
-  _id: string;
-  name: string;
-  slug: string;
-  brand: string;
-  category: string;
-  subCategory: string;
-  pattern: string;
-  sleeveType?: string;
-  fabric: string;
-  neckType?: string;
-  description: string;
-  isActive: boolean;
-  isFeatured: boolean;
-  isPreOrder?: boolean;
-  avgPrice: number;
-  totalStock: number;
-  allImages: string[];
-  allColors: string[];
-  allSizes: string[];
-  variants: ProductVariant[];
-  averageRating: number;
-  totalReviews: number;
-  reviews: unknown[];
+  sku: string;
   createdAt: string;
   updatedAt: string;
   __v?: number;
 }
 
+export interface Product {
+  _id: string;
+  category: string;
+  brand: string;
+  product_name: string;
+  fabric: string;
+  description: string;
+  is_sale: boolean;
+  is_visible: boolean;
+  is_trending_collection?: boolean;
+  is_reel_collection?: boolean;
+  status: string;
+  is_delete: boolean;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+  variant?: ProductVariant;
+  product_variants?: ProductVariant[];
+}
+
 export interface ProductsListResponse {
   total: number;
-  page: number;
+  offset: number;
   limit: number;
   totalPages: number;
   products: Product[];
 }
 
+export interface ReelsProductsResponse {
+  products: Product[];
+}
+
+export interface ProductVariantInfoData {
+  product_id: string;
+  variant_id: string;
+  sizes: ProductVariantSize[];
+}
+
+export interface ProductVariantInfoResponse {
+  success: boolean;
+  data: ProductVariantInfoData;
+}
+
 export interface TestimonialsResponse {
   testimonials: unknown[];
+}
+
+export interface FilterPriceRange {
+  min: number;
+  max: number;
+}
+
+export interface FilterItemOption {
+  name: string;
+  count?: number;
+}
+
+export interface ColorFilterItem {
+  name: string;
+  code?: string;
+  hex?: string;
+  count?: number;
+}
+
+export interface FilterOptionsData {
+  brands: (string | FilterItemOption)[];
+  categories: (string | FilterItemOption)[];
+  fabrics: (string | FilterItemOption)[];
+  colors: (string | ColorFilterItem)[];
+  sizes: (string | FilterItemOption)[];
+  price: FilterPriceRange;
+  discount?: number[];
+}
+
+export interface FilterOptionsResponse {
+  success: boolean;
+  data: FilterOptionsData;
 }
 
 export interface ProductsListParams {
@@ -74,12 +119,16 @@ export interface ProductsListParams {
   pattern?: string;
   minPrice?: number;
   maxPrice?: number;
+  discount?: number;
   availability?: ProductAvailability;
   isFeatured?: boolean;
   search?: string;
   sort?: ProductSortOption;
   page?: number;
+  offset?: number;
   limit?: number;
+  is_sale?: boolean;
+  is_trending_collection?: boolean;
 }
 
 export type ProductCategory =

@@ -37,29 +37,66 @@ export interface WishlistProduct {
   updatedAt: string;
 }
 
-export interface WishlistItem {
-  _id?: string;
-  product: WishlistProduct;
-  variantId: string;
+export interface WishlistVariantSize {
+  _id: string;
   size: string;
-  addedAt?: string;
+  quantity: number;
+  selling_price: number;
+  mrp: number;
+}
+
+export interface WishlistVariant {
+  variant_id: string;
+  size_id: string;
+  images: string[];
+  color: string;
+  size: WishlistVariantSize;
+}
+
+export interface WishlistItem {
+  _id: string;
+  product_id: string;
+  product_name: string;
+  brand: string;
+  description: string;
+  variant: WishlistVariant;
 }
 
 export interface WishlistResponse {
-  items: WishlistItem[];
-  total?: number; // API may not return this field
+  success: boolean;
+  total: number;
+  offset: number;
+  limit: number;
+  list: WishlistItem[];
+}
+
+export interface GetWishlistParams {
+  limit?: number;
+  offset?: number;
+}
+
+export interface WishlistItemPayload {
+  productId: string;
+  variantId: string;
+  size_id?: string;
+  size: string;
 }
 
 export interface AddToWishlistRequest {
-  productId: string;
-  variantId: string;
-  size: string;
+  wishlistItems: WishlistItemPayload[];
 }
 
+export type AddToWishlistInput =
+  | AddToWishlistRequest
+  | WishlistItemPayload
+  | WishlistItemPayload[];
+
 export interface RemoveFromWishlistRequest {
-  productId: string;
-  variantId: string;
-  size: string;
+  id?: string;
+  wishlistItemId?: string;
+  productId?: string;
+  variantId?: string;
+  size?: string;
 }
 
 export interface MoveToCartRequest {
@@ -69,13 +106,16 @@ export interface MoveToCartRequest {
 }
 
 export interface BulkMoveToCartItem {
+  _id: string;
   productId: string;
   variantId: string;
+  quantity?: number;
+  size_id?: string;
   size: string;
 }
 
 export interface BulkMoveToCartRequest {
-  items: BulkMoveToCartItem[];
+  cartItems: BulkMoveToCartItem[];
 }
 
 export interface BulkMoveToCartResponse {

@@ -1,21 +1,74 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { ReviewCard } from "@/components/review/ReviewCard";
 import { productService } from "@/features/products/services/product.service";
 import type { Review } from "@/types/review";
 
+const staticReviews = [
+  {
+    id: "1",
+    customerName: "Ananya Singhania",
+    customerInitial: "A",
+    location: "London, UK",
+    rating: 5,
+    title: "Breathtaking craftsmanship",
+    comment:
+      "The zardozi craftsmanship on my wedding lehenga was beyond breathtaking. From virtual fittings in London to the seamless delivery, the attention to every detail made my trousseau utterly unforgettable.",
+    date: "March 12, 2026",
+    verified: true,
+  },
+  {
+    id: "2",
+    customerName: "Meera Roy-Kapoor",
+    customerInitial: "M",
+    location: "Dubai, UAE",
+    rating: 5,
+    title: "Felt like draped heritage",
+    comment:
+      "The antique gold Kanjeevaram drape felt like draped heritage. The custom blouse adjustments and cedar wood box packaging showed unparalleled attention to detail.",
+    date: "February 4, 2026",
+    verified: true,
+  },
+  {
+    id: "3",
+    customerName: "Rhea Merchant",
+    customerInitial: "R",
+    location: "New York, USA",
+    rating: 5,
+    title: "Effortless luxury from start to finish",
+    comment:
+      "Selecting our reception poshak through the digital concierge was effortless. The drape fell impeccably and received non-stop compliments all evening.",
+    date: "January 22, 2026",
+    verified: true,
+  },
+];
+
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <svg
+          key={star}
+          className={`w-3.5 h-3.5 ${star <= rating ? "text-[#C5A880]" : "text-[#E8E6E1]"}`}
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
 export const ReviewsSection = () => {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [reviewIndex, setReviewIndex] = useState(0);
+  const [reviews, setReviews] = useState<Review[]>(staticReviews);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
         const response = await productService.getTestimonials();
-        if (response && response.testimonials) {
+        if (response && response.testimonials && response.testimonials.length > 0) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const mappedReviews: Review[] = (response.testimonials as any[]).map((t: any) => ({
             id: t._id || t.id || Math.random().toString(),
@@ -25,10 +78,14 @@ export const ReviewsSection = () => {
             rating: t.rating || 5,
             title: t.title || "Great product",
             comment: t.comment || "",
-            date: new Date(t.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+            date: new Date(t.createdAt || Date.now()).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            }),
             verified: t.isVerified ?? true,
           }));
-          setReviews(mappedReviews);
+          setReviews(mappedReviews.slice(0, 3));
         }
       } catch (err) {
         console.error("Failed to fetch testimonials:", err);
@@ -39,84 +96,72 @@ export const ReviewsSection = () => {
     fetchTestimonials();
   }, []);
 
-  const slideReviewLeft = () => {
-    if (reviewIndex > 0) {
-      setReviewIndex(reviewIndex - 1);
-    }
-  };
-
-  const slideReviewRight = () => {
-    if (reviewIndex < reviews.length - 3) {
-      setReviewIndex(reviewIndex + 1);
-    }
-  };
+  const displayReviews = isLoading ? staticReviews : reviews.length > 0 ? reviews : staticReviews;
 
   return (
-    <section className="py-10 md:py-14 lg:py-18 bg-gray-50">
+    <section className="bg-white py-12 md:py-16 border-t border-[#E8E6E1]">
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-16">
-        <div className="flex items-end justify-between mb-8 md:mb-10">
-          <div>
-            <p className="text-[10px] md:text-xs font-poppins font-semibold uppercase tracking-widest text-rose-600 mb-1.5">What Customers Say</p>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 font-playfair tracking-tight">
-              Reviews &amp; Ratings
-            </h2>
-          </div>
-          <Link
-            href="#"
-            className="flex items-center gap-1 text-sm font-semibold text-rose-600 hover:text-rose-700 transition-colors font-poppins"
+        {/* Header */}
+        <div className="text-center mb-10 md:mb-12">
+          <p className="text-[9px] tracking-[0.25em] font-semibold text-[#6B6B6B] uppercase mb-3">
+            Trousseau Stories
+          </p>
+          <h2
+            className="text-3xl md:text-5xl font-semibold text-[#111212] mb-4"
+            style={{ fontFamily: "var(--font-serif)" }}
           >
-            View All
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
+            Customer Acclaim
+          </h2>
+          <p className="text-sm text-[#6B6B6B] max-w-lg mx-auto leading-relaxed">
+            Memorable moments from brides worldwide who trusted our atelier with their signature day.
+          </p>
         </div>
 
-        <div className="relative">
-          <button
-            onClick={slideReviewLeft}
-            disabled={reviewIndex === 0}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-6 z-10 bg-white rounded-full p-3 shadow-xl hover:bg-gray-50 hover:shadow-2xl disabled:opacity-20 disabled:cursor-not-allowed transition-all border border-gray-100"
-          >
-            <svg className="w-5 h-5 md:w-6 md:h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-
-          <button
-            onClick={slideReviewRight}
-            disabled={reviewIndex >= reviews.length - 3 || reviews.length <= 3}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-6 z-10 bg-white rounded-full p-3 shadow-xl hover:bg-gray-50 hover:shadow-2xl disabled:opacity-20 disabled:cursor-not-allowed transition-all border border-gray-100"
-          >
-            <svg className="w-5 h-5 md:w-6 md:h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          <div className="overflow-hidden">
+        {/* Review cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+          {displayReviews.map((review) => (
             <div
-              className="flex gap-4 md:gap-6 transition-all duration-500 py-4"
-              style={{ transform: `translateX(-${reviewIndex * 33.33}%)` }}
+              key={review.id}
+              className="bg-white border border-[#E8E6E1] rounded-2xl p-7 flex flex-col gap-5 hover:shadow-lg hover:border-[#D0CCC6] transition-all duration-300"
             >
-              {isLoading ? (
-                <div className="flex w-full justify-center p-4">
-                  <div className="animate-pulse flex space-x-4">
-                    <div className="rounded-md bg-gray-200 h-32 w-64"></div>
-                    <div className="rounded-md bg-gray-200 h-32 w-64 hidden md:block"></div>
-                    <div className="rounded-md bg-gray-200 h-32 w-64 hidden lg:block"></div>
-                  </div>
+              {/* Stars */}
+              <StarRating rating={review.rating} />
+
+              {/* Quote */}
+              <p className="text-sm text-[#444444] leading-relaxed flex-1 italic">
+                &ldquo;{review.comment}&rdquo;
+              </p>
+
+              {/* View more */}
+              <button className="self-start flex items-center gap-1.5 text-[10px] tracking-[0.15em] font-bold text-[#111212] uppercase border-b border-[#111212] hover:opacity-60 transition-opacity pb-px">
+                VIEW MORE
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* Reviewer */}
+              <div className="flex items-center gap-3 pt-3 border-t border-[#F4F3F3]">
+                <div className="w-9 h-9 rounded-full bg-[#111212] flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-semibold text-white">
+                    {review.customerInitial}
+                  </span>
                 </div>
-              ) : reviews.length > 0 ? (
-                reviews.map((review) => (
-                  <div key={review.id} className="flex-shrink-0 w-full md:w-[calc(50%-12px)] lg:w-[calc(33.33%-16px)]">
-                    <ReviewCard review={review} />
-                  </div>
-                ))
-              ) : (
-                <div className="text-center w-full py-8 text-gray-500">No reviews yet.</div>
-              )}
+                <div>
+                  <p className="text-sm font-semibold text-[#111212]">{review.customerName}</p>
+                  <p className="text-[9px] text-[#9B9B9B]">{review.date}</p>
+                </div>
+                <div className="ml-auto flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5 text-[#6B6B6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-[8px] tracking-[0.12em] text-[#6B6B6B] uppercase font-medium">
+                    Verified Bride
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>

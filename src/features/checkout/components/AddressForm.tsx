@@ -71,8 +71,8 @@ export function AddressForm({ initial, onSave, onCancel, isSaving }: AddressForm
   }
 
   const inputClass =
-    "w-full border border-gray-300 rounded px-3 py-2.5 text-sm font-poppins text-gray-800 placeholder-gray-400 focus:outline-none focus:border-secondary transition-colors";
-  const errorClass = "text-xs text-red-500 mt-1 font-poppins";
+    "w-full border border-gray-300 rounded px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-secondary transition-colors";
+  const errorClass = "text-xs text-red-500 mt-1";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -85,7 +85,7 @@ export function AddressForm({ initial, onSave, onCancel, isSaving }: AddressForm
             >
               <ArrowLeft size={18} />
             </button>
-            <h2 className="font-playfair font-semibold text-gray-900 text-base">
+            <h2 className="font-semibold text-gray-900 text-base">
               {initial ? "EDIT ADDRESS" : "ADD NEW ADDRESS"}
             </h2>
           </div>
@@ -122,7 +122,7 @@ export function AddressForm({ initial, onSave, onCancel, isSaving }: AddressForm
           </div>
 
           <div className="pt-2">
-            <p className="text-xs font-poppins font-semibold text-gray-700 uppercase tracking-wide mb-3">
+            <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">
               Address
             </p>
             <div className="space-y-3">
@@ -134,7 +134,7 @@ export function AddressForm({ initial, onSave, onCancel, isSaving }: AddressForm
                   onChange={(e) => handleChange("addressLine1", e.target.value)}
                   className={inputClass}
                 />
-                <p className="text-xs text-amber-600 font-poppins mt-1">
+                <p className="text-xs text-amber-600 mt-1">
                   *House Number will allow a doorstep delivery
                 </p>
                 {errors.addressLine1 && (
@@ -194,14 +194,14 @@ export function AddressForm({ initial, onSave, onCancel, isSaving }: AddressForm
           <button
             onClick={onCancel}
             disabled={isSaving}
-            className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded font-poppins font-semibold text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded font-semibold text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSaving}
-            className="flex-1 bg-secondary text-white py-2.5 rounded font-poppins font-semibold text-sm hover:bg-secondary/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+            className="flex-1 bg-secondary text-white py-2.5 rounded font-semibold text-sm hover:bg-secondary/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {isSaving ? (
               <>

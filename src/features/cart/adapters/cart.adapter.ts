@@ -1,31 +1,67 @@
 import type { CartItem } from "../services/cart.service";
-import { productService } from "@/features/products/services/product.service";
 
-export interface UICartItem extends CartItem {
+export interface UICartItem {
+  _id: string;
+  productId: string;
+  productName: string;
+  description: string;
+  brand: string;
+  category: string;
+  variantId: string;
+  color?: string;
+  size: string;
+  size_id: string;
+  price: number;
+  mrp: number;
+  quantity: number;
   images: string[];
+  product: {
+    _id: string;
+    name: string;
+    slug: string;
+    allImages: string[];
+  };
 }
 
-export async function enrichCartItemWithImages(item: CartItem): Promise<UICartItem> {
-  try {
-    const product = await productService.getProductById(item.product._id);
-    
-    const variant = product.variants.find(v => v.variantId === item.variantId);
-    
-    const images = variant?.images || product.allImages || [];
-    
-    return {
-      ...item,
-      images,
-    };
-  } catch (error) {
-    console.error(`Failed to fetch images for product ${item.product._id}:`, error);
-    return {
-      ...item,
-      images: [],
-    };
-  }
+export function enrichCartItemWithImages(item: CartItem): UICartItem {
+  const productId = item?.product_id ?? (item as unknown as { productId?: string })?.productId ?? "";
+  const productName = item?.product_name ?? (item as unknown as { productName?: string })?.productName ?? "";
+  const variantId = item?.variantId ?? (item as unknown as { variant_id?: string })?.variant_id ?? "";
+  const size = item?.size ?? "";
+  const size_id = item?.size_id ?? (item as unknown as { sizeId?: string })?.sizeId ?? "";
+  const price = item?.selling_price ?? (item as unknown as { price?: number })?.price ?? 0;
+  const mrp = item?.mrp ?? price;
+  const quantity = item?.quantity ?? 1;
+  const images =
+    item?.images && item.images.length > 0
+      ? item.images
+      : ["/placeholder.jpg"];
+
+  return {
+    _id: item?._id ?? "",
+    productId,
+    productName,
+    description: item?.description ?? "",
+    brand: item?.brand ?? "",
+    category: item?.category ?? "",
+    variantId,
+    color: item?.color ?? "",
+    size,
+    size_id,
+    price,
+    mrp,
+    quantity,
+    images,
+    product: {
+      _id: productId,
+      name: productName,
+      slug: productId,
+      allImages: images,
+    },
+  };
 }
 
-export async function enrichCartItemsWithImages(items: CartItem[]): Promise<UICartItem[]> {
-  return Promise.all(items.map(enrichCartItemWithImages));
+export function enrichCartItemsWithImages(items: CartItem[]): UICartItem[] {
+  if (!Array.isArray(items)) return [];
+  return items.map(enrichCartItemWithImages);
 }

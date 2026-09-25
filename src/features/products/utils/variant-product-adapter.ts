@@ -10,13 +10,16 @@ export function adaptExpandedVariantToUI(
   expandedProduct: ExpandedVariantProduct,
 ): UIProduct {
   const variant = expandedProduct.selectedVariant;
+  const firstSize = variant.sizes[0];
+  const sellingPrice = firstSize ? firstSize.selling_price : 0;
+  const mrp = firstSize ? firstSize.mrp : 0;
   const discount =
-    variant.mrp > variant.sellingPrice
-      ? Math.round(((variant.mrp - variant.sellingPrice) / variant.mrp) * 100)
+    mrp > sellingPrice
+      ? Math.round(((mrp - sellingPrice) / mrp) * 100)
       : 0;
   const hasDiscount = discount > 0;
   const totalStock = (variant.sizes || []).reduce(
-    (sum, s) => sum + (s?.stock || 0),
+    (sum, s) => sum + (s?.quantity || 0),
     0,
   );
   const stockStatus =
@@ -32,37 +35,42 @@ export function adaptExpandedVariantToUI(
     ? variant.color.charAt(0).toUpperCase() + variant.color.slice(1)
     : "Unknown";
 
-  // Handle empty or missing images
-  const variantImages =
-    (variant.images || []).length > 0
-      ? variant.images
-      : expandedProduct.allImages || [];
+  const variantImages = variant.images || [];
+
+  const isSale = Boolean(expandedProduct.is_sale);
+  const isWishlist = Boolean(
+    firstSize?.is_wishlist || variant.sizes?.some((s) => s?.is_wishlist)
+  );
+  const isCartActive = Boolean(
+    firstSize?.is_cart_active || variant.sizes?.some((s) => s?.is_cart_active)
+  );
 
   return {
     id: expandedProduct._id,
-    name: `${expandedProduct.name} (${colorName})`, // Include color in name
-    slug: expandedProduct.slug,
+    brand: expandedProduct.brand || "Brand",
+    name: `${expandedProduct.product_name} (${colorName})`,
+    slug: expandedProduct._id,
     description: expandedProduct.description || "",
     shortDescription: stripHtml(expandedProduct.description || ""),
     images: variantImages.map((url) => ({
       url: url,
-      alt: `${expandedProduct.name} - ${colorName}`,
+      alt: `${expandedProduct.product_name} - ${colorName}`,
     })),
     price: {
-      current: variant.sellingPrice,
-      original: variant.mrp > variant.sellingPrice ? variant.mrp : undefined,
+      current: sellingPrice,
+      original: mrp > sellingPrice ? mrp : undefined,
       discount: hasDiscount ? discount : undefined,
     },
     rating: {
-      average: expandedProduct.averageRating || 0,
-      count: expandedProduct.totalReviews || 0,
+      average: 0,
+      count: 0,
     },
     category: expandedProduct.category,
     categorySlug: expandedProduct.category.toLowerCase().replace(/_/g, "-"),
     stockStatus,
-    featured: expandedProduct.isFeatured || false,
-    bestseller: expandedProduct.isFeatured || false,
-    trending: expandedProduct.isFeatured || false,
+    featured: isSale,
+    bestseller: false,
+    trending: false,
     colors: [
       {
         name: variant.color,
@@ -72,15 +80,18 @@ export function adaptExpandedVariantToUI(
     ],
     sizes: variant.sizes.map((size) => ({
       name: size.size,
-      available: size.stock > 0,
+      available: size.quantity > 0,
     })),
     features: [],
-    fabric: expandedProduct.fabric || "Viscose",
-    sku: expandedProduct._id.substring(0, 8).toUpperCase(),
-    label: hasDiscount
+    fabric: expandedProduct.fabric || "",
+    sku: variant.sku || expandedProduct._id.substring(0, 8).toUpperCase(),
+    is_sale: isSale,
+    is_wishlist: isWishlist,
+    is_cart_active: isCartActive,
+    label: isSale
       ? {
           type: ProductLabelType.SALE,
-          text: `${discount}% OFF`,
+          text: hasDiscount ? `${discount}% OFF` : "SALE",
         }
       : stockStatus === StockStatus.OUT_OF_STOCK
         ? {

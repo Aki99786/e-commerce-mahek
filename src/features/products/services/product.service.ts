@@ -5,6 +5,9 @@ import type {
   ProductsListResponse,
   ProductsListParams,
   TestimonialsResponse,
+  FilterOptionsResponse,
+  ProductVariantInfoResponse,
+  ReelsProductsResponse,
 } from "../types";
 
 class ProductService extends BaseService {
@@ -24,14 +27,27 @@ class ProductService extends BaseService {
       queryParams.append("minPrice", params.minPrice.toString());
     if (params.maxPrice !== undefined)
       queryParams.append("maxPrice", params.maxPrice.toString());
+    if (params.discount !== undefined)
+      queryParams.append("discount", params.discount.toString());
+    if (params.is_sale !== undefined)
+      queryParams.append("is_sale", params.is_sale.toString());
+    if (params.is_trending_collection !== undefined)
+      queryParams.append("is_trending_collection", params.is_trending_collection.toString());
     if (params.availability)
       queryParams.append("availability", params.availability);
     if (params.isFeatured !== undefined)
       queryParams.append("isFeatured", params.isFeatured.toString());
     if (params.search) queryParams.append("search", params.search);
     if (params.sort) queryParams.append("sort", params.sort);
-    if (params.page !== undefined)
+    if (params.page !== undefined) {
       queryParams.append("page", params.page.toString());
+      // The API uses 0-based offset as page index (offset=0 for page 1, offset=1 for page 2)
+      const offset =
+        params.offset !== undefined ? params.offset : Math.max(0, params.page - 1);
+      queryParams.append("offset", offset.toString());
+    } else if (params.offset !== undefined) {
+      queryParams.append("offset", params.offset.toString());
+    }
     if (params.limit !== undefined)
       queryParams.append("limit", params.limit.toString());
 
@@ -52,16 +68,22 @@ class ProductService extends BaseService {
     return this.get<Product>(API_ENDPOINTS.PRODUCTS.BY_ID(id));
   }
 
+  async getProductVariantInfo(variantId: string): Promise<ProductVariantInfoResponse> {
+    return this.get<ProductVariantInfoResponse>(
+      API_ENDPOINTS.PRODUCTS.VARIANT_INFO(variantId)
+    );
+  }
+
   async getBestSellingProducts(): Promise<ProductsListResponse> {
     return this.get<ProductsListResponse>(API_ENDPOINTS.PRODUCTS.BEST_SELLING);
   }
 
-  async getTrendingProducts(): Promise<ProductsListResponse> {
-    return this.get<ProductsListResponse>(API_ENDPOINTS.PRODUCTS.TRENDING);
+  async getTrendingProducts(limit: number = 4): Promise<ProductsListResponse> {
+    return this.getProductsList({ is_trending_collection: true, limit, page: 1 });
   }
 
   async getFlashSaleProducts(): Promise<ProductsListResponse> {
-    return this.get<ProductsListResponse>(API_ENDPOINTS.PRODUCTS.FLASH_SALE);
+    return this.getProductsList({ is_sale: true, limit: 3, page: 1 });
   }
 
   async getLehengasProducts(): Promise<ProductsListResponse> {
@@ -70,6 +92,24 @@ class ProductService extends BaseService {
 
   async getTestimonials(): Promise<TestimonialsResponse> {
     return this.get<TestimonialsResponse>(API_ENDPOINTS.PRODUCTS.TESTIMONIALS);
+  }
+
+  async getReelsProducts(): Promise<ReelsProductsResponse> {
+    return this.get<ReelsProductsResponse>(API_ENDPOINTS.PRODUCTS.GET_REELS);
+  }
+
+  private filterOptionsPromise: Promise<FilterOptionsResponse> | null = null;
+
+  async getFilterOptions(): Promise<FilterOptionsResponse> {
+    if (!this.filterOptionsPromise) {
+      this.filterOptionsPromise = this.get<FilterOptionsResponse>(
+        API_ENDPOINTS.PRODUCTS.FILTER_OPTIONS
+      ).catch((err) => {
+        this.filterOptionsPromise = null;
+        throw err;
+      });
+    }
+    return this.filterOptionsPromise;
   }
 }
 

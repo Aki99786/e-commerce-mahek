@@ -24,12 +24,18 @@
   --color-error: #dc3545;
   --color-warning: #ffc107;
 
-  --font-playfair: "Playfair Display";
-  --font-inter: "Inter";
-  --font-poppins: "Poppins";
-  --font-family-playfair: "Playfair Display", serif;
-  --font-family-inter: "Inter", sans-serif;
-  --font-family-poppins: "Poppins", sans-serif;
+  /* Luxury design tokens from Figma */
+  --color-luxe-bg: #F4F3F3;
+  --color-luxe-ivory: #FAF9F5;
+  --color-luxe-dark: #111212;
+  --color-luxe-charcoal: #1a1a1a;
+  --color-luxe-gold: #C5A880;
+  --color-luxe-rose: #9E2A2B;
+  --color-luxe-muted: #6B6B6B;
+  --color-luxe-border: #E8E6E1;
+
+  --font-sans: Figtree-Regular, "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: "Cormorant Garamond", "Cormorant", Georgia, "Times New Roman", serif;
 
   --spacing-18: 4.5rem;
   --spacing-22: 5.5rem;
@@ -54,8 +60,21 @@ html {
   overflow-y: auto;
 }
 
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+input,
+select,
+textarea {
+  font-family: Figtree-Regular, "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
 body {
-  font-family: var(--font-inter);
   font-size: 0.875rem;
   line-height: 1.7;
   -webkit-font-smoothing: antialiased;
@@ -68,7 +87,6 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-playfair);
   font-weight: 600;
 }
 
@@ -107,6 +125,7 @@ img {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translate(-50%);
   }
@@ -134,3 +153,86 @@ img {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Dual Range Slider Styles */
+.dual-slider-input {
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+.dual-slider-input::-webkit-slider-thumb {
+  pointer-events: auto;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ff3f6c;
+  border: 2.5px solid #ffffff;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(255, 63, 108, 0.4);
+  transition: transform 0.1s ease;
+}
+
+.dual-slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.dual-slider-input::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+}
+
+.dual-slider-input::-moz-range-thumb {
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ff3f6c;
+  border: 2.5px solid #ffffff;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(255, 63, 108, 0.4);
+  transition: transform 0.1s ease;
+}
+
+.dual-slider-input::-moz-range-thumb:hover {
+  transform: scale(1.15);
+}
+
+.dual-slider-input::-moz-range-thumb:active {
+  transform: scale(1.2);
+}
+
+@keyframes heart-like {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.45); }
+  60%  { transform: scale(0.9); }
+  80%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes heart-unlike {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.7); }
+  100% { transform: scale(1); }
+}
+
+.heart-anim-like {
+  animation: heart-like 0.4s ease forwards;
+}
+
+.heart-anim-unlike {
+  animation: heart-unlike 0.35s ease forwards;
+}
+
+/* ── Luxury TopBar marquee ── */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+  will-change: transform;
+}

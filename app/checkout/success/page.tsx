@@ -42,29 +42,29 @@ function SuccessContent() {
           </div>
         </div>
 
-        <h1 className="text-2xl font-playfair font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
           Order Placed Successfully!
         </h1>
-        <p className="text-sm font-poppins text-gray-500 mb-6">
+        <p className="text-sm text-gray-500 mb-6">
           Thank you for shopping with Mahek Sarees. Your order has been confirmed and payment received.
         </p>
 
         <div className="bg-gray-50 rounded-lg p-4 mb-5 text-left space-y-2.5">
-          <div className="flex justify-between font-poppins text-sm">
+          <div className="flex justify-between text-sm">
             <span className="text-gray-500">Order ID</span>
             <span className="text-gray-800 font-semibold text-xs break-all text-right ml-2 max-w-[55%]">
               {orderId}
             </span>
           </div>
-          <div className="flex justify-between font-poppins text-sm">
+          <div className="flex justify-between text-sm">
             <span className="text-gray-500">Payment Status</span>
             <span className="text-green-600 font-semibold">Paid ✓</span>
           </div>
-          <div className="flex justify-between font-poppins text-sm">
+          <div className="flex justify-between text-sm">
             <span className="text-gray-500">Order Status</span>
             <span className="text-gray-800 font-semibold">Processing</span>
           </div>
-          <div className="flex justify-between font-poppins text-sm">
+          <div className="flex justify-between text-sm">
             <span className="text-gray-500">Estimated Delivery</span>
             <span className="text-gray-800 font-semibold">5–7 Working Days</span>
           </div>
@@ -73,7 +73,7 @@ function SuccessContent() {
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-5">
           <div className="flex items-center gap-2">
             <Package size={16} className="text-amber-600 flex-shrink-0" />
-            <p className="text-xs font-poppins text-amber-700">
+            <p className="text-xs text-amber-700">
               Your order will be packed and shipped within 2–3 business days. You will receive a tracking number once shipped.
             </p>
           </div>
@@ -82,7 +82,7 @@ function SuccessContent() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
           <div className="flex items-center gap-2">
             <Truck size={16} className="text-blue-600 flex-shrink-0" />
-            <p className="text-xs font-poppins text-blue-700">
+            <p className="text-xs text-blue-700">
               Shipping handled by Shiprocket. Track your order from My Orders page once dispatched.
             </p>
           </div>
@@ -91,14 +91,14 @@ function SuccessContent() {
         <div className="flex flex-col gap-3">
           <Link
             href={ROUTES.HOME}
-            className="flex items-center justify-center gap-2 w-full bg-secondary text-white py-3 rounded font-poppins font-bold text-sm tracking-wider hover:bg-secondary/90 transition-colors"
+            className="flex items-center justify-center gap-2 w-full bg-secondary text-white py-3 rounded font-bold text-sm tracking-wider hover:bg-secondary/90 transition-colors"
           >
             <Home size={16} />
             Continue Shopping
           </Link>
           <Link
             href={ROUTES.TRACK_ORDER}
-            className="w-full border border-gray-300 text-gray-700 py-3 rounded font-poppins font-semibold text-sm hover:bg-gray-50 transition-colors"
+            className="w-full border border-gray-300 text-gray-700 py-3 rounded font-semibold text-sm hover:bg-gray-50 transition-colors"
           >
             View My Orders
           </Link>

@@ -1,66 +1,84 @@
 import { Availability } from "../types";
 import type { WishlistItem, WishlistProduct } from "../types";
 
-export interface UIWishlistProduct extends WishlistProduct {
+export interface UIWishlistProduct extends Partial<WishlistProduct> {
+  _id: string;
+  name: string;
+  brand?: string;
+  description?: string;
   price: number;
   oldPrice: number;
   discountPercent: number;
   availability: Availability;
   totalStock: number;
   images: string[];
-  selectedColor: string;
+  selectedColor?: string;
 }
 
-export interface UIWishlistItem extends Omit<WishlistItem, "product"> {
+export interface UIWishlistItem extends WishlistItem {
+  variantId: string;
+  sizeId?: string;
+  size: string;
   product: UIWishlistProduct;
 }
 
 export function adaptWishlistItemToUI(item: WishlistItem): UIWishlistItem {
-  const selectedVariant = item.product.variants.find(
-    (v) => v.variantId === item.variantId,
-  );
-
-  if (!selectedVariant) {
-    throw new Error(
-      `Variant ${item.variantId} not found for product ${item.product._id}`,
-    );
-  }
-
-  // sizes can be [null] for single-size items (e.g., sarees) — filter before summing
-  const totalStock = selectedVariant.sizes
-    .filter((s): s is NonNullable<typeof s> => s !== null)
-    .reduce((sum, sizeItem) => sum + sizeItem.stock, 0);
+  const sellingPrice = item?.variant?.size?.selling_price ?? 0;
+  const mrp = item?.variant?.size?.mrp ?? sellingPrice;
+  const stock = item?.variant?.size?.quantity ?? 0;
+  const images = item?.variant?.images ?? [];
+  const selectedColor = item?.variant?.color ?? "";
+  const sizeName = item?.variant?.size?.size ?? "";
 
   const discountPercent =
-    selectedVariant.mrp > 0
-      ? Math.round(
-          ((selectedVariant.mrp - selectedVariant.sellingPrice) /
-            selectedVariant.mrp) *
-            100,
-        )
+    mrp > 0 && mrp > sellingPrice
+      ? Math.round(((mrp - sellingPrice) / mrp) * 100)
       : 0;
 
   let availability: Availability;
-  if (totalStock === 0) {
+  if (stock === 0) {
     availability = Availability.OUT_OF_STOCK;
-  } else if (totalStock <= 5) {
+  } else if (stock <= 5) {
     availability = Availability.LOW_STOCK;
   } else {
     availability = Availability.IN_STOCK;
   }
 
   return {
-    ...item,
-    _id: item._id || `${item.product._id}-${item.variantId}-${item.size}`,
+    _id: item?._id ?? "",
+    product_id: item?.product_id ?? "",
+    product_name: item?.product_name ?? "",
+    brand: item?.brand ?? "",
+    description: item?.description ?? "",
+    variantId: item?.variant?.variant_id ?? "",
+    sizeId: item?.variant?.size_id ?? "",
+    size: sizeName,
+    variant: item?.variant,
     product: {
-      ...item.product,
-      price: selectedVariant.sellingPrice,
-      oldPrice: selectedVariant.mrp,
+      _id: item?.product_id ?? "",
+      name: item?.product_name ?? "",
+      brand: item?.brand ?? "",
+      description: item?.description ?? "",
+      price: sellingPrice,
+      oldPrice: mrp,
       discountPercent,
       availability,
-      totalStock,
-      images: selectedVariant.images,
-      selectedColor: selectedVariant.color,
+      totalStock: stock,
+      images,
+      selectedColor,
+      slug: "",
+      category: "",
+      isActive: true,
+      isFeatured: false,
+      allImages: images,
+      allColors: selectedColor ? [selectedColor] : [],
+      allSizes: sizeName ? [sizeName] : [],
+      variants: [],
+      averageRating: 0,
+      totalReviews: 0,
+      reviews: [],
+      createdAt: "",
+      updatedAt: "",
     },
   };
 }
@@ -68,5 +86,6 @@ export function adaptWishlistItemToUI(item: WishlistItem): UIWishlistItem {
 export function adaptWishlistResponseToUI(
   items: WishlistItem[],
 ): UIWishlistItem[] {
+  if (!items || !Array.isArray(items)) return [];
   return items.map(adaptWishlistItemToUI);
 }

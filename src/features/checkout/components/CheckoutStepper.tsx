@@ -99,7 +99,7 @@ export function CheckoutStepper({ currentStep }: CheckoutStepperProps) {
           return (
             <div key={step.id} className="flex items-start">
               <span
-                className={`w-9 text-center text-[9px] sm:text-[10px] font-poppins font-semibold tracking-widest uppercase leading-tight ${
+                className={`w-9 text-center text-[9px] sm:text-[10px] font-semibold tracking-widest uppercase leading-tight ${
                   isActive ? "text-rose-600" : isCompleted ? "text-green-600" : "text-gray-400"
                 }`}
               >

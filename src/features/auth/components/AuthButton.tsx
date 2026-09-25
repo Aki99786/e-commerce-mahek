@@ -16,7 +16,7 @@ export const AuthButton = ({
   ...props
 }: AuthButtonProps) => {
   const baseStyles =
-    "w-full py-3.5 px-6 rounded-xl font-poppins font-bold text-sm tracking-wider transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2";
+    "w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-wider transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-[0.98] flex items-center justify-center gap-2";
 
   const variantStyles = {
     primary:

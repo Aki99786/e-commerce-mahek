@@ -49,7 +49,7 @@ export interface OrderItemProduct {
 }
 
 export interface OrderItem {
-  product: OrderItemProduct;
+  product: OrderItemProduct | null;
   variantId: string;
   size: string;
   quantity: number;

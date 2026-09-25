@@ -10,7 +10,7 @@ import { OtpInput } from "@/features/auth/components/OtpInput";
 import { validateAuthForm, validateOtp } from "@/features/auth/utils/validation";
 import { authService } from "@/features/auth/services/auth.service";
 import { AUTH_MESSAGES } from "@/features/auth/constants";
-import { getRedirectUrl } from "@/lib/auth-utils";
+import { getRedirectUrl, isAuthenticated } from "@/lib/auth-utils";
 import type { AuthFormData, FormErrors } from "@/features/auth/types";
 
 type AuthStep = "email" | "otp";
@@ -31,10 +31,7 @@ export function LoginForm() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
-    const userData = typeof window !== "undefined" ? localStorage.getItem("userData") : null;
-
-    if (token && userData) {
+    if (isAuthenticated()) {
       const redirectUrl = getRedirectUrl(searchParams);
       router.replace(redirectUrl);
     }
@@ -180,7 +177,7 @@ export function LoginForm() {
               onChange={handleChange}
               className="mt-1 w-4 h-4 rounded border-border text-secondary focus:ring-secondary focus:ring-2"
             />
-            <label htmlFor="agreeToTerms" className="text-sm font-poppins text-text-secondary leading-relaxed">
+            <label htmlFor="agreeToTerms" className="text-sm text-text-secondary leading-relaxed">
               By continuing, I agree to the{" "}
               <Link href="/terms" className="text-secondary font-semibold hover:underline">
                 Terms of Use
@@ -193,18 +190,18 @@ export function LoginForm() {
             </label>
           </div>
           {errors.agreeToTerms && (
-            <p className="text-sm font-poppins text-red-600 -mt-2">{errors.agreeToTerms}</p>
+            <p className="text-sm text-red-600 -mt-2">{errors.agreeToTerms}</p>
           )}
 
           {errorMessage && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm font-poppins text-red-600">{errorMessage}</p>
+              <p className="text-sm text-red-600">{errorMessage}</p>
             </div>
           )}
 
           {successMessage && (
             <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm font-poppins text-green-600">{successMessage}</p>
+              <p className="text-sm text-green-600">{successMessage}</p>
             </div>
           )}
 
@@ -217,7 +214,7 @@ export function LoginForm() {
           </AuthButton>
 
           <div className="text-center">
-            <p className="text-sm font-poppins text-text-secondary">
+            <p className="text-sm text-text-secondary">
               Have trouble logging in?{" "}
               <Link
                 href="/help"
@@ -231,8 +228,8 @@ export function LoginForm() {
       ) : (
         <div className="space-y-6">
           <div className="text-center mb-5">
-            <p className="text-sm font-poppins text-gray-500 mb-2">We&apos;ve sent a 6-digit OTP to</p>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-lg text-sm font-semibold font-poppins text-rose-700">
+            <p className="text-sm text-gray-500 mb-2">We&apos;ve sent a 6-digit OTP to</p>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-lg text-sm font-semibold text-rose-700">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
@@ -252,7 +249,7 @@ export function LoginForm() {
               <svg className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p className="text-xs font-poppins text-red-600">{errorMessage}</p>
+              <p className="text-xs text-red-600">{errorMessage}</p>
             </div>
           )}
 
@@ -261,7 +258,7 @@ export function LoginForm() {
               <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p className="text-xs font-poppins text-green-600">{successMessage}</p>
+              <p className="text-xs text-green-600">{successMessage}</p>
             </div>
           )}
 
@@ -283,7 +280,7 @@ export function LoginForm() {
             <button
               type="button"
               onClick={handleBackToEmail}
-              className="flex items-center gap-1 text-xs font-poppins font-semibold text-gray-500 hover:text-gray-800 transition-colors disabled:opacity-40"
+              className="flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-gray-800 transition-colors disabled:opacity-40"
               disabled={isLoading}
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -294,7 +291,7 @@ export function LoginForm() {
             <button
               type="button"
               onClick={handleResendOtp}
-              className="flex items-center gap-1 text-xs font-poppins font-semibold text-rose-600 hover:text-rose-700 transition-colors disabled:opacity-40"
+              className="flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700 transition-colors disabled:opacity-40"
               disabled={isLoading}
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
